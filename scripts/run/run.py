@@ -158,7 +158,7 @@ for run in range(runs_per_job):
                 shellscript.writelines('done\n')
                 shellscript.writelines('cd '+local_workdir_base+'/'+model+'\n')
             shellscript.writelines(bash_get_rank+'\n') # e.g. "my_id=${PMI_RANK}"
-            shellscript.writelines('exec ./'+model_executable[i]+' > logfile_${my_id}.txt 2>&1')
+            shellscript.writelines('exec ./' + model_executable[i] + ' > logfile_${my_id}.txt 2>&1')
             shellscript.close()
             st = os.stat('run_'+model+'.sh')                 # get current permissions
             os.chmod('run_'+model+'.sh', st.st_mode | 0o777) # add a+rwx permission
@@ -167,7 +167,29 @@ for run in range(runs_per_job):
         mpmd_file = open('mpmd_file', 'w')
         for i,model in enumerate(models):
             mpmd_file.writelines(mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
-        mpmd_file.close()        
+        mpmd_file.close() 
+
+        # Check if the namcouple file should be generated automatically by the flux_calculator
+        try: 
+            namcouple = generate_namcouple
+        except:
+            namcouple = False
+
+        if namcouple:
+            # Start flux_calculator excutable with switch --generate_namcouple before starting the model
+            shellscript_name = 'create_namcouple.sh'
+            shellscript = open(shellscript_name, 'w')
+            shellscript.writelines('#!/bin/bash\n')
+            shellscript.writelines('cd '+work_directory_root+'/flux_calculator\n')
+            shellscript.writelines('exec ./flux_calculator --generate_namcouple > logfile_namcouple_generation.txt 2>&1')
+            shellscript.close()
+            st = os.stat(shellscript_name)                 # get current permissions
+            os.chmod(shellscript_name, st.st_mode | 0o777) # add a+rwx permission
+            mpi_command = mpi_run_command.split(' ')[0]
+            print('  create namcouple file with command: '+mpi_command, flush=True)
+            # this creates namcouple in the flux_calculator work directory and copies it to the other directories
+            os.system(mpi_command + " " + mpi_n_flag + " 1 " + shellscript_name)
+            print('  ... creating namcouple finished '+mpi_command, flush=True)
 
         # START THE MPI JOBS
         full_mpi_run_command = mpi_run_command.replace('_CORES_',str(parallelization_layout['total_cores']))

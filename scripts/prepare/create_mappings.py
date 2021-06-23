@@ -137,6 +137,12 @@ for i,model in enumerate(models):
         print('        v_grid...')
         shutil.copy(IOW_ESM_ROOT+'/input/'+model+'/mappings/remap_v_grid_exchangegrid_to_'+models[atmosmodel]+'.nc',
                     IOW_ESM_ROOT+'/input/'+models[atmosmodel]+'/mappings/remap_v_grid_exchangegrid_to_'+models[atmosmodel]+'.nc')
+        # copy mapping back from atmospheric grid to exchange grid
+        print('    adding remapping for '+model+':')
+        for grid in ['u', 'v', 't']:
+            print('        ' + grid + '_grid...')
+            shutil.copy(IOW_ESM_ROOT+'/input/'+models[atmosmodel]+'/mappings/remap_to_exchangegrid_for_'+model+'_'+grid+'_grid.nc',
+                IOW_ESM_ROOT+'/input/'+models[atmosmodel]+'/mappings/remap_'+ grid +'_grid_' + models[atmosmodel] + '_to_exchangegrid.nc')
         print('        done.')
 
 ###################################################################

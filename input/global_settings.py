@@ -73,3 +73,8 @@ cores_per_node = 40                                     # maximum number of core
 jobscript_template = 'scripts/run/jobscript_haumea'     # path to a template file which will become the job script to run the model
                                                         # may contain the same wildcards as mpi_run_command, plus _IOW_ESM_ROOT_
 check_layout_only = True                                # if set to True, will not run the models but only print which model runs on which node
+
+################################################
+# STEP 7 (optional): generate namcouple file automatically  #
+################################################
+generate_namcouple = True

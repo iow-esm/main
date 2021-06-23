@@ -123,14 +123,18 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
                                 copyfunc(IOW_ESM_ROOT+'/input/'+model+'/from/'+our_date+'/'+file,work_dir+'/'+file)
     
             # STEP 5: copy namcouple and change it according to run length
-            copyfunc(IOW_ESM_ROOT+'/input/namcouple',work_dir+'/namcouple')
+            if os.path.isfile(IOW_ESM_ROOT+'/input/namcouple'):
+                copyfunc(IOW_ESM_ROOT+'/input/namcouple',work_dir+'/namcouple')
     
-            my_startdate = datetime.strptime(start_date,'%Y%m%d')
-            my_enddate = datetime.strptime(end_date,'%Y%m%d')
-            runlength = (my_enddate - my_startdate).days*24*3600
-            change_in_namelist.change_in_namelist(filename=work_dir+'/namcouple', 
+                my_startdate = datetime.strptime(start_date,'%Y%m%d')
+                my_enddate = datetime.strptime(end_date,'%Y%m%d')
+                runlength = (my_enddate - my_startdate).days*24*3600
+                change_in_namelist.change_in_namelist(filename=work_dir+'/namcouple', 
                                after='$RUNTIME', before='$END', start_of_line='', 
                                new_value = str(runlength), add_if_needed=True)
+            else:
+                print("There is no " + IOW_ESM_ROOT + '/input/namcouple. \
+                    It will be generated automatically if `generate_namcouple = True` in' + IOW_ESM_ROOT + '/input/global_settings.py')
 
             # STEP 6: We will probably not need the files areas.nc, grids.nc and masks.nc
             # We still copy them.
