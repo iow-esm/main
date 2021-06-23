@@ -7,6 +7,8 @@ import shutil
 
 import change_in_namelist
 
+import modify_cclm_restart_file
+
 def create_work_directory_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
                                work_directory_root, # /path/to/work/directory for all models
                                my_directory,        # name of this model instance
@@ -39,7 +41,7 @@ def create_work_directory_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
     # STEP 2: Read global options file
     exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read())
 
-    # STEP 3: Adjust times in input.nml
+    # STEP 3: Adjust times in INPUT_IO
     my_startdate = datetime.strptime(start_date,'%Y%m%d')
     my_enddate = datetime.strptime(end_date,'%Y%m%d')
     my_initdate = datetime.strptime(init_date,'%Y%m%d')
@@ -51,7 +53,7 @@ def create_work_directory_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
                      new_value = '='+str(starthours)+','+str(finalhours)+','+str(finalhours-starthours)+',')
     change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT_IO',
                      after='&GRIBOUT', before='/END', start_of_line='hcomb',
-                     new_value = '='+str(starthours)+','+str(finalhours)+',24,', repeated=True)
+                     new_value = '='+str(starthours)+','+str(finalhours)+',1,', repeated=True)
     change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT_ORG',
                      after='&RUNCTL', before='/END', start_of_line='hstart',
                      new_value = '='+str(starthours)+', hstop='+str(finalhours)+',')
@@ -60,4 +62,9 @@ def create_work_directory_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
     if (start_date != init_date):
         hotstart_folder = IOW_ESM_ROOT + '/hotstart/' + runname + '/' + my_directory + '/' + start_date
         os.system('cp '+hotstart_folder+'/* '+full_directory+'/')        # copy all hotstart files 
+   
+
+    # STEP 6: Modify hotstart file according to land mask
+    modify_cclm_restart_file.modify_cclm_restart_file(work_directory_root, my_directory, start_date)
+
     return
