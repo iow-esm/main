@@ -1,0 +1,403 @@
+# This is a typical input file for OASIS3-MCT, using NetCDF 
+# format for restart input files. OASIS3-MCT reads in this file 
+# at run time. Don't hesitate to ask precisions or make 
+# suggestions (oasishelp@cerfacs.fr)
+#
+# Any line beginning with # is ignored. Blank lines are not allowed
+####################################################################
+ $NFIELDS 
+49
+ $END
+############################################
+ $RUNTIME 
+2592000
+ $END
+############################################
+ $NLOGPRT 
+1 1
+ $END
+############################################
+ $STRINGS 
+ATMSEPRE OCEREPRE 1 3600 5 restart_atm_pre.nc EXPOUT
+222 244 91 102 cobs tmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+BASBAL bfb 
+INT=1
+####
+ATMSEEVA OCEREEVA 1 3600 5 restart_atm_eva.nc EXPOUT
+222 244 91 102 cobs tmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+BASBAL bfb 
+INT=1
+####
+ATMSESLP OCERESLP 1 3600 5 restart_atm_slp.nc EXPOUT
+222 244 91 102 cobs tmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT
+AVERAGE
+INT=1
+BILINEAR LR SCALAR LATLON 1
+BASBAL bfb
+INT=1
+####
+ATMSEUVL OCEREUVL 1 3600 4 restart_atm_uvl.nc EXPOUT
+222 244 91 102 cobs cmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+INT=1
+####
+ATMSEVVL OCEREVVL 1 3600 4 restart_atm_vvl.nc EXPOUT
+222 244 91 102 cobs cmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+INT=1
+####
+ATMSELWD OCERELWD 1 3600 5 restart_atm_lwd.nc EXPOUT
+222 244 91 102 cobs tmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+BASBAL bfb 
+INT=1
+####
+ATMSESWF OCERESWF 1 3600 5 restart_atm_swf.nc EXPOUT
+222 244 91 102 cobs tmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+BASBAL bfb 
+INT=1
+####
+ATMSESNO OCERESNO 1 3600 5 restart_atm_sno.nc EXPOUT
+222 244 91 102 cobs tmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+BASBAL bfb 
+INT=1
+####
+ATMSELHF OCERELHF 1 3600 5 restart_atm_lhf.nc EXPOUT
+222 244 91 102 cobs tmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+BASBAL bfb 
+INT=1
+####
+ATMSESHF OCERESHF 1 3600 5 restart_atm_shf.nc EXPOUT
+222 244 91 102 cobs tmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+BASBAL bfb 
+INT=1
+####
+ATMSELWU OCERELWU 1 3600 5 restart_atm_lwu.nc EXPOUT
+222 244 91 102 cobs tmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+BASBAL bfb 
+INT=1
+####
+ATMSESWD OCERESWD 1 3600 5 restart_atm_swd.nc EXPOUT
+222 244 91 102 cobs tmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+BASBAL bfb 
+INT=1
+####
+ATMSEUWS OCEREUWS 1 3600 4 restart_atm_uws.nc EXPOUT
+222 244 91 102 cobs cmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+INT=1
+####
+ATMSEVWS OCEREVWS 1 3600 4 restart_atm_vws.nc EXPOUT
+222 244 91 102 cobs cmom LAG=150
+R 0 R 0 
+LOCTRANS CHECKIN SCRIPR CHECKOUT 
+AVERAGE 
+INT=1
+BILINEAR LR SCALAR LATLON 1
+INT=1
+####
+MSFARE01 RMFARE01 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSFARE02 RMFARE02 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSFARE03 RMFARE03 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSFARE04 RMFARE04 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSFARE05 RMFARE05 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSFARE06 RMFARE06 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSTSUR01 RMTSUR01 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSTSUR02 RMTSUR02 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSTSUR03 RMTSUR03 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSTSUR04 RMTSUR04 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSTSUR05 RMTSUR05 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+MSTSUR06 RMTSUR06 1 600 2 restart_oce_sst.nc EXPOUT
+91 102 6193 1 tmom flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_MOM5_Baltic_to_exchangegrid.nc src
+####
+SATSUR00 ARTSUR00 1 600 2 restart_flc_TSUR.nc EXPOUT
+6193 1 222 244 flxt cobs LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_CCLM_Eurocordex.nc src
+####
+SARBBR00 ARRBBR00 1 600 2 restart_flc_RBBR.nc EXPOUT
+6193 1 222 244 flxt cobs LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_CCLM_Eurocordex.nc src
+####
+ASTATM00 RATATM00 1 600 2 restart_flc_TATM.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASPATM00 RAPATM00 1 600 2 restart_flc_PATM.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASPSUR00 RAPSUR00 1 600 2 restart_flc_PSUR.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASMRAI00 RAMRAI00 1 600 2 restart_flc_MRAI.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASMSNO00 RAMSNO00 1 600 2 restart_flc_MSNO.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASRLWD00 RARLWD00 1 600 2 restart_flc_RLWD.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASRLWU00 RARLWU00 1 600 2 restart_flc_RLWU.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASRSDD00 RARSDD00 1 600 2 restart_flc_RSDD.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASRSIN00 RARSIN00 1 600 2 restart_flc_RSIN.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASU10M00 RAU10M00 1 600 2 restart_flc_U10M.nc EXPOUT
+222 244 5217 1 cobs flxu LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_u_grid.nc
+####
+ASV10M00 RAV10M00 1 600 2 restart_flc_V10M.nc EXPOUT
+222 244 5217 1 cobs flxv LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_v_grid.nc
+####
+ASAMOI00 RAAMOI00 1 600 2 restart_flc_AMOI.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASAMOM00 RAAMOM00 1 600 2 restart_flc_AMOM.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASQATM00 RAQATM00 1 600 2 restart_flc_QATM.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASUATM00 RAUATM00 1 600 2 restart_flc_UATM.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+ASVATM00 RAVATM00 1 600 2 restart_flc_VATM.nc EXPOUT
+222 244 6193 1 cobs flxt LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_to_exchangegrid_for_MOM5_Baltic_t_grid.nc
+####
+SAMEVA00 ARMEVA00 1 600 2 restart_flc_MEVA.nc EXPOUT
+6193 1 222 244 flxt cobs LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_CCLM_Eurocordex.nc src
+####
+SAHLAT00 ARHLAT00 1 600 2 restart_flc_HLAT.nc EXPOUT
+6193 1 222 244 flxt cobs LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_CCLM_Eurocordex.nc src
+####
+SAHSEN00 ARHSEN00 1 600 2 restart_flc_HSEN.nc EXPOUT
+6193 1 222 244 flxt cobs LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_CCLM_Eurocordex.nc src
+####
+SAUMOM00 ARUMOM00 1 600 2 restart_flc_UMOM.nc EXPOUT
+5217 1 222 244 flxu cobs LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_u_grid_exchangegrid_to_CCLM_Eurocordex.nc src
+####
+SAVMOM00 ARVMOM00 1 600 2 restart_flc_VMOM.nc EXPOUT
+5217 1 222 244 flxv cobs LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_v_grid_exchangegrid_to_CCLM_Eurocordex.nc src
+####
+ $END
+############################################
