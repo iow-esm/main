@@ -1,0 +1,661 @@
+\documentclass[a4paper,titlepage]{scrartcl}
+
+% use IOW font MetaPro and corresponding math font
+\usepackage[LY1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[italic,eulergreek]{mathastext}
+\renewcommand{\rmdefault}{MetaPro}
+\renewcommand{\sfdefault}{MetaPro}
+\renewcommand{\ttdefault}{pcr}
+\renewcommand{\bfdefault}{b}
+\MTfamily{\sfdefault}\Mathastext
+
+% use other packages
+\usepackage{color}
+\usepackage[hidelinks]{hyperref}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{natbib}
+\bibliographystyle{apalike}
+
+%\usepackage{tabularx}
+
+% title and author
+\title{User's guide for the IOW Earth System Model}
+\author{Hagen Radtke\thanks{hagen.radtke@io-warnemuende.de} \\ Leibniz Institute for Baltic Sea Research Warnem\"unde (IOW)}
+
+\clubpenalty10000
+\widowpenalty10000
+\displaywidowpenalty=10000
+
+\begin{document}
+\sffamily
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0.0em}
+
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.45\textwidth} >{\raggedleft\arraybackslash}p{0.45\textwidth}}
+& \href{https://www.io-warnemuende.de}{\includegraphics[height=5em]{logo_iow_englisch_rgb.jpg}} 
+\end{tabular}
+
+\vspace*{5em}
+{\let\newpage\relax\maketitle}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{About this document}
+This document describes how to use the IOW Earth System Model. The Appendix sections contain more detailed information intended for developers. 
+
+\vfill 
+
+\newpage
+
+\renewcommand{\contentsname}{Table of Contents\\ \vspace{2cm}}
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION: Coupling concept                            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Coupling concept}
+
+\subsection{Components}
+The following components can be coupled in the IOW ESM:
+\begin{itemize}
+\item \textbf{COSMO-CLM} atmospheric model
+\item \textbf{MOM5.1} ocean model (including (a) ERGOM ecosystem model and (b) dynamic ice model coupled internally via FMS coupler)
+\end{itemize}
+
+\subsection{Coupling philosophy}
+The components are coupled via the OASIS3-MCT coupler, but not directly:
+\begin{enumerate}
+\item The components (Atmosphere, Land, Ocean) communicate their variables (temperature, pressure, velocity etc.) to a \textbf{flux calculator} executable.
+\item The \textbf{flux calculator} runs on an exchange grid and calculates  fluxes (radiation, heat, mass, momentum).
+\item The fluxes are back-communicated to the components (Atmosphere, Land, Ocean).
+\end{enumerate}
+This procedure automatically ensures conservation of all exchanged quantities.
+
+Some fluxes, however, do not fit into this concept. Precipitation and radiative fluxes will still be determined by the atmospheric model (on the coarse atmospheric grid) and the resulting fluxes will be sent to the flux calculator executable. Precipitation is then simply passed to the bottom models. Radiative fluxes need some redistribution between different surface areas under the same atmospheric grid cell (e.g. ocean and land) that show different albedo. This concept is described in detail in Section~\ref{sec:fluxes_radiation}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION: Directory structure of the IOW ESM          %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Directory structure of the IOW ESM}
+Under a base directory which the user can select, there is the following directory structure:
+\begin{verbatim}
+components
+   OASIS3-MCT
+   COSMO-CLM
+   MOM5
+   flux_calculator
+input
+   CCLM_MAINGRID
+   MOM5_MAINGRID
+   GETM_SUBGRID
+scripts
+   prepare
+   run
+   post
+work
+   CCLM_MAINGRID
+   MOM5_MAINGRID
+   GETM_SUBGRID
+output
+   RUN01
+      CCLM_MAINGRID
+         19500101
+         19510101
+         ...
+      MOM5_MAINGRID
+         ...
+      GETM_SUBGRID
+         ...
+   RUN02
+   ...
+hotstart
+   RUN01
+      CCLM_MAINGRID
+         19510101
+         19520101
+      ...
+   RUN02
+   ...
+\end{verbatim}
+
+\subsection{The components directory}
+This directory contains the components of the IOW-ESM, which are
+\begin{itemize}
+\item \textbf{COSMO-CLM}, a regional atmospheric model,
+\item \textbf{MOM5}, a hydrodynamic ocean model,
+\item the \textbf{OASIS3-MCT} library for coupling the components via MPI,
+\item the \textbf{flux calculator}, a separate executable to calculate fluxes between atmosphere and ocean/land on an exchange grid.
+\end{itemize}
+
+Each component's directory contains subdirectories for
+\begin{itemize}
+\item the source code,
+\item the compile scripts,
+\item the compiled libraries and/or executables.
+\end{itemize}
+In some cases, the directory contains a GIT repository of source code, such that the changes to the official GIT release of that model component can be easily seen.
+
+\subsection{The input directory}
+The user of the model system has to create a directory called \texttt{input}.
+It contains subdirectories for the individual model instances which shall be coupled.
+For each model instance, the subdirectory shall be named \texttt{\color{red}MODELNAME\color{black}\_\color{red}GRIDNAME} where \texttt{\color{red}MODELNAME} is the name of the model (as it is called in the \texttt{components} folder) and \texttt{\color{red}GRIDNAME} is the name of the model grid, since more than one instance of a model can run at the same time but with different grids.
+Section~\ref{sec:preparing_input_folders} describes how to store model input in these folders.
+
+In addition, there are three files directly in the \texttt{input} directory:
+\begin{itemize}
+\item \texttt{global\_settings.py} contains settings for the entire model system, such as name and duration of the present run, coupling timestep, or whether the work directory in which the coupled model runs should be global or node-local.
+\item \texttt{flux\_calculator.nml} is a configuration file for the \texttt{flux\_calculator} executable which defines how fluxes between atmosphere and land/sea shall be calculated, i.e. which bulk formulae are used.
+\item \texttt{namcouple} is the OASIS3-MCT coupling configuration file and describes how data are exchanged between the model subcomponents. It needs to match the configuration in \texttt{flux\_calculator.nml}.
+\end{itemize}
+
+\subsection{The scripts directory}
+This directory contains scripts (bash or python3 scripts) which perform tasks in preparing model runs, running the model system, or postprocessing of data.
+
+\subsection{The work directory (automatically created during model start)}
+This is the directory in which the models are actually executed.
+It can also be located in another place, such as a RAM drive.
+If the model run fails, you can check for errors here.
+
+\subsection{The output directory (automatically created during model run)}
+For each run of the model system, there will be a separate directory which contains the model results.
+These are sorted by sub-model and by starting time.
+
+\subsection{The hotstart directory (automatically created during model run)}
+This contains hotstart files to restart the model from a specific date.
+The directory is sorted like the \texttt{output} folder.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION: Compiling IOW ESM components                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Compiling IOW ESM components}
+It is important to compile the OASIS3-MCT libraries first before compiling the other subcomponents.
+
+In order to compile one of the components, go to the corresponding folder:
+\begin{itemize}
+\item \texttt{components/OASIS3-MCT}
+\item \texttt{components/CCLM}
+\item \texttt{components/MOM5}
+\item \texttt{components/flux\_calculator}
+\end{itemize}
+This folder contains the source code and makefiles required to build this component.
+Execute the file \texttt{build.sh}, which will then create your executable.
+You will need to modify the file \texttt{build.sh} according to the machine you are compiling it on, and according to the compiler and MPI libraries which you want to use.
+
+For compiling in debug mode (with traceback), there is sometimes an alternative script \texttt{build\_debug.sh} which will create a separate executable with debug options enabled. You can define which of the executables to use by specifying \texttt{debug\_mode = True} or \texttt{False} in the file \texttt{global\_settings.py}. You should obviously not do productions runs with the debug-mode executables since this will waste computational resources.
+
+In some of the component folders, there is a separate script \texttt{build\_tools.sh}. 
+Run this to build executables for auxiliary tasks, such as regridding or finding optimal parallelization layouts.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION: Preparing IOW ESM runs                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Preparing IOW ESM runs}
+\subsection{Preparing the input folders for individual models}
+\label{sec:preparing_input_folders}
+
+The IOW ESM supports to run a single atmospheric model and several ocean or land models at the same time.
+For each of these, a sub-folder in the \texttt{input} directory has to be prepared.
+It shall be named \texttt{\color{red}MODELNAME\color{black}\_\color{red}GRIDNAME} where \texttt{\color{red}MODELNAME} is the name of the model (as it is called in the \texttt{components} folder) and \texttt{\color{red}GRIDNAME} is the name of the model grid.
+
+To start, it makes most sense to download existing example \texttt{input} folders from this webpage: 
+\color{red}\url{https://www.io-warnemuende.de/???}\color{black}
+
+\subsubsection{General remarks}
+The input folders can contain files and arbitrarily named sub-directories which will simply be copied (or dynamically linked) to create a work directory for the model.
+An exception are subfolders named \texttt{from}.
+These should themselves contain subfolders named after years or dates as YYYYMMDD (e.g. \texttt{1950} or \texttt{19501201}).
+In case that the starting date of a model run is equal to or larger than a subfolder's date, the files inside this folder will be copied to the directory containing the folder \texttt{from}.
+For example, if there are files
+\begin{verbatim}
+input/MOM5_maingrid/OBC/from/1950/obc_sealevel.nc
+input/MOM5_maingrid/OBC/from/1951/obc_sealevel.nc
+input/MOM5_maingrid/OBC/from/1952/obc_sealevel.nc
+\end{verbatim}
+and the starting date of a model run is 1951-06-01, the file\\ 
+\texttt{input/MOM5\_maingrid/OBC/from/1951/obc\_sealevel.nc}\\
+will be copied (or linked) to \\
+\texttt{work/MOM5\_maingrid/OBC/obc\_sealevel.nc}.
+
+\subsubsection{Expected contents of the COSMO-CLM input directory}
+The following settings are required in \texttt{INPUT\_PHY}:\\
+\texttt{llake = FALSE}\\
+\texttt{lseaice = FALSE}
+
+\subsubsection{Expected contents of a MOM5 input directory}
+
+\subsection{Defining the parallelization layout}
+Parallelization is defined for each individual model, as described in the later subsections.
+The parallelization of the entire model system will then be derived from these individual settings.
+
+To get a parallelization that fits your machine and model system, please take the following steps:
+\begin{sloppypar}
+\begin{enumerate}
+\item Specify the parallelization layout of individual models as described in the component-specific subsections.
+\item Go to the folder \texttt{scripts/run} where you will find job script templates \texttt{jobscript\_\color{red}???\color{black}}{}for different supercomputers and their job submission systems. Find an appropriate one for your supercomputer (or create it), adjust the runtime.
+\item Go to the file \texttt{input/global\_settings.py} and specify the filename of your template there (\texttt{jobscript\_template = '\color{red}???\color{black}'})
+\item Also in \texttt{input/global\_settings.py}, fill in the number of cores per node to use.
+\item Go to the folder \texttt{scripts/prepare} and run \texttt{python3 create\_jobscript.py}, which will take the supercomputer-specific job script defined in \texttt{input/global\_settings.py} and produce a file \texttt{scripts/run/jobscript} by filling in in the required number of cores and nodes for the full coupled model.
+\item Later you may want to check whether the parallelization is efficient, i.e. whether none of the components has too much idle time waiting for the others. This is described in Section~\ref{sec:optimizing}.
+\end{enumerate}
+\end{sloppypar}
+
+\subsubsection{Defining CCLM parallelization}
+CCLM uses a rectangular parallelization in X and Y direction, where X and Y are the zonal and meridional direction on the rotated lat-lon grid. The number of rectangles in each direction can be specified in the file \texttt{input/CCLM\_\color{red}???\color{black}/INPUT\_ORG} 
+
+\subsubsection{Defining MOM5 parallelization}
+MOM5 uses a rectangular decomposition defined in \texttt{input.nml}. 
+A file named \texttt{mask\_table} can be used to define which of the rectangles contain land points only.
+MOM5 comes with a tool to find out parallelization layouts which optimize the relative fraction of these land domains.
+
+We recommend to use the same layout for both ocean model and ice model.
+
+
+\subsection{Generating the exchange grid}
+To create the exchange grid
+
+\subsection{Creating the coupling namelists}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION: Running IOW ESM                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Running IOW\_ESM}
+\subsection{Starting an IOW\_ESM run}
+\subsection{Optimizing the runtime of the coupled model system}
+\label{sec:optimizing}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION: Details on individual fluxes                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Details on individual fluxes}
+This section contains physical details about the fluxes that can be calculated in the flux calculator executable.
+
+All fluxes are calculated positive upward, such that e.g. precipitation is always negative.
+
+Fluxes may depend on the following variables:
+
+\small
+\begin{tabular}{lllll}
+  \hline \hline
+  code & symbol & description & provided by & unit\\
+  \hline
+	\texttt{ALBE} & $\alpha$       & shortwave surface albedo                                              & ocean/land model & 1       \\
+  \texttt{AMOI} & $a_{moisture}$ & turbulent diffusion coefficient for moisture                & atmos model      & 1       \\
+  \texttt{AMOM} & $a_{momentum}$ & turbulent diffusion coefficient for momentum                & atmos model      & 1       \\
+	              & $c_d$          & specific heat capacity of dry air at constant pressure      & 1005.0           & J/kg/K  \\
+                & $\Delta H_v$   & latent heat of vaporization                                 & 2.501e6          & J/kg    \\
+                & $\Delta H_f$   & latent heat of freezing                                     & 0.334e6          & J/kg    \\
+                & $\Delta H_s$   & latent heat of sublimation                                  & 2.835e6          & J/kg    \\
+	\texttt{FARE} & $f_{area}$     & area fraction of this bottom type (between 0 and 1)         & ocean/land model & 1       \\
+	\texttt{FICE} & $f_{ice}$      & ice area fraction (between 0 and 1)                         & ocean/land model & 1       \\
+                & $g$            & graviational acceleration                                   & 9.81             & m/s     \\
+	\texttt{PATM} & $p_a$          & pressure at lowest atmospheric level                        & atmos model      & Pa      \\
+  \texttt{PSUR} & $p_s$          & surface pressure                                            & atmos model      & Pa      \\
+  \texttt{QATM} & $q_{v,a}$      & specific water vapor content (lowest atmospheric grid cell) & atmos model      & kg/kg   \\
+                & $q_{v,s}$      & specific water vapor content (at sea / soil surface)        & aux. variable    & kg/kg   \\
+                & $R_d$          & dry air gas constant                                        & 287.05           & J/kg/K  \\
+                & $R_v$          & water vapor gas constant                                    & 461.51           & J/kg/K  \\
+								& $\sigma$       & Stefan-Boltzmann constant                                   & 5.67e-8          & W/m$^2$/K$^4$ \\
+	\texttt{TATM} & $T_a$          & air temperature (lowest atmospheric grid cell)              & atmos model      & K       \\
+	\texttt{TSUR} & $T_s$          & surface temperature                                         & ocean/land model & K       \\
+  \texttt{UATM} & $u_a$          & zonal velocity (lowest atmospheric grid cell)               & atmos model      & m/s     \\
+	              & $u_{min,evap}$ & minimum velocity for CCLM evaporation calculation           & 0.01             & m/s     \\
+  \texttt{VATM} & $v_a$          & meridional velocity (lowest atmospheric grid cell)          & atmos model      & m/s     \\
+  \hline \hline
+\end{tabular}
+\normalsize
+
+\newpage
+\subsection{Auxiliary variables for fluxes}
+\subsubsection{specific water vapor content (at sea / soil surface)}
+This auxiliary variable ($q_{v,s}$, in~kg/kg) describes the specific water vapor content in the air immediately above the surface, i.e. in the logarithmic boundary layer. 
+
+It is used further in the following routines:
+
+\tiny
+\begin{tabular}{llll}
+  \hline \hline
+  & file & routine & variable \\ 
+  \hline
+  flux calculator & \texttt{flux\_lib/mass/flux\_mass\_evap.F90} & \texttt{flux\_mass\_evap\_cclm} & \texttt{specific\_vapor\_content\_surface} \\
+  \hline \hline
+\end{tabular}
+\normalsize
+
+Here is how it is calculated:
+
+\subsubsection*{COSMO-CLM routine for specific water vapor content at sea/ice surface}
+
+\begin{tabular}{|lll|}
+  \hline
+  \textbf{requires} & $f_{ice}$, $p_s$, $R_d$, $R_v$, $T_s$ & \\
+  \hline
+  \textbf{source}   & COSMO-CLM subroutine \texttt{initialize\_loop}                                   & (\texttt{lmorg.f90}) \\
+	\hline
+	\textbf{references}  & \cite{Lowe1977}, \cite{Murray1967}                                                      &  \\
+  \hline
+  \textbf{calculation} & over water / over ice:                                                                   &  \\
+											 & $\: \alpha = 17.2693882 \, / \, \alpha = 21.8745584$                                     & 1 \\
+											 & $\: T_2 = 35.86 \, / \, T_2 = 7.66$                                                      & K \\
+											 & always:                                                                                  & \\
+											 & $T_1 = 273.16$																															              & K \\
+											 & $p_0 = 610.78$                                                                           & Pa \\
+                       & $p_{sat} = p_0 \, \exp \left( \alpha \frac{T_s - T_1}{T_s - T_2} \right)    $               & Pa \\
+                       & $\mathbf{q_{v,s}} = \frac{ \frac{R_d}{R_v} p_{sat}}{p_s - \left(1-\frac{R_d}{R_v}\right) p_{sat}}$ & kg/kg \\
+  \hline
+\end{tabular}
+
+%             fpvsw(zst)       = b1 * EXP( b2w * (zst-b3)/(zst-b4w) )
+%             fpvsi(zst)       = b1 * EXP( b2i * (zst-b3)/(zst-b4i) )
+%             fqvs (zsge, zsp) = rdv * zsge / ( zsp - o_m_rdv * zsge )
+%            IF (h_ice(i,j,nnow) > 0.0_ireals) THEN
+%              ! Ice surface
+%              qv_s(i,j,nnow) = fqvs ( fpvsi ( t_ice(i,j,nnow) ) , ps (i,j,nnow) )
+%            ELSE
+%              ! Water surface
+%              qv_s(i,j,nnow) = fqvs ( fpvsw ( t_s(i,j,nnow) ) , ps (i,j,nnow) )
+%            ENDIF
+
+\newpage
+\subsection{Mass fluxes}
+\subsubsection{Evaporation/condensation mass flux of water}
+The surface moisture flux (kg/m$^2$/s) is used further in the following routines:
+
+\begin{tabular}{llll}
+  \hline \hline
+  & file & routine & variable \\ 
+  \hline
+  COSMO-CLM & \texttt{src\_conv\_tiedtke.f90} & \texttt{organize\_conv\_tiedtke} & \texttt{-qvsflx} \\
+	COSMO-CLM & \texttt{src\_diagbudget.f90}    & \texttt{organize\_diagbudget}    & \texttt{-qvsflx} \\
+	COSMO-CLM & \texttt{src\_integrals.f90}     & \texttt{check\_qx\_conservation} & \texttt{-qvsflx} \\
+  flux calculator & \texttt{flux\_heat\_latent.f90} & \texttt{flux\_heat\_latent\_water} & \texttt{flux\_mass\_evap} \\
+  flux calculator & \texttt{flux\_heat\_latent.f90} & \texttt{flux\_heat\_latent\_ice}   & \texttt{flux\_mass\_evap} \\
+  \hline \hline
+\end{tabular}
+
+
+
+Here is how it is calculated:
+
+\subsubsection*{COSMO-CLM routine for evaporation/condensation mass flux}
+\begin{tabular}{|lll|}
+  \hline
+  \textbf{requires} & \multicolumn{2}{p{12cm}|}{$a_{moisture}$, $p_s$, $q_{v,a}$, $q_{v,s}$, $R_d$, $R_v$, $T_s$, $u_a$, $u_{min,evap}$, $v_a$ } \\
+  \hline
+  \textbf{source}   & COSMO-CLM subroutine \texttt{slow\_tendencies}                                   & (\texttt{slow\_tendencies.f90}) \\
+  \hline
+  \textbf{calculation} & $\tilde{T} = T_s \left(1 + \left(\frac{R_v}{R_d}-1\right) q_{v,s} \right)$         & K \\
+                       & $|\vec{u}| = \sqrt{u_a^2+v_a^2}$                                                   & m/s \\
+                       & $flux_{air} = a_{moisture} \max(|\vec{u}|,u_{min,evap}) \frac{p_s}{R_d \tilde{T}}$ & kg/m$^2$/s \\
+                       & $\mathbf{flux\_mass\_evap} = flux_{air} \cdot (q_{v,s} - q_{v,a})$                 & kg/m$^2$/s \\
+  \hline
+	\textbf{explanation} & \multicolumn{2}{p{12cm}|}{First we calculate the temperature $\tilde{T}$ at which dry air at the surface would show the same energy $p\cdot V$ as the moist air which is there now. We then calculate a mass flux of air coming into contact with the surface. Evaporation is then calculated assuming that this air adjusts its water vapor content to the one at the surface. } \\
+	\hline
+\end{tabular}
+
+\newpage
+\subsection{Heat fluxes}
+\subsubsection{Latent heat flux}
+The latent heat flux (W/m$^2$) is used further in the following routines:
+
+\begin{tabular}{llll}
+  \hline \hline
+  & file & routine & variable \\ 
+  \hline
+	COSMO-CLM & \texttt{near\_surface.f90}  & \texttt{near\_surface}       & \texttt{-lhfl\_s} \\
+	COSMO-CLM & \texttt{send\_fld.f90}      & \texttt{send\_fld}           & \texttt{-lhfl\_s} \\
+  COSMO-CLM & \texttt{src\_conv\_ifs.f90} & \texttt{organize\_conv\_ifs} & \texttt{-lhfl\_s} \\
+  \hline \hline
+\end{tabular}
+
+Here is how the fluxes can be calculated:
+
+\subsubsection*{COSMO-CLM routine for latent heat flux over water}
+
+\begin{tabular}{|lll|}
+  \hline
+  \textbf{requires} & $\Delta H_v$, \texttt{flux\_mass\_evap} &  \\
+  \hline
+  \textbf{source}   & COSMO-CLM subroutine \texttt{slow\_tendencies} & (\texttt{slow\_tendencies.f90}) \\
+  \hline
+  \textbf{calculation} & $\mathbf{flux\_heat\_latent} = \Delta H_v \cdot \mathtt{flux\_mass\_evap}$ & J/m$^2$/s \\
+  \hline
+\end{tabular}
+
+\subsubsection*{COSMO-CLM routine for latent heat flux over ice}
+
+\begin{tabular}{|lll|}
+  \hline
+  \textbf{requires} & $\Delta H_s$, \texttt{flux\_mass\_evap} &  \\
+  \hline
+  \textbf{source}   & COSMO-CLM subroutine \texttt{slow\_tendencies} & (\texttt{slow\_tendencies.f90}) \\
+  \hline
+  \textbf{calculation} & $\mathbf{flux\_heat\_latent} = \Delta H_s \cdot \mathtt{flux\_mass\_evap}$ & J/m$^2$/s \\
+  \hline
+\end{tabular}
+
+\newpage
+\subsubsection{Sensible heat flux}
+The sensible heat flux (W/m$^2$) is used further in the following routines:
+
+\begin{tabular}{llll}
+  \hline \hline
+  & file & routine & variable \\ 
+  \hline
+	COSMO-CLM & \texttt{near\_surface.f90}  & \texttt{near\_surface}       & \texttt{-shfl\_s} \\
+	COSMO-CLM & \texttt{send\_fld.f90}      & \texttt{send\_fld}           & \texttt{-shfl\_s} \\
+  COSMO-CLM & \texttt{src\_conv\_ifs.f90} & \texttt{organize\_conv\_ifs} & \texttt{-shfl\_s} \\
+  \hline \hline
+\end{tabular}
+
+Here is how the fluxes can be calculated:
+
+\subsubsection*{COSMO-CLM routine for sensible heat flux}
+
+\begin{tabular}{|lm{8cm}l|}
+  \hline
+  \textbf{requires} & \multicolumn{2}{p{12cm}|}{$a_{moisture}$, $p_a$, $p_s$, $q_{v,s}$, $R_d$, $R_v$, $T_s$, $u_a$, $u_{min,evap}$, $v_a$} \\
+  \hline
+  \textbf{source}   & COSMO-CLM subroutine \texttt{slow\_tendencies}                                   & (\texttt{slow\_tendencies.f90}) \\
+  \hline
+  \textbf{calculation} & $\tilde{T} = T_s \left(1 + \left(\frac{R_v}{R_d}-1\right) q_{v,s} \right)$         & K \\
+                       & $|\vec{u}| = \sqrt{u_a^2+v_a^2}$                                                   & m/s \\
+                       & $flux_{air} = a_{moisture} \max(|\vec{u}|,u_{min,evap}) \frac{p_s}{R_d \tilde{T}}$ & kg/m$^2$/s \\
+											 & $ EF = \left(\frac{p_s}{p_a}\right)^\frac{R_d}{cp_d}$                              & 1 \\
+                       & $\mathbf{flux\_mass\_evap} = flux_{air} \cdot cp_d \cdot \left(T_g - T_a \cdot EF \right)$ & kg/m$^2$/s \\
+  \hline
+	\textbf{explanation} & \multicolumn{2}{p{12cm}|}{The first part until $flux_{air}$ is identical to the CCLM mass flux of evaporation.
+	$EF$ is the Exner function which calculates the ratio $T/\theta$ between local temperature at local pressure and potential temperature at a reference pressure. In the original routine two Exner factors were calculated for pressure in the lowest atmospheric level and surface pressure, each with a reference pressure of 1e5~Pa, and divided by each other, here the procedure is simplified. The Exner factor $EF$ converts the temperature of the lowest atmospheric level $T_a$ to temperature at the surface.} \\
+	\hline
+\end{tabular}
+
+\newpage
+\subsection{Momentum fluxes}
+
+\subsubsection{Upward flux of horizontal momentum}
+The upward flux of horizontal momentum (=shear stress, N/m$^2$) is used further in the following routines:
+
+\begin{tabular}{llll}
+  \hline \hline
+  & file & routine & variable \\ 
+  \hline
+	COSMO-CLM & \texttt{near\_surface.f90}  & \texttt{near\_surface}       & \texttt{-umfl\_s, -vmfl\_s} \\
+	COSMO-CLM & \texttt{send\_fld.f90}      & \texttt{send\_fld}           & \texttt{-umfl\_s, -vmfl\_s} \\
+  \hline \hline
+\end{tabular}
+
+Here is how it is calculated:
+
+\subsubsection*{COSMO-CLM routine for eastward momentum flux}
+\begin{tabular}{|lll|}
+  \hline
+  \textbf{requires} & \multicolumn{2}{p{12cm}|}{$a_{momentum}$, $p_s$, $q_{v,s}$, $R_d$, $R_v$, $T_s$, $u_a$, $v_a$ } \\
+  \hline
+  \textbf{source}   & COSMO-CLM subroutine \texttt{slow\_tendencies}                                   & (\texttt{slow\_tendencies.f90}) \\
+  \hline
+	% 
+	% ztcm   = tcm(i,j)*zvbke*g*ps(i,j,nold)/(r_d*ztvb)
+	% ztmcmq = 0.5_ireals*( ztcm(i,j) + ztcm(i+1,j) )
+	% umfl_s = ztmcmq*gr*u
+  \textbf{calculation} & $\tilde{T} = T_s \left(1 + \left(\frac{R_v}{R_d}-1\right) q_{v,s} \right)$         & K \\
+                       & $|\vec{u}| = \sqrt{u_a^2+v_a^2}$                                                   & m/s \\
+                       & $flux_{air} = a_{momentum} |\vec{u}| \frac{p_s}{R_d \tilde{T}}$                    & kg/m$^2$/s \\
+                       & $\mathbf{flux\_momentum\_east} = - flux_{air} \cdot u_a$                           & kg/m/s$^2$=N/m$^2$ \\
+  \hline
+	\textbf{explanation} & \multicolumn{2}{p{12cm}|}{First we calculate the temperature $\tilde{T}$ at which dry air at the surface would show the same energy $p\cdot V$ as the moist air which is there now. We then calculate a mass flux of air coming into contact with the surface. Momentum transfer is then calculated assuming that this air passes all its horizontal momentum to the surface. } \\
+	\hline
+\end{tabular}
+
+\subsubsection*{COSMO-CLM routine for northward momentum flux}
+is completely analog to the previous one.
+
+\newpage
+\subsection{Radiation fluxes}
+\label{sec:fluxes_radiation}
+
+Just like precipitation fluxes, radiation fluxes are calculated by the atmospheric model on the atmospheric grid. Unlike precipitation, they do however vary between different bottom model cells with a different temperature and albedo. We will outline here how this redistribution works.
+
+Two types of radiation are distinguished by their wavelength, which are shortwave and longwave radiation. For each of these types, each bottom grid cell can have one albedo value, or possibly several different ones e.g. for different ice classes which share the area of the ocean grid cell. The average albedo for the atmospheric grid cell $i$, $\alpha^a_i$, can therefore be calculated as follows:
+\begin{eqnarray}
+  \alpha^a_{i,shortwave} &=& \sum\limits_{m=1}^M \sum\limits_{j=1}^{B_m} \frac{\left| g^a_i \tilde{\cap} g^{b,m}_j \right|}{\left| g^a_i \right|} \sum\limits_{c=1}^{C_m} \alpha^{b,m}_{c,shortwave} \cdot f^{b,m}_c(j) \\
+	\alpha^a_{i,longwave} &=& \sum\limits_{m=1}^M \sum\limits_{j=1}^{B_m} \frac{\left| g^a_i \tilde{\cap} g^{b,m}_j \right|}{\left| g^a_i \right|} \sum\limits_{c=1}^{C_m} \alpha^{b,m}_{c,longwave} \cdot f^{b,m}_c(j)
+\end{eqnarray}
+Here, $m$ is the index of the bottom model chosen, $j$ is its grid cell index, the numerator in the fraction gives the area of intersection between atmospheric and bottom model grid cells where they are bidirectionally coupled, the denominator normalizes this area to the full area of the atmospheric grid cell, $c$ is the class index (=ice class, soil type) used in bottom model $m$, $\alpha^{b,m}_{c}$ is the albedo defined for this class in the bottom model, and  $f^{b,m}_c(j)$ is the area fraction of the bottom grid cell covered by this class.
+
+Black-body radiation is emitted from the surface according to its temperature and longwave albedo and can be calculated with the help of the Stefan-Boltzmann constant $\sigma$:
+\begin{eqnarray}
+  bbr = (1-\alpha_{longwave}) \sigma T^4
+\end{eqnarray}
+A similar horizontal averaging gives an average value for the atmospheric grid cell:
+\begin{eqnarray}
+  bbr^a_{i,longwave} &=& \sum\limits_{m=1}^M \sum\limits_{j=1}^{B_m} \frac{\left| g^a_i \tilde{\cap} g^{b,m}_j \right|}{\left| g^a_i \right|} \sum\limits_{c=1}^{C_m} \left(1-\alpha^{b,m}_{c,longwave} \right) f^{b,m}_c(j) \sigma \left(T^{b,m}(j)\right)^4 
+\end{eqnarray}
+From this value, we can calculate an effective radiative bottom temperature for the atmospheric grid cell:
+\begin{eqnarray}
+  T^a_{i,longwave} &=& \sqrt[4]{\frac{bbr^a_{i,longwave}}{(1-\alpha^a_{i,longwave}) \sigma}}
+\end{eqnarray}
+We use this temperature for the radiative flux calculation to make sure the emitted black-body radiation is exact.
+
+After calculating the downward radiative fluxes (both shortwave and longwave) by the atmospheric model, we pass these to the flux calculator. The flux calculator will then calculate the upward radiative fluxes on the exchange grid, using the spatially detailed information on albedo and surface temperature. This procedure ensures that also the average upward fluxes over the atmospheric grid cell are exactly identical between (a) the flux calculator and (b) the atmospheric model which calculate them independently.
+
+In practice, it works like this:
+\begin{enumerate}
+  \item Bottom models send surface temperature.
+	\item flux\_calculator calculates and sends blackbody radiation.
+  \item CCLM receives surface temperature and blackbody radiation in \\
+        \texttt{lmorg -> initialize\_loop -> receive\_fld}
+  \item CCLM calculates all radiation components in \\
+        \texttt{lmorg -> organize\_physics('compute',...) \\-> organize\_radiation}
+  \item CCLM sends radiation fluxes and other variables in \\
+	      \texttt{lmorg -> organize\_physics('compute',...) \\-> communicate\_with\_flux\_calculator}
+	\item flux\_calculator calculates and sends all other fluxes.
+	\item CCLM receives these fluxes in the same routine.
+	\item Bottom models receive all fluxes.
+\end{enumerate}
+
+\subsubsection{Blackbody radiation}
+The upward flux of blackbody radiation (=thermally emitted longwave radiation, W/m$^2$) is used further in the following routines:
+
+\begin{tabular}{llll}
+  \hline \hline
+  & file & routine & variable \\ 
+  \hline
+  \hline \hline
+\end{tabular}
+
+Here is how it is calculated:
+
+\subsubsection*{Calculation after Stefan-Boltzmann law}
+\begin{tabular}{|lll|}
+  \hline
+  \textbf{requires} & \multicolumn{2}{p{12cm}|}{$\sigma$, $T_s$ } \\
+  \hline
+  \textbf{source}   & any textbook & \\
+  \hline
+	% 
+	% ztcm   = tcm(i,j)*zvbke*g*ps(i,j,nold)/(r_d*ztvb)
+	% ztmcmq = 0.5_ireals*( ztcm(i,j) + ztcm(i+1,j) )
+	% umfl_s = ztmcmq*gr*u
+  \textbf{calculation} & $\mathbf{flux\_radiation\_blackbody} = \sigma T_s^4$  & W/m$^2$/K$^4$ \\
+  \hline
+	\textbf{explanation} & \multicolumn{2}{p{12cm}|}{This is the well-known Stefan-Boltzmann law, it assumes that the surface acts as a perfect black body in the long-wavelength band.} \\
+	\hline
+\end{tabular}
+
+\newpage
+\addsec{Appendix A: Previous way of coupling}
+\subsection{Sandra's approach}
+\subsubsection{OASIS3-MCT routines in COSMO-CLM}
+This is where the OASIS3-MCT coupling routines were called in COSMO-CLM in the previous version by Sandra-Esther Brunnabend (largely inherited from the version by Ha Ho-Hagemann at HZG):
+\begin{verbatim}
+lmorg                             ( lmorg.f90        )
+  organize_setup                  ( src_setup.f90    )
+    init_environment              ( environment.f90  )
+      oas_cos_init                ( oas_cos_init.f90 )
+        >prism_init_comp_proto     --> initialize the PRISM system
+        >prism_get_localcomp_proto --> get MPI communicator 
+  read_namelist_oasis             ( oas_cos_define.f90 )
+    input_oasisctl                ( oas_cos_define.f90 )
+  oas_cos_define                  ( oas_cos_define.f90 )
+    >prism_start_grids_writing     --> write grids to external files
+    >prism_write_grid
+    >prism_write_corner
+    >prism_write_mask
+    >prism_write_area
+    >prism_terminate_grids_writing
+    >prism_def_partition_proto     --> offset and size of this PE's 
+                                       rectangle
+    >prism_def_var_proto           --> names of variables to be sent 
+                                       and received
+    >prism_enddef_proto
+  initialize_loop                 ( lmorg.f90 )
+    receive_fld                   ( receive_fld.f90 )
+      oas_cos_rcv                 ( oas_cos_rcv.f90 )
+        >prism_get_proto           --> receive fields from coupler
+  send_fld                        ( send_fld.f90 )
+    oas_cos_snd                   ( oas_cos_snd.f90 )
+      >prism_put_proto             --> send fields to coupler
+  final_environment               ( environment.f90 )
+    oas_cos_finalize              ( oas_cos_finalize.f90 )
+      >prism_terminate_proto
+\end{verbatim}
+
+\subsubsection{Radiation flux calculation in CCLM}
+
+Radiation is calculated in subroutine \texttt{organize\_radiation} in \texttt{src\_radiation.F90}. 
+The following values are used:
+\begin{itemize}
+\item \textbf{Shortwave albedo:} Since \texttt{ytype\_oce=='momBS'}, there are defined lon-lat boxes in which the MOM5 model ice fraction \texttt{fr\_ice(i,j)} is used to have an average albedo between ice and ocean. Outside these, each water cell is either ice or ocean depending on the value of \texttt{t\_test}. For open water we use the value \texttt{csalb(9)}=0.07 and for ice we use \texttt{csalb(10)}=0.70 as defined in \texttt{data\_soil.F90}.
+\item \textbf{Longwave albedo:} Since \texttt{lemiss==FALSE}, we use the value \texttt{ctalb}=0.004 defined in \texttt{data\_soil.F90}.
+\item \textbf{Temperature for black-body radiation:} \texttt{t\_g(i,j)} is used and saved in \texttt{zti(i,j,ke1)}. The array \texttt{zti} stores the temperatures at the interfaces between vertical layers.
+\end{itemize}
+
+The following fields are communicated to MOM5:
+\begin{verbatim}
+Name of field
+|        Name in organize_radiation()
+|        |       Argument nr. in fesft()
+|        |       |  Name in fesft()
+         zflt_s  42 pflt_s  (i,j)   ! thermal net surface flux
+         zfls_s  43 pfls_s  (i,j)   ! shortwave net surface flux
+         zflsdir 44 pflsdir (i,j,k) ! solar direct downward radiative
+lwd_s    zfltd   45 pfltd   (i,j)   ! thermal downward
+lwu_s    zfltu   46 pfltu   (i,j)   ! thermal upward
+swdifd_s zflsd   47 pflsd   (i,j)   ! shortwave diffusive downward
+swdifu_s zflsu   48 pflsu   (i,j)   ! shortwave diffusive upward
+swdir_s  zflsp   49 pflsp   (i,j)   ! shortwave direct downward
+\end{verbatim}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\bibliography{bibliography}
+
+\end{document}
