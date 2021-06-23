@@ -4,6 +4,8 @@
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   timestep      = 600,   ! coupling time step in seconds
   num_timesteps = 4464,
+  
+  name_atmos_model = 'CCLM_Eurocordex'
  
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ! Bottom models and parallelization of the flux calculation !
@@ -21,6 +23,8 @@
   name_bottom_var_t(1,1:6,2) = 'TSUR','TSUR','TSUR','TSUR','TSUR','TSUR',  
   name_bottom_var_t(1,1:6,3) = 'FICE','FICE','FICE','FICE','FICE','FICE',
   val_bottom_var_t (1,1:6,3) = 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,                     ! constant values can be given, in this case no read from coupler
+  name_bottom_var_t(1,1:6,4) = 'ALBE','ALBE','ALBE','ALBE','ALBE','ALBE',
+
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ! Input from atmos model                                                                     !
@@ -61,17 +65,53 @@
   name_send_t(1)        = 'TSUR'   ! surface temperature
   send_to_bottom_t(1,1) = .FALSE.          
   name_send_t(2)        = 'RBBR'   ! blackbody radiation
-  send_to_bottom_t(1,2) = .FALSE.
+  send_to_bottom_t(1,2) = .TRUE.
+  send_uniform_t(1,2)   = .FALSE.
   name_send_t(3)        = 'MEVA'   ! evaporation mass flux
-  send_to_bottom_t(1,3) = .FALSE.
+  send_to_bottom_t(1,3) = .TRUE.
+  send_uniform_t(1,3)   = .FALSE.
   name_send_t(4)        = 'HLAT'   ! latent heat flux upward
-  send_to_bottom_t(1,4) = .FALSE.
+  send_to_bottom_t(1,4) = .TRUE.
+  send_uniform_t(1,4)   = .FALSE.
   name_send_t(5)        = 'HSEN'   ! sensible heat flux
-  send_to_bottom_t(1,5) = .FALSE.
+  send_to_bottom_t(1,5) = .TRUE.
+  send_uniform_t(1,5)   = .FALSE.
+  name_send_t(6)        = 'MRAI'   ! liquid precipitation (rain, negative values)
+  send_to_bottom_t(1,6) = .TRUE.
+  send_uniform_t(1,6)   = .TRUE.
+  name_send_t(7)        = 'RLWD'   ! longwave downward radiation (negative values)
+  send_to_bottom_t(1,7) = .TRUE.
+  send_uniform_t(1,7)   = .TRUE.
+  name_send_t(8)        = 'MSNO'   ! solid precipitation (snow, negative values)
+  send_to_bottom_t(1,8) = .TRUE.
+  send_uniform_t(1,8)   = .TRUE.
+  name_send_t(9)        = 'PSUR'   ! atmospheric pressure at surface (Pa) 
+  send_to_bottom_t(1,9) = .TRUE.
+  send_uniform_t(1,9)   = .TRUE.
+  name_send_t(10)        = 'RSDD'   ! shortwave direct downward radiation (W/m2) (negative values) 
+  send_to_bottom_t(1,10) = .TRUE.
+  send_uniform_t(1,10)   = .TRUE.
+  name_send_t(11)        = 'RSIN'   ! shortwave indirect (=diffusive) downward radiation (W/m2) (negative values)
+  send_to_bottom_t(1,11) = .TRUE.
+  send_uniform_t(1,11)   = .TRUE.
+  name_send_t(12)		= 'FICE'	! fraction of ice
+  send_to_bottom_t(1,12) = .FALSE.
+  name_send_t(13)		= 'ALBE'	! shortwave albedo
+  send_to_bottom_t(1,13) = .FALSE.
+  send_uniform_t(1,13) = .FALSE.
   name_send_u(1)        = 'UMOM'   ! upward flux of eastward momentum
-  send_to_bottom_u(1,1) = .FALSE.
+  send_to_bottom_u(1,1) = .TRUE.
+  send_uniform_u(1,1)   = .FALSE.
+  name_send_u(2)        = 'U10M'   ! 10m wind eastward
+  send_to_bottom_u(1,2) = .TRUE.
+  send_uniform_u(1,2)   = .TRUE.
   name_send_v(1)        = 'VMOM'   ! upward flux of northward momentum
-  send_to_bottom_v(1,1) = .FALSE.
+  send_to_bottom_v(1,1) = .TRUE.
+  send_uniform_v(1,1)   = .FALSE.
+  name_send_v(2)        = 'V10M'   ! 10m wind northward
+  send_to_bottom_v(1,2) = .TRUE.
+  send_uniform_v(1,2)   = .TRUE.   
+  
   !  name_send_t(3)       = 'PATM', ! atmospheric pressure
   !  name_send_t(4)       = 'MPRL', ! liquid precipitation (rain, negative values)
   !  name_send_t(5)       = 'MPRS', ! solid precipitation (snow, negative values)

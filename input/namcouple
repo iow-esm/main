@@ -6,7 +6,7 @@
 # Any line beginning with # is ignored. Blank lines are not allowed
 ####################################################################
  $NFIELDS 
-49
+79
  $END
 ############################################
  $RUNTIME 
@@ -18,142 +18,6 @@
  $END
 ############################################
  $STRINGS 
-ATMSEPRE OCEREPRE 1 3600 5 restart_atm_pre.nc EXPOUT
-222 244 91 102 cobs tmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-BASBAL bfb 
-INT=1
-####
-ATMSEEVA OCEREEVA 1 3600 5 restart_atm_eva.nc EXPOUT
-222 244 91 102 cobs tmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-BASBAL bfb 
-INT=1
-####
-ATMSESLP OCERESLP 1 3600 5 restart_atm_slp.nc EXPOUT
-222 244 91 102 cobs tmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT
-AVERAGE
-INT=1
-BILINEAR LR SCALAR LATLON 1
-BASBAL bfb
-INT=1
-####
-ATMSEUVL OCEREUVL 1 3600 4 restart_atm_uvl.nc EXPOUT
-222 244 91 102 cobs cmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-INT=1
-####
-ATMSEVVL OCEREVVL 1 3600 4 restart_atm_vvl.nc EXPOUT
-222 244 91 102 cobs cmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-INT=1
-####
-ATMSELWD OCERELWD 1 3600 5 restart_atm_lwd.nc EXPOUT
-222 244 91 102 cobs tmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-BASBAL bfb 
-INT=1
-####
-ATMSESWF OCERESWF 1 3600 5 restart_atm_swf.nc EXPOUT
-222 244 91 102 cobs tmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-BASBAL bfb 
-INT=1
-####
-ATMSESNO OCERESNO 1 3600 5 restart_atm_sno.nc EXPOUT
-222 244 91 102 cobs tmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-BASBAL bfb 
-INT=1
-####
-ATMSELHF OCERELHF 1 3600 5 restart_atm_lhf.nc EXPOUT
-222 244 91 102 cobs tmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-BASBAL bfb 
-INT=1
-####
-ATMSESHF OCERESHF 1 3600 5 restart_atm_shf.nc EXPOUT
-222 244 91 102 cobs tmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-BASBAL bfb 
-INT=1
-####
-ATMSELWU OCERELWU 1 3600 5 restart_atm_lwu.nc EXPOUT
-222 244 91 102 cobs tmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-BASBAL bfb 
-INT=1
-####
-ATMSESWD OCERESWD 1 3600 5 restart_atm_swd.nc EXPOUT
-222 244 91 102 cobs tmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CONSERV CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-BASBAL bfb 
-INT=1
-####
-ATMSEUWS OCEREUWS 1 3600 4 restart_atm_uws.nc EXPOUT
-222 244 91 102 cobs cmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-INT=1
-####
-ATMSEVWS OCEREVWS 1 3600 4 restart_atm_vws.nc EXPOUT
-222 244 91 102 cobs cmom LAG=150
-R 0 R 0 
-LOCTRANS CHECKIN SCRIPR CHECKOUT 
-AVERAGE 
-INT=1
-BILINEAR LR SCALAR LATLON 1
-INT=1
-####
 MSFARE01 RMFARE01 1 600 2 restart_oce_sst.nc EXPOUT
 91 102 6193 1 tmom flxt LAG=0
 R 0 R 0
@@ -399,5 +263,313 @@ LOCTRANS MAPPING
 INSTANT
 mappings/remap_v_grid_exchangegrid_to_CCLM_Eurocordex.nc src
 ####
+SMMEVA01 MRMEVA01 1 600 2 restart_flc_MEVAMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+####
+SMMEVA02 MRMEVA02 1 600 2 restart_flc_MEVAMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+####
+SMMEVA03 MRMEVA03 1 600 2 restart_flc_MEVAMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+####
+SMMEVA04 MRMEVA04 1 600 2 restart_flc_MEVAMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+####
+SMMEVA05 MRMEVA05 1 600 2 restart_flc_MEVAMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+####
+SMMEVA06 MRMEVA06 1 600 2 restart_flc_MEVAMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+####
+SMHSEN01 MRHSEN01 1 600 2 restart_flc_HSENMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+####
+SMHSEN02 MRHSEN02 1 600 2 restart_flc_HSENMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+####
+SMHSEN03 MRHSEN03 1 600 2 restart_flc_HSENMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+####
+SMHSEN04 MRHSEN04 1 600 2 restart_flc_HSENMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMHSEN05 MRHSEN05 1 600 2 restart_flc_HSENMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMHSEN06 MRHSEN06 1 600 2 restart_flc_HSENMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMHLAT01 MRHLAT01 1 600 2 restart_flc_HLATMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMHLAT02 MRHLAT02 1 600 2 restart_flc_HLATMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMHLAT03 MRHLAT03 1 600 2 restart_flc_HLATMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMHLAT04 MRHLAT04 1 600 2 restart_flc_HLATMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMHLAT05 MRHLAT05 1 600 2 restart_flc_HLATMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMHLAT06 MRHLAT06 1 600 2 restart_flc_HLATMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMUMOM01 MRUMOM01 1 600 2 restart_flc_UMOMMOM.nc EXPOUT
+5217 1 91 102 flxt umom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_u_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMUMOM02 MRUMOM02 1 600 2 restart_flc_UMOMMOM.nc EXPOUT
+5217 1 91 102 flxt umom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_u_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMUMOM03 MRUMOM03 1 600 2 restart_flc_UMOMMOM.nc EXPOUT
+5217 1 91 102 flxt umom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_u_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMUMOM04 MRUMOM04 1 600 2 restart_flc_UMOMMOM.nc EXPOUT
+5217 1 91 102 flxt umom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_u_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMUMOM05 MRUMOM05 1 600 2 restart_flc_UMOMMOM.nc EXPOUT
+5217 1 91 102 flxt umom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_u_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMUMOM06 MRUMOM06 1 600 2 restart_flc_UMOMMOM.nc EXPOUT
+5217 1 91 102 flxt umom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_u_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMVMOM01 MRVMOM01 1 600 2 restart_flc_VMOMMOM.nc EXPOUT
+5217 1 91 102 flxt vmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_v_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMVMOM02 MRVMOM02 1 600 2 restart_flc_VMOMMOM.nc EXPOUT
+5217 1 91 102 flxt vmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_v_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMVMOM03 MRVMOM03 1 600 2 restart_flc_VMOMMOM.nc EXPOUT
+5217 1 91 102 flxt vmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_v_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMVMOM04 MRVMOM04 1 600 2 restart_flc_VMOMMOM.nc EXPOUT
+5217 1 91 102 flxt vmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_v_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMVMOM05 MRVMOM05 1 600 2 restart_flc_VMOMMOM.nc EXPOUT
+5217 1 91 102 flxt vmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_v_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMVMOM06 MRVMOM06 1 600 2 restart_flc_VMOMMOM.nc EXPOUT
+5217 1 91 102 flxt vmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_v_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMMRAI01 MRMRAI01 1 600 2 restart_flc_MRAIMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMRBBR01 MRRBBR01 1 600 2 restart_flc_RBBRMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMRBBR02 MRRBBR02 1 600 2 restart_flc_RBBRMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMRBBR03 MRRBBR03 1 600 2 restart_flc_RBBRMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMRBBR04 MRRBBR04 1 600 2 restart_flc_RBBRMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMRBBR05 MRRBBR05 1 600 2 restart_flc_RBBRMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMRBBR06 MRRBBR06 1 600 2 restart_flc_RBBRMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMRLWD01 MRRLWD01 1 600 2 restart_flc_RLWDMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMMSNO01 MRMSNO01 1 600 2 restart_flc_MSNOMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMPSUR01 MRPSUR01 1 600 2 restart_flc_PSURMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMU10M01 MRU10M01 1 600 2 restart_flc_U10MMOM.nc EXPOUT
+5217 1 91 102 flxt umom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_u_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMV10M01 MRV10M01 1 600 2 restart_flc_V10MMOM.nc EXPOUT
+5217 1 91 102 flxt vmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_v_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMRSDD01 MRRSDD01 1 600 2 restart_flc_RSDDMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
+SMRSIN01 MRRSIN01 1 600 2 restart_flc_RSINMOM.nc EXPOUT
+6193 1 91 102 flxt tmom LAG=0
+R 0 R 0
+LOCTRANS MAPPING
+INSTANT
+mappings/remap_t_grid_exchangegrid_to_MOM5_Baltic.nc
+###
  $END
 ############################################
