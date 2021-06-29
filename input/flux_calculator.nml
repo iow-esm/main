@@ -47,6 +47,7 @@
   name_atmos_var_t(12) = 'QATM',      ! specific water vapor content at surface (kg/kg)
   name_atmos_var_t(13) = 'UATM',      ! eastward wind in lowest atmospheric cell (m/s)
   name_atmos_var_t(14) = 'VATM',      ! northward wind in lowest atmospheric cell (m/s)
+  name_atmos_var_t(15) = 'ALBE',	  ! shortwave albedo averaged on atmospheric grid 
   name_atmos_var_u( 1) = 'U10M',      ! 10m wind eastward
   name_atmos_var_v( 1) = 'V10M',      ! 10m wind northward
 
@@ -90,7 +91,7 @@
   send_uniform_t(1,9)   = .TRUE.
   name_send_t(10)        = 'RSDD'   ! shortwave direct downward radiation (W/m2) (negative values) 
   send_to_bottom_t(1,10) = .TRUE.
-  send_uniform_t(1,10)   = .TRUE.
+  send_uniform_t(1,10)   = .FALSE.
   name_send_t(11)        = 'RSIN'   ! shortwave indirect (=diffusive) downward radiation (W/m2) (negative values)
   send_to_bottom_t(1,11) = .TRUE.
   send_uniform_t(1,11)   = .TRUE.
