@@ -17,11 +17,12 @@ last_build_file="${local}/../LAST_BUILD_$target"
 
 # find out if the working directory has uncommitted changes
 dirt=`git status | grep "nothing to commit, working tree clean"`
-# if yes, we tag this
+# if yes, grep did not find the string and the variable is empty thus we tag this
 if [ -z "${dirt}" ]; then
 	dirt="+uncommited"
+else
+	dirt=""
 fi
-# if not, this variable stays empty
 
 # component name is the string after the last / in the path
 component=${PWD##*/}
