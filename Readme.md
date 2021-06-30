@@ -3,11 +3,14 @@
 This is the main repository for this project.
 Further information will follow.
 
-**!!!ATTENTION!!! This not yet a working project and not be used at the moment**
+**!!!ATTENTION!!! This not yet a working project and cannot be used at the moment**
+
 
 ## First steps
 
+
 ### Prerequisites
+
 
 #### Local
 
@@ -17,10 +20,13 @@ Your local machine has to provide:
 * configured git instance
 
 If you work on Windows, you can use e.g. `Git for Windows` which already provides these prerequisites.
+If yoou work on Linux you will most probably have a `bash` and you can install `git` with the package manager of your distribution.
+
 
 #### Remote
 
 You need accounts on the target servers, where you want to run the model
+
 
 ### Get the component sources
 
@@ -37,6 +43,7 @@ you clone all individual components which have their own repositories to your lo
 If there will be some you don't need you can later remove them. 
 However, be sure that you can still build and run the model properly.
 
+
 ### Configure your destinations (targets)
 
 You will not build (or run) the model on your local computer.
@@ -47,8 +54,8 @@ However, there is an example `DESTINATIONS.example`, please have a look.
 You see that each line consists of two elements.
 The first is the *keyword for the target*. This keyword has to be one of the following
 
-* haumea
-* phy-2
+* `haumea`
+* `phy-2`
 
 where 
 
@@ -61,15 +68,13 @@ The second element in a line of `DESTINATIONS.example` corresponds to the *path 
 This path corresponds to the root directory where this `Readme.md` file is located. The path on the target has to already exist.
 **Now it is up to you, to create your own file `DESTINATIONS` in your local root directory, but do not commit it!**
 
-## Deploy dependencies
 
-### Depdendencies for building
+### Deploy dependencies for building
 
-### Dependencies for running
+???
 
-## Build the coupled model
 
-### First build
+### Build the coupled model for the first time
 
 The components of the copled model cannot be built indepently on each other.
 For the first build you should probably use the `build.sh` script in the root directory.
@@ -79,9 +84,46 @@ If you want to build the model e.g. on the university's cluster, you can run
 ./build.sh haumea
 ``` 
 
+
+### Deploy dependencies for running (setups)
+
+
+#### Configure your setups
+
+In order to run the model, you need input files which define a certain setup.
+What exactly a setup consits of, you can find out by looking at **Available setups**.
+The setups you want to use can be registered in a special file named `SETUPS` (this name is obligatory), 
+which is in the root directory.
+Since this file specific for certain users and individual runs of the model it is not part of the repository and *you have to create one.*
+However, there is an example `SETUPS.example`, please have a look.
+You see that each line consists of two elements.
+The first is the *keyword for the setup*. 
+This keyword can be chosen by you freely.
+The second represents the location of this setup. This can be local on your machine or on a remote computer.
+Be sure that the remote computer knows your targets and can copy files to them. 
+
+
+#### Available setups
+
+
+#### Copy files to target
+
+After creating the file `SETUPS` you can run in the root directory
+
+``` bash
+./deploy_setup.sh haumea testing
+``` 
+
+
+### Run the coupled model for the first time
+
+``` bash
+./run.sh haumea
+``` 
+
+
 ### Building during development
+
 
 #### Build tagging
 `LAST_BUILD_haumea`
-
-## Run the coupled
