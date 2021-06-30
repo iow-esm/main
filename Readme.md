@@ -3,7 +3,24 @@
 This is the main repository for this project.
 Further information will follow.
 
+**!!!ATTENTION!!! This not yet a working project and not be used at the moment**
+
 ## First steps
+
+### Prerequisites
+
+#### Local
+
+Your local machine has to provide:
+
+* bash
+* configured git instance
+
+If you work on Windows, you can use e.g. `Git for Windows` which already provides these prerequisites.
+
+#### Remote
+
+You need accounts on the target servers, where you want to run the model
 
 ### Get the component sources
 
@@ -13,7 +30,7 @@ For this purpose there is the bash script `local_scripts/clone_origins.sh` which
 By executing in the root directory (where this `Readme.md` is located)
 
 ``` bash
-./local_scripts/clone_origins.sh
+./clone_origins.sh
 ```
 
 you clone all individual components which have their own repositories to your local machine.
@@ -30,10 +47,8 @@ However, there is an example `DESTINATIONS.example`, please have a look.
 You see that each line consists of two elements.
 The first is the *keyword for the target*. This keyword has to be one of the following
 
-``` bash
-haumea
-phy-2
-```
+* haumea
+* phy-2
 
 where 
 
@@ -45,3 +60,28 @@ If you want to add more, it will be explained later how this can be done.
 The second element in a line of `DESTINATIONS.example` corresponds to the *path on the target*, where the model will be deployed, built and run.
 This path corresponds to the root directory where this `Readme.md` file is located. The path on the target has to already exist.
 **Now it is up to you, to create your own file `DESTINATIONS` in your local root directory, but do not commit it!**
+
+## Deploy dependencies
+
+### Depdendencies for building
+
+### Dependencies for running
+
+## Build the coupled model
+
+### First build
+
+The components of the copled model cannot be built indepently on each other.
+For the first build you should probably use the `build.sh` script in the root directory.
+If you want to build the model e.g. on the university's cluster, you can run
+
+``` bash
+./build.sh haumea
+``` 
+
+### Building during development
+
+#### Build tagging
+`LAST_BUILD_haumea`
+
+## Run the coupled
