@@ -98,8 +98,13 @@ Since this file specific for certain users and individual runs of the model it i
 However, there is an example `SETUPS.example`, please have a look.
 You see that each line consists of two elements.
 The first is the *keyword for the setup*. 
-This keyword can be chosen by you freely.
-The second represents the location of this setup. This can be local on your machine or on a remote computer.
+This keyword can be chosen by you almost freely.
+It should be unique and a single word without spaces and special characters.
+Importantly, there is one reserved keyword *local* for a special source of setup.
+From here you can update specific files of your target's setup during development.
+
+The second element of a line in `SETUPS` represents the location of this setup. 
+This can be local on your machine or on a remote computer.
 Be sure that the remote computer knows your targets and can copy files to them. 
 
 
