@@ -1,0 +1,36 @@
+ &LMGRID
+  startlat_tot  = -24.805, startlon_tot  = -29.805,
+  pollat = 39.25, pollon = -162.0, polgam = 0., 
+  dlon=0.22, dlat=0.22, 
+  ie_tot=222, je_tot=244, ke_tot=40,
+ /END
+ &RUNCTL
+  dt=150,
+  hstart=*AUTO*,  hstop=*AUTO*, *LEAVE THESE TWO IN ONE LINE*
+  ydate_ini='1979020100', ydate_end='1979010100',
+  nprocx= 8, nprocy= 24, nprocio=0,
+  num_asynio_comm  = 0,
+  num_iope_percomm = 0,
+  hincmxt=24, hincmxu=24,
+  itype_calendar=0
+  lartif_data = .FALSE.,
+  ldatatypes = .FALSE.,
+  ldump_ascii = .FALSE.,
+  lreorder = .FALSE.,
+  lreproduce = .TRUE.,
+  nboundlines = 3, 
+  ncomm_type = 3,
+ /END
+ &TUNING
+  entr_sc=0.0002,
+  fac_rootdp2=0.9000,
+  mu_rain=0.5,
+  rlam_heat=0.5249,
+  soilhyd=1.6200
+  tkhmin=0.35,
+  tkmmin=1.,
+  tur_len=500.,
+  uc1=0.0626,
+  v0snow=20.,
+  wichfakt=0.,
+ /END

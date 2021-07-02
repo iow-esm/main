@@ -1,0 +1,7 @@
+ &DIACTL
+  n0meanval=0, nincmeanval=24,
+  lgplong=.FALSE., lgpshort=.TRUE., lgpspec=.FALSE.,
+  n0gp=0,      hincgp=6.0,
+  stationlist_tot= 0, 0, 52.220, 14.135, 'Lindenberg_Obs',
+                   0, 0, 53.633,  9.983, 'Hamburg',
+ /END

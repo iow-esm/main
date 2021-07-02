@@ -23,6 +23,7 @@ if [[ "${update_from_local_setup}" == "true" ]]; then
 	./deploy_setups.sh "$target" local
 fi
 
+# TODO: to be removed. This should be done with the deploy_setups.sh script
 ./local_scripts/sync_input.sh ${dest}
 
 ./local_scripts/sync_scripts.sh ${dest}

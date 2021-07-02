@@ -1,0 +1,63 @@
+# format for data_table:
+# gridname, fieldname_code, fieldname_file, filename, ongrid, factor
+# If user wants to override fieldname_code with a const set fieldname_file = ""
+# and factor = const
+"ATM", "z_bot"          , ""       , ""                             ,"default", 10.0    
+"ATM", "gust"           , ""       , ""                             ,"default",  0.0    
+"ATM", "t_n2_flux_pcair_atm", ""   , ""                             ,"default",  0.78084
+"ATM", "t_o2_flux_pcair_atm", ""   , ""                             ,"default",  0.20942
+"ATM", "co2_flux_pcair_atm", ""    , ""                             ,"default",  0.00038
+"ICE", "runoff"         , "runoff" , "./RIVER/runoff.nc"            ,"none",     1.15    
+"ICE", "calving"        , ""       , ""                             ,"default",  0.0    
+"ICE", "dhdt"           , ""       , ""                             ,"default", 40.0    
+"ICE", "dedt"           , ""       , ""                             ,"default",  2.0e-6 
+"ICE", "drdt"           , ""       , ""                             ,"default", 10.0    
+"ICE", "sic_obs"        , "SIC"    , "./INPUT/sst_ice_clim.nc"      ,"default",  0.0    
+"ICE", "sit_obs"        , "SIT"    , "./INPUT/sst_ice_clim.nc"      ,"default",  0.0    
+"ICE", "sst_obs"        , "SST"    , "./INPUT/sst_ice_clim.nc"      ,"default",  1.0    
+"LND", "t_surf"         , ""       , ""                             ,"default",  273.0  
+"LND", "t_ca"           , ""       , ""                             ,"default",  273.0  
+"LND", "q_ca"           , ""       , ""                             ,"default",  0.0    
+"LND", "rough_mom"      , ""       , ""                             ,"default",  0.01   
+"LND", "rough_heat"     , ""       , ""                             ,"default",  0.1    
+"LND", "albedo"         , ""       , ""                             ,"default",  0.1    
+"LND", "t_ca"           , ""       , ""                             ,"default",  273.0  
+"LND", "t_surf"         , ""       , ""                             ,"default",  273.0  
+"LND", "q_ca"           , ""       , ""                             ,"default",  0.0    
+"LND", "t_flux"         , ""       , ""                             ,"default",  0.0    
+"LND", "q_flux"         , ""       , ""                             ,"default",  0.0    
+"LND", "lw_flux"        , ""       , ""                             ,"default",  0.0    
+"LND", "sw_flux"        , ""       , ""                             ,"default",  0.0    
+"LND", "lprec"          , ""       , ""                             ,"default",  0.0    
+"LND", "fprec"          , ""       , ""                             ,"default",  0.0    
+"LND", "dhdt"           , ""       , ""                             ,"default",  5.0    
+"LND", "dedt"           , ""       , ""                             ,"default",  2e-6   
+"LND", "dedq"           , ""       , ""                             ,"default",  0.0    
+"LND", "drdt"           , ""       , ""                             ,"default",  5.0    
+"LND", "drag_q"         , ""       , ""                             ,"default",  0.0    
+"LND", "p_surf"         , ""       , ""                             ,"default",  1.e5   
+"OCN", "runoff_salt_flux_ice_ocn",    "", ""                              ,"default",  0.001
+#"OCN", "runoff_temp_flux_ice_ocn",    "temp",  "./INPUT/runoff.nc"         ,"none",  1.0
+"OCN", "runoff_temp_flux_ice_ocn",    "",  ""         ,"default",  30.0
+#
+"OCN", "runoff_t_o2_flux_ice_ocn",      "", ""                               ,"none",   0.00035
+"OCN", "runoff_t_dic_flux_ice_ocn",     "t_dic", "./RIVER/runoff.nc"         ,"none",   1.0
+"OCN", "runoff_t_alk_flux_ice_ocn",     "t_alk", "./RIVER/runoff.nc"         ,"none",   1.0
+# wegen 15% erhoehten runoff weniger load Konzentration, fuer river-N 75%, river-P 100% Bioverfuegbarkeit
+# Faktor fuer N: 1/1.15 * 0.75 = 0.652
+# weil P durch Det. Reduktion auch reduziert wird, Ausgleich durch mehr PO4
+# der Erhoehungsfaktor ist 1.4412, beruecksichtigt erhoehter runoff -> 1.253
+#"OCN", "runoff_t_nh4_flux_ice_ocn",     "t_nh4", "./INPUT/runoff.nc"         ,"none",   0.75000
+"OCN", "runoff_t_nh4_flux_ice_ocn",     "t_nh4", "./RIVER/runoff.nc"         ,"none",   0.65217
+"OCN", "dry_dep_t_no3_flux_ice_ocn",    "t_no3", "./RIVER/diffloads.nc"      ,"none",  -1.0
+#"OCN", "runoff_t_no3_flux_ice_ocn",     "t_no3", "./INPUT/runoff.nc"         ,"none",   0.75000
+"OCN", "runoff_t_no3_flux_ice_ocn",     "t_no3", "./RIVER/runoff.nc"         ,"none",   0.65217
+"OCN", "dry_dep_t_po4_flux_ice_ocn",    "t_po4", "./RIVER/diffloads.nc"      ,"none",  -1.0
+#"OCN", "runoff_t_po4_flux_ice_ocn",     "t_po4", "./INPUT/runoff.nc"         ,"none",   1.00000
+"OCN", "runoff_t_po4_flux_ice_ocn",     "t_po4", "./RIVER/runoff.nc"         ,"none",   1.25322
+#"OCN", "runoff_t_det_flux_ice_ocn",     "t_det", "./INPUT/runoff.nc"         ,"none",   1.00000
+"OCN", "runoff_t_det_flux_ice_ocn",     "t_det", "./RIVER/runoff.nc"         ,"none",   0.65217
+"OCN", "wet_dep_t_nh4_flux_ice_ocn",    "t_nh4_wet_dep","./ATMDEP/depflux.nc", "none" , -1.0
+"OCN", "wet_dep_t_no3_flux_ice_ocn",    "t_no3_wet_dep","./ATMDEP/depflux.nc", "none" , -1.0
+"OCN", "wet_dep_t_po4_flux_ice_ocn",    "t_po4_wet_dep","./ATMDEP/depflux.nc", "none" , -1.0
+
