@@ -90,7 +90,8 @@
   name_send_t(9)        = 'PSUR'   ! atmospheric pressure at surface (Pa) 
   send_to_bottom_t(1,9) = .TRUE.
   send_uniform_t(1,9)   = .TRUE.
-  name_send_t(10)        = 'RSDD'   ! shortwave direct downward radiation (W/m2) (negative values) 
+  name_send_t(10)        = 'RSDR'   ! shortwave direct downward radiation (W/m2) (negative values) 
+  send_to_atmos_t(10)    = .FALSE.
   send_to_bottom_t(1,10) = .TRUE.
   send_uniform_t(1,10)   = .FALSE.
   name_send_t(11)        = 'RSIN'   ! shortwave indirect (=diffusive) downward radiation (W/m2) (negative values)
