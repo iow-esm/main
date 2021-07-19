@@ -19,6 +19,7 @@
   ! Input from bottom models              !
   ! by (model,surface_type,runningnumber) !
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !name_bottom_var_t(1,1:6,1) = 'FARE','none','none','none','none','none',        ! which variables (model,surface_type,runningnumber) come from the bottom model grid
   name_bottom_var_t(1,1:6,1) = 'FARE','FARE','FARE','FARE','FARE','FARE',        ! which variables (model,surface_type,runningnumber) come from the bottom model grid
   name_bottom_var_t(1,1:6,2) = 'TSUR','TSUR','TSUR','TSUR','TSUR','TSUR',  
   name_bottom_var_t(1,1:6,3) = 'FICE','FICE','FICE','FICE','FICE','FICE',
@@ -47,6 +48,7 @@
   name_atmos_var_t(12) = 'QATM',      ! specific water vapor content at surface (kg/kg)
   name_atmos_var_t(13) = 'UATM',      ! eastward wind in lowest atmospheric cell (m/s)
   name_atmos_var_t(14) = 'VATM',      ! northward wind in lowest atmospheric cell (m/s)
+  name_atmos_var_t(15) = 'ALBA',	  ! shortwave albedo averaged on atmospheric grid 
   name_atmos_var_u( 1) = 'U10M',      ! 10m wind eastward
   name_atmos_var_v( 1) = 'V10M',      ! 10m wind northward
 
@@ -88,9 +90,10 @@
   name_send_t(9)        = 'PSUR'   ! atmospheric pressure at surface (Pa) 
   send_to_bottom_t(1,9) = .TRUE.
   send_uniform_t(1,9)   = .TRUE.
-  name_send_t(10)        = 'RSDD'   ! shortwave direct downward radiation (W/m2) (negative values) 
+  name_send_t(10)        = 'RSDR'   ! shortwave direct downward radiation (W/m2) (negative values) 
+  send_to_atmos_t(10)    = .FALSE.
   send_to_bottom_t(1,10) = .TRUE.
-  send_uniform_t(1,10)   = .TRUE.
+  send_uniform_t(1,10)   = .FALSE.
   name_send_t(11)        = 'RSIN'   ! shortwave indirect (=diffusive) downward radiation (W/m2) (negative values)
   send_to_bottom_t(1,11) = .TRUE.
   send_uniform_t(1,11)   = .TRUE.
