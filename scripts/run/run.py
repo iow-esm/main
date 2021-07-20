@@ -177,7 +177,7 @@ for run in range(runs_per_job):
 
         if namcouple:
             # Start flux_calculator excutable with switch --generate_namcouple before starting the model
-            shellscript_name = 'create_namcouple.sh'
+            shellscript_name = './create_namcouple.sh'
             shellscript = open(shellscript_name, 'w')
             shellscript.writelines('#!/bin/bash\n')
             shellscript.writelines('cd '+work_directory_root+'/flux_calculator\n')
