@@ -20,12 +20,13 @@ Your local machine has to provide:
 * configured git instance
 
 If you work on Windows, you can use e.g. `Git for Windows` which already provides these prerequisites.
-If yoou work on Linux you will most probably have a `bash` and you can install `git` with the package manager of your distribution.
+If you work on Linux you will most probably have a `bash` and you can install `git` with the package manager of your distribution.
 
 
 #### Remote
 
-You need accounts on the target servers, where you want to run the model
+You need accounts on the target servers, where you want to run the model.
+**TODO:** How to setup correctly `.bashrc`and `.bash_profile`?
 
 
 ### Get the component sources
@@ -54,13 +55,17 @@ However, there is an example `DESTINATIONS.example`, please have a look.
 You see that each line consists of two elements.
 The first is the *keyword for the target*. This keyword has to be one of the following
 
+* `hlrnb`
+* `hlrng`
 * `haumea`
 * `phy-2`
 
 where 
 
+* `hlrnb` refers to the HLRN IV cluster located in Berlin
+* `hlrng` refers to the HLRN IV cluster located in Göttingen
 * `haumea` is the cluster of the of the Rostock University
-* `phy-2` is one of the IOW's physics department computing servers
+* `phy-2` is one of the IOW's physics department computing servers (**ATTENTION: currently the model is not running here**)
 
 At the moment there are running build scripts only for these targets. 
 If you want to add more, it will be explained later how this can be done.
@@ -69,20 +74,19 @@ This path corresponds to the root directory where this `Readme.md` file is locat
 **Now it is up to you, to create your own file `DESTINATIONS` in your local root directory, but do not commit it!**
 
 
-### Deploy dependencies for building
-
-???
-
-
 ### Build the coupled model for the first time
 
 The components of the copled model cannot be built indepently on each other.
 For the first build you should probably use the `build.sh` script in the root directory.
-If you want to build the model e.g. on the university's cluster, you can run
+If you want to build the model e.g. on the university's cluster, you can run, e.g.
 
 ``` bash
-./build.sh haumea
+./build.sh haumea release rebuild
 ``` 
+
+This will build the model on `haumea` in release mode.
+If you want to start with debug confiuration replace `release` by `debug`.
+The `rebuild` option is is obligatory for the first build, since that way necessary directories for some of the components are created.
 
 
 ### Deploy dependencies for running (setups)
@@ -102,6 +106,7 @@ This keyword can be chosen by you almost freely.
 It should be unique and a single word without spaces and special characters.
 Importantly, there is one reserved keyword *local* for a special source of setup.
 From here you can update specific files of your target's setup during development.
+In order to update from your local setup yo can call the run script `run.sh` with a second argument equal to `true`, see below.
 
 The second element of a line in `SETUPS` represents the location of this setup. 
 This can be local on your machine or on a remote computer.
@@ -119,6 +124,24 @@ After creating the file `SETUPS` you can run in the root directory
 ./deploy_setup.sh haumea testing
 ``` 
 
+### Prepare the first run
+
+On the target you have to go to the preparation-script directory
+
+``` bash
+cd scripts/prepare
+```
+
+and execute
+
+``` bash
+python create_mappings.py
+```
+
+Be sure that the correct python module is loaded.
+
+**TODO:** to be changed such that this can be done from local computer.
+
 
 ### Run the coupled model for the first time
 
@@ -126,9 +149,41 @@ After creating the file `SETUPS` you can run in the root directory
 ./run.sh haumea
 ``` 
 
+## Ongoing development
 
 ### Building during development
 
 
 #### Build tagging
 `LAST_BUILD_haumea`
+
+
+### Running during development
+
+
+#### Update setup from your local setup
+
+``` bash
+./run.sh haumea true
+```
+
+## Extending the project
+
+### Register new destinations
+
+1. Add a new keyword and the corresponding remote directory to your `DESTINATIONS` file.
+Let's call the new target keyword in this example `new-target`.
+Then the new line in your `DESTINATIONS` file could look like `new-target user@new-target:/data/user/IOW_ESM`.
+2. Add a build script for each component that should be build on the new target. 
+For the example this must be called `build_new-target.sh`.
+In general the name has to be `build_` followed by the keyword and `.sh`.
+In most cases you can probably copy the build script from another target and simply adapt the loaded modules or paths.
+You have to find out on your own which modification are to be done here.
+3. Add a script that starts the build script on the target. 
+For the example this must be called `start_build_new-target.sh`.
+In general the name has to be `start_build_` followed by the keyword and `.sh`.
+On some targets the build is performed using the queuing system on others it can be performed on directly the login node.
+Find out which is true for your new target.
+The existing `start_build_haumea.sh` is an example for using the queue, whereas `start_build_hlrnb.sh` is an example for direct compilation on the login node.
+
+### Add new models
