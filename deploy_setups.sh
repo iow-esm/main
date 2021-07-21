@@ -17,7 +17,7 @@ if [ ! -f "${setups_file_name}" ]; then
 	echo "e.g. testing karsten@phy-2:/silod7/karsten/setups/IOW_ESM/testing"
 	exit
 fi
-
+	
 setup_origin="`awk -v setup="$setup" '{if($1==setup){print $2}}' ${setups_file_name}`"
 
 if [ -z "${setup_origin}" ]; then
@@ -25,6 +25,10 @@ if [ -z "${setup_origin}" ]; then
 	exit
 else
 	echo "Setup: ${setup_origin}"
+fi
+
+if [ "$setup" == "local" ]; then
+	echo "Updated from local setup "`whoami`@`hostname`":${setup_origin} at "`date +%Y-%m-%d_%H-%M-%S` >> "${setup_origin}"/LOCAL_SETUP_INFO
 fi
 
 source ${local}/local_scripts/identify_target.sh $target

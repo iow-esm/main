@@ -17,9 +17,6 @@ fi
 source ./local_scripts/identify_target.sh $target
 
 if [[ "${update_from_local_setup}" == "true" ]]; then
-	setups_file_name="./SETUPS"
-	setup_origin="`awk -v setup="local" '{if($1==setup){print $2}}' ${setups_file_name}`"
-	echo "Updated from local setup "`whoami`@`hostname`":${setup_origin} at "`date +%Y-%m-%d_%H-%M-%S` >> "${setup_origin}"/LOCAL_SETUP_INFO
 	./deploy_setups.sh "$target" local
 fi
 
