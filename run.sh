@@ -8,7 +8,6 @@ if [ $# -eq 0 ]; then
 	exit
 else
 	target=$1
-	update_from_local_setup=${2:-"false"}
 fi	
 
 #available_args=("target" "update_from_local_setup")
@@ -16,8 +15,11 @@ fi
 
 source ./local_scripts/identify_target.sh $target
 
-if [[ "${update_from_local_setup}" == "true" ]]; then
-	./deploy_setups.sh "$target" local
+if [ $# -gt 1 ]; then
+	args=("$@")
+	for ((i=1;i<$#;i++)); do 
+		./deploy_setups.sh "$target" "${args[i]}"
+	done
 fi
 
 ./local_scripts/sync_scripts.sh ${user_at_dest} ${dest_folder}

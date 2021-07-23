@@ -104,9 +104,9 @@ You see that each line consists of two elements.
 The first is the *keyword for the setup*. 
 This keyword can be chosen by you almost freely.
 It should be unique and a single word without spaces and special characters.
-Importantly, there is one reserved keyword *local* for a special source of setup.
-From here you can update specific files of your target's setup during development.
-In order to update from your local setup yo can call the run script `run.sh` with a second argument equal to `true`, see below.
+In order to update from one or several setups you can call the run script `run.sh` with a second, third, etc. argument representing your setup keys in the `SETUP`.
+The files from these setups are then synchronized to the target in the order they appear as arguments.
+That is, the last setup will overwrite the ones before if files are overlapping.
 
 The second element of a line in `SETUPS` represents the location of this setup. 
 This can be local on your machine or on a remote computer.
@@ -161,10 +161,10 @@ Be sure that the correct python module is loaded.
 ### Running during development
 
 
-#### Update setup from your local setup
+#### Update the setup before running
 
 ``` bash
-./run.sh haumea true
+./run.sh haumea setup1 setup2 setup3...
 ```
 
 ## Extending the project
