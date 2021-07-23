@@ -143,7 +143,8 @@
   regrid_t_to_u(1,1:6,4) = 'PSUR','PSUR','PSUR','PSUR','PSUR','PSUR'
   regrid_t_to_u(1,1:6,5) = 'TATM','TATM','TATM','TATM','TATM','TATM'
   regrid_t_to_u(1,1:6,6) = 'TSUR','TSUR','TSUR','TSUR','TSUR','TSUR'
-  regrid_t_to_u(1,1:6,7) = 'QSUR','QSUR','QSUR','QSUR','QSUR','QSUR'  
+  regrid_t_to_u(1,1:6,7) = 'QSUR','QSUR','QSUR','QSUR','QSUR','QSUR'
+  regrid_t_to_u(1,1:6,8) = 'FARE','FARE','FARE','FARE','FARE','FARE'
   
   regrid_t_to_v(1,1:6,1) = 'UATM','UATM','UATM','UATM','UATM','UATM'
   regrid_t_to_v(1,1:6,2) = 'VATM','VATM','VATM','VATM','VATM','VATM'
@@ -151,7 +152,8 @@
   regrid_t_to_v(1,1:6,4) = 'PSUR','PSUR','PSUR','PSUR','PSUR','PSUR'
   regrid_t_to_v(1,1:6,5) = 'TATM','TATM','TATM','TATM','TATM','TATM'
   regrid_t_to_v(1,1:6,6) = 'TSUR','TSUR','TSUR','TSUR','TSUR','TSUR'
-  regrid_t_to_v(1,1:6,7) = 'QSUR','QSUR','QSUR','QSUR','QSUR','QSUR'  
+  regrid_t_to_v(1,1:6,7) = 'QSUR','QSUR','QSUR','QSUR','QSUR','QSUR'
+  regrid_t_to_v(1,1:6,8) = 'FARE','FARE','FARE','FARE','FARE','FARE'
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ! How are auxiliary variables calculated  !
