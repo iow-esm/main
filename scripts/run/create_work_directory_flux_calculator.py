@@ -50,7 +50,14 @@ def create_work_directory_flux_calculator(IOW_ESM_ROOT,        # root directory 
 
     # STEP 4: copy flux_calculator.nml file and change timestep and number of time steps
     os.system('cp '+IOW_ESM_ROOT+'/input/flux_calculator.nml '+full_directory+'/flux_calculator.nml')
-
+    
+    change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
+                     after='&input', before='/', start_of_line='timestep',
+                     new_value = '='+str(coupling_time_step))
+    change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
+                     after='&input', before='/', start_of_line='num_timesteps',
+                     new_value = '='+str(timesteps))
+    
     # STEP 5: Create an empty folder named "mappings" and place exchange grid files and mapping files there
     os.makedirs(full_directory+'/mappings') 
     os.system('cp '+IOW_ESM_ROOT+'/input/CCLM*/mappings/?_grid_exchangegrid.nc '+full_directory+'/mappings')

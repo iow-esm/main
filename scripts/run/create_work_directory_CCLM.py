@@ -57,6 +57,9 @@ def create_work_directory_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
     change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT_ORG',
                      after='&RUNCTL', before='/END', start_of_line='hstart',
                      new_value = '='+str(starthours)+', hstop='+str(finalhours)+',')
+    change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT_OASIS',
+                     after='&OASISCTL', before='/END', start_of_line='dt_cp',
+                     new_value = ' = '+str(coupling_time_step))             
 
     # STEP 5: Copy hotstart files if a corresponding folder exists
     if (start_date != init_date):
