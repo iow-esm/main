@@ -15,9 +15,23 @@ fi
 
 source ./local_scripts/identify_target.sh $target
 
+# check if there are more optional arguments
 if [ $# -gt 1 ]; then
+	
 	args=("$@")
-	for ((i=1;i<$#;i++)); do 
+	
+	# first optional argument: should we run prepare scripts before we run?
+	prepare_arg=1
+	
+	if [ "${args[${prepare_arg}]}" == 'prepare-before-run' ]; then
+		setups_arg=2				#if yes, possible setup-update arguments will follow at index 2
+		prepare_before_run=true
+	else
+		setups_arg=1				#if no, possible setup-update arguments will follow at index 1
+		prepare_before_run=false
+	fi
+	
+	for ((i = ${setups_arg}; i < $#; i++)); do 
 		./deploy_setups.sh "$target" "${args[i]}"
 	done
 fi
@@ -28,6 +42,6 @@ fi
 echo scp "LAST_BUILD_$target" ${user_at_dest}:${dest_folder}/
 scp "LAST_BUILD_$target" ${user_at_dest}:${dest_folder}/
 
-./local_scripts/run_${target}.sh ${user_at_dest} ${dest_folder}
+./local_scripts/run_${target}.sh ${user_at_dest} ${dest_folder} ${prepare_before_run}
 
 

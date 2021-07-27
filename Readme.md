@@ -81,12 +81,16 @@ For the first build you should probably use the `build.sh` script in the root di
 If you want to build the model e.g. on the university's cluster, you can run, e.g.
 
 ``` bash
-./build.sh haumea release rebuild
+./build.sh hlrnb release rebuild
 ``` 
 
-This will build the model on `haumea` in release mode.
+This will build the model on `hlrnb` in release mode.
+Note that we will stick to this specific target throughout this Readme.
+Nevertheless, if you want to work with another target for your first tests, just replace `hlrnb` with another valid keyword.
 If you want to start with debug confiuration replace `release` by `debug`.
-The `rebuild` option is is obligatory for the first build, since that way necessary directories for some of the components are created.
+The `rebuild` option is obligatory for the first build, since that way necessary directories for some of the components are created.
+Note that the first argument is non-optional, whereas the other two can be omitted in the future. 
+The defaults are then `release` and `fast` (which is the opposite of `rebuild`).
 
 
 ### Deploy dependencies for running (setups)
@@ -95,7 +99,7 @@ The `rebuild` option is is obligatory for the first build, since that way necess
 #### Configure your setups
 
 In order to run the model, you need input files which define a certain setup.
-What exactly a setup consits of, you can find out by looking at **Available setups**.
+What exactly a setup consits of, you can find out by looking at [Available setups](ref-Available_setups).
 The setups you want to use can be registered in a special file named `SETUPS` (this name is obligatory), 
 which is in the root directory.
 Since this file specific for certain users and individual runs of the model it is not part of the repository and *you have to create one.*
@@ -113,41 +117,40 @@ This can be local on your machine or on a remote computer.
 Be sure that the remote computer knows your targets and can copy files to them. 
 
 
-#### Available setups
+#### <a name="ref-Available_setups"> Available setups </a>
+
+**TODO:** Put a path here to an existing example setup for testing.
+**TODO:** Give an example for a line in the `SETUPS` file with keyword `testing`.
 
 
-#### Copy files to target
+#### Copy setup files to target
 
 After creating the file `SETUPS` you can run in the root directory
 
 ``` bash
-./deploy_setup.sh haumea testing
+./deploy_setup.sh hlrnb testing
 ``` 
-
-### Prepare the first run
-
-On the target you have to go to the preparation-script directory
-
-``` bash
-cd scripts/prepare
-```
-
-and execute
-
-``` bash
-python create_mappings.py
-```
-
-Be sure that the correct python module is loaded.
-
-**TODO:** to be changed such that this can be done from local computer.
 
 
 ### Run the coupled model for the first time
 
+If everything is set up on your remote computer of choice, you can run the model for the first time by executing this in the root directory:
+
 ``` bash
-./run.sh haumea
+./run.sh hlrnb prepare-before-run
 ``` 
+
+The first argument of the run script is always the target keyword as specified in your `DESTINATIONS` file.
+By executing the run script all files from `scripts` directory will be transferred to the target.
+The second argument `prepare-before-run` is obligatory for the very first run.
+This will create necessary mapping files in the destination directories.
+However, for all following runs *this is an optional argument and should be omitted*, unless you really want to re-create the mapping files.
+
+After the scripts are transferred and the preparation script has finished (this can take a bit time),
+the model is started on the target.
+
+#### Examine the output of the first run
+
 
 ## Ongoing development
 
@@ -155,7 +158,7 @@ Be sure that the correct python module is loaded.
 
 
 #### Build tagging
-`LAST_BUILD_haumea`
+`LAST_BUILD_hlrnb`
 
 
 ### Running during development
@@ -164,8 +167,10 @@ Be sure that the correct python module is loaded.
 #### Update the setup before running
 
 ``` bash
-./run.sh haumea setup1 setup2 setup3...
+./run.sh hlrnb [prepare-before-run] setup1 setup2 setup3...
 ```
+
+Note that `prepare-before-run` is optional and can be omitted, which is usually the case if it is not the very first run on a target.
 
 ## Extending the project
 
@@ -174,11 +179,13 @@ Be sure that the correct python module is loaded.
 1. Add a new keyword and the corresponding remote directory to your `DESTINATIONS` file.
 Let's call the new target keyword in this example `new-target`.
 Then the new line in your `DESTINATIONS` file could look like `new-target user@new-target:/data/user/IOW_ESM`.
+
 2. Add a build script for each component that should be build on the new target. 
 For the example this must be called `build_new-target.sh`.
 In general the name has to be `build_` followed by the keyword and `.sh`.
 In most cases you can probably copy the build script from another target and simply adapt the loaded modules or paths.
 You have to find out on your own which modification are to be done here.
+
 3. Add a script that starts the build script on the target. 
 For the example this must be called `start_build_new-target.sh`.
 In general the name has to be `start_build_` followed by the keyword and `.sh`.
