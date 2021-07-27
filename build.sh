@@ -3,7 +3,7 @@ debug=${2:-"release"}
 fast=${3:-"fast"}
 
 cd components/OASIS3-MCT
-#./build.sh "$target" "$debug" "$fast"
+./build.sh "$target" "$debug" "$fast"
 cd -
 
 cd components/flux_calculator
