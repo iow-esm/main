@@ -99,7 +99,7 @@ The defaults are then `release` and `fast` (which is the opposite of `rebuild`).
 #### Configure your setups
 
 In order to run the model, you need input files which define a certain setup.
-What exactly a setup consits of, you can find out by looking at [Available setups](ref-Available_setups).
+What exactly a setup consits of, you can find out by looking at [Available setups](#available-setups).
 The setups you want to use can be registered in a special file named `SETUPS` (this name is obligatory), 
 which is in the root directory.
 Since this file specific for certain users and individual runs of the model it is not part of the repository and *you have to create one.*
@@ -117,7 +117,7 @@ This can be local on your machine or on a remote computer.
 Be sure that the remote computer knows your targets and can copy files to them. 
 
 
-#### <a name="ref-Available_setups"> Available setups </a>
+#### Available setups
 
 **TODO:** Put a path here to an existing example setup for testing.
 **TODO:** Give an example for a line in the `SETUPS` file with keyword `testing`.
