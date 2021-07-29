@@ -81,16 +81,14 @@ For the first build you should probably use the `build.sh` script in the root di
 If you want to build the model e.g. on the university's cluster, you can run, e.g.
 
 ``` bash
-./build.sh hlrnb release rebuild
+./build.sh hlrnb
 ``` 
 
 This will build the model on `hlrnb` in release mode.
 Note that we will stick to this specific target throughout this Readme.
 Nevertheless, if you want to work with another target for your first tests, just replace `hlrnb` with another valid keyword.
-If you want to start with debug confiuration replace `release` by `debug`.
-The `rebuild` option is obligatory for the first build, since that way necessary directories for some of the components are created.
-Note that the first argument is non-optional, whereas the other two can be omitted in the future. 
-The defaults are then `release` and `fast` (which is the opposite of `rebuild`).
+Note that the first argument is non-optional, whereas there are two others which can be omitted, 
+see [Build single components in a different modes and configurations](#build-single-components-in-a-different-modes-and-configurations).
 
 
 ### Deploy dependencies for running (setups)
@@ -157,6 +155,16 @@ the model is started on the target.
 ### Building during development
 
 
+#### Build single components in a different modes and configurations
+
+``` bash
+cd components/flux_calculator
+./build.sh hlrnb debug rebuild 
+``` 
+
+The defaults for the second and third argument are `release` and `fast` (which is the opposite of `rebuild`).
+
+
 #### Build tagging
 `LAST_BUILD_hlrnb`
 
@@ -171,6 +179,9 @@ the model is started on the target.
 ```
 
 Note that `prepare-before-run` is optional and can be omitted, which is usually the case if it is not the very first run on a target.
+
+
+
 
 ## Extending the project
 
