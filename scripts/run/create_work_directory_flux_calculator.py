@@ -24,9 +24,9 @@ def create_work_directory_flux_calculator(IOW_ESM_ROOT,        # root directory 
     if not os.path.isfile(destfile):
         # no executable, need to copy
         if debug_mode:
-            sourcefile = IOW_ESM_ROOT+'/components/flux_calculator/bin/flux_calculator' # we may change this in future
+            sourcefile = IOW_ESM_ROOT+'/components/flux_calculator/bin_DEBUG/flux_calculator' # we may change this in future
         else:
-            sourcefile = IOW_ESM_ROOT+'/components/flux_calculator/bin/flux_calculator'
+            sourcefile = IOW_ESM_ROOT+'/components/flux_calculator/bin_PRODUCTION/flux_calculator'
         # check if file exists
         if os.path.isfile(sourcefile):
             shutil.copyfile(sourcefile,destfile)   # copy the file
