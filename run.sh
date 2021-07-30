@@ -70,12 +70,14 @@ echo ""
 
 echo "##        Gather info on last build          ##"
 echo "###############################################"
-./local_scripts/tag_build.sh ${target} "" ""
-cat "LAST_BUILD_$target"
+./local_scripts/tag_build.sh ${target} ${debug} ""
+# this is name of the file where the tags are stored
+last_build_file="LAST_BUILD_${target}_${debug}"
+cat "${last_build_file}"
 echo ""
 echo "Transfer it to the target:"
-echo scp "LAST_BUILD_$target" ${user_at_dest}:${dest_folder}/
-scp "LAST_BUILD_$target" ${user_at_dest}:${dest_folder}/
+echo scp "${last_build_file}" ${user_at_dest}:${dest_folder}/
+scp "${last_build_file}" ${user_at_dest}:${dest_folder}/
 echo ""
 echo ""
 

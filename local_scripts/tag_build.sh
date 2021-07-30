@@ -13,7 +13,7 @@ fast=$3	# fast/rebuild
 local="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # this is name of the file where the tags are stored
-last_build_file="${local}/../LAST_BUILD_$target"
+last_build_file="${local}/../LAST_BUILD_${target}_${debug}"
 
 # find out if the working directory has uncommitted changes
 dirt=`git status | grep "nothing to commit, working tree clean"`
@@ -28,7 +28,7 @@ fi
 component=${PWD##*/}
 
 # build up the tag that should be recorded 
-tag="$component `git show | head -n 1 | awk '{print $2}'`$dirt $debug $fast `date +%Y-%m-%d_%H-%M-%S`"
+tag="$component `git show | head -n 1 | awk '{print $2}'`$dirt $fast `date +%Y-%m-%d_%H-%M-%S`"
 
 # is this component already tagged?
 last_tag=`grep "${component}" "${last_build_file}"`
