@@ -67,7 +67,9 @@ def create_work_directory_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
         os.system('cp '+hotstart_folder+'/* '+full_directory+'/')        # copy all hotstart files 
    
 
-    # STEP 6: Modify hotstart file according to land mask
-    modify_cclm_restart_file.modify_cclm_restart_file(work_directory_root, my_directory, start_date)
+    # STEP 6: Get a corrected land mask from restart file
+    # restart files currently only exist for the first day of a month
+    beginning_of_month = start_date[:6] + "01" + start_date[8:]
+    modify_cclm_restart_file.modify_cclm_restart_file(work_directory_root, my_directory, beginning_of_month)
 
     return
