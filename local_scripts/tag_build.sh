@@ -37,7 +37,7 @@ last_tag=`grep "${component}" "${last_build_file}"`
 if [ -z "${last_tag}" ]; then
 	echo $tag >> ${last_build_file}
 else # if yes, we replace the old tag with the new one
-	sed -i s."${last_tag}"."$tag".g ${last_build_file}
+	sed -i s/"${last_tag}"/"$tag"/g ${last_build_file}
 fi
 
 #exit
