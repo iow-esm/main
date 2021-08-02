@@ -27,6 +27,8 @@ If you work on Linux you will most probably have a `bash` and you can install `g
 
 You need accounts on the target servers, where you want to run the model.
 **TODO:** How to setup correctly `.bashrc`and `.bash_profile`?
+Note that it is strongly recommended to use a key agent for your account on the target server.
+Otherwise you will have to type in your account password very often.
 
 
 ### Get the component sources
@@ -69,16 +71,18 @@ where
 
 At the moment there are running build scripts only for these targets. 
 If you want to add more, it will be explained later how this can be done.
-The second element in a line of `DESTINATIONS.example` corresponds to the *path on the target*, where the model will be deployed, built and run.
-This path corresponds to the root directory where this `Readme.md` file is located. The path on the target has to already exist.
+The second element in a line of `DESTINATIONS.example` corresponds to the *root directory on the target*, the path, where the whole model will be deployed, built and run.
+If the path on the target does not exist, it will be created.
+Be sure that you have write permissions.
 **Now it is up to you, to create your own file `DESTINATIONS` in your local root directory, but do not commit it!**
 
 
 ### Build the coupled model for the first time
 
-The components of the copled model cannot be built indepently on each other.
-For the first build you should probably use the `build.sh` script in the root directory.
-If you want to build the model e.g. on the university's cluster, you can run, e.g.
+Each component can be built individually by executing the build scripts in the component's directory, see [Build single components in a different modes and configurations](#build-single-components-in-a-different-modes-and-configurations).
+However, for the first build the order is important, since some components of the coupled model depend on each other.
+Therefore, you should use the `build.sh` script in the root directory.
+If you want to build the model e.g. on the HLRN cluster located in Berlin, you can run, e.g.
 
 ``` bash
 ./build.sh hlrnb
