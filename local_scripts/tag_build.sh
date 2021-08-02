@@ -39,3 +39,45 @@ if [ -z "${last_tag}" ]; then
 else # if yes, we replace the old tag with the new one
 	sed -i s."${last_tag}"."$tag".g ${last_build_file}
 fi
+
+#exit
+
+if [ "${dirt}" == "+uncommited" ]; then
+
+	difference="######## uncommited changes in ${component}"$'\n'
+	difference="${difference}"`git diff`
+	difference="${difference}"$'\n'"######## uncommited changes in $component"
+else
+	difference=""
+fi
+	
+awk -v difference="${difference}" -v marker="######## uncommited changes in ${component}" '
+BEGIN{ replace = 0 }
+{
+	# normal lines
+	if(($0 != marker) && (replace == 0))
+	{
+		print $0
+	}
+	
+	# find beginning of block
+	if(($0 == marker) && (replace == 0))
+	{
+		replace = 1
+		next
+	}
+	
+	# find end of block
+	if(($0 == marker) && (replace == 1))
+	{
+		replace = 0
+	}
+} 
+END{
+	if(difference != "")
+	{
+		print difference
+	}
+}' ${last_build_file} > tmp.file
+
+mv tmp.file ${last_build_file}
