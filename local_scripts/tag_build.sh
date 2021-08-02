@@ -31,7 +31,7 @@ component=${PWD##*/}
 tag="$component `git show | head -n 1 | awk '{print $2}'`$dirt $fast `date +%Y-%m-%d_%H-%M-%S`"
 
 # is this component already tagged?
-last_tag=`grep "${component}" "${last_build_file}"`
+last_tag=`grep "^${component}" "${last_build_file}"`
 
 # if not, we add it  
 if [ -z "${last_tag}" ]; then
