@@ -36,18 +36,13 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
     # check whether we perform an uncoupled run (= only 1 atmospheric model or no atmospheric model)
     # list of supported atmospheric models (4 letters)
     atmos_models = ['CCLM']
-    #expect that we are uncoupled
-    uncoupled=True
-    if (len(models) == 1) and (models[0][0:4] in atmos_models):
-        pass    # case: only one atmospheric model, uncoupled remains True
+    if (len(models) == 1):
+        coupled = models[0][0:4] not in atmos_models # case: only 1 model, atmospheric or not? 
     else:
-        for m in models:
-            if m[0:4] in atmos_models:
-                uncoupled=False # case: sveral models and one is an atmospheric model
-                break
+        coupled = bool(set(atmos_models).intersection([m[0:4] for m in models])) # several models, is atmosphere included ?
                
     # we possibly need flux_calculator as additional model if we run a coupled simulation
-    if flux_calculator_mode=='single_core_per_bottom_model' and not uncoupled:
+    if flux_calculator_mode=='single_core_per_bottom_model' and coupled:
         models = models + ['flux_calculator']    
 
     # Loop over the models
