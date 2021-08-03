@@ -32,8 +32,22 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
 
     # Get a list of all subdirectories in "input" folder -> these are the models
     models = [d for d in os.listdir(IOW_ESM_ROOT+'/input/') if os.path.isdir(os.path.join(IOW_ESM_ROOT+'/input/',d))]
-    # we possibly need flux_calculator as additional model
-    if flux_calculator_mode=='single_core_per_bottom_model':
+    
+    # check whether we perform an uncoupled run (= only 1 atmospheric model or no atmospheric model)
+    # list of supported atmospheric models (4 letters)
+    atmos_models = ['CCLM']
+    #expect that we are uncoupled
+    uncoupled=True
+    if (len(models) == 1) and (models[0][0:4] in atmos_models):
+        pass    # case: only one atmospheric model, uncoupled remains True
+    else:
+        for m in models:
+            if m[0:4] in atmos_models:
+                uncoupled=False # case: sveral models and one is an atmospheric model
+                break
+               
+    # we possibly need flux_calculator as additional model if we run a coupled simulation
+    if flux_calculator_mode=='single_core_per_bottom_model' and not uncoupled:
         models = models + ['flux_calculator']    
 
     # Loop over the models
