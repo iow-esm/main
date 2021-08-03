@@ -10,7 +10,12 @@ components=(
 )
 	
 for c in "${components[@]}"; do
-	cd components/"$c"
-	./build.sh "$target" "$debug" "$fast"
-	cd -
+	if [ -d components/"$c" ]; then
+		cd components/"$c"
+		./build.sh "$target" "$debug" "$fast"
+		cd -
+	else
+		echo "Skipping not existing directory components/$c."
+		echo "$c will not be built."
+	fi
 done
