@@ -47,3 +47,7 @@ else
 	echo ssh -t "${user_at_setup_origin}" \"rsync -r -i -u ${setup_origin_folder}/ ${dest}/.\"
 	ssh -t "${user_at_setup_origin}" "rsync -r -i -u ${setup_origin_folder}/ ${dest}/."
 fi
+
+# some preparation scripts require write premissions
+echo ssh -t "${user_at_dest}" \"chmod u+w -R ${dest_folder}\"
+ssh -t "${user_at_dest}" "chmod u+w -R ${dest_folder}"
