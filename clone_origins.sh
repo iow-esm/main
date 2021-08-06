@@ -1,5 +1,16 @@
 #!/bin/bash
 
+echo "###############################################"
+echo "##                                           ##"
+echo "##          IOW earth-system model           ##"
+echo "##                                           ##"
+echo "###############################################"
+echo ""
+echo "###############################################"
+echo "##             Cloning components            ##"
+echo "###############################################"
+echo ""
+
 # find out location of this script
 local="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
@@ -36,4 +47,9 @@ chmod u+x ${temporary_name}
 # remove temporary file
 rm ${temporary_name}
 	
+echo ""
+echo "###############################################"
+echo "##               Cloning done                ##"
+echo "###############################################"
+echo ""
 
