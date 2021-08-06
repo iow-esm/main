@@ -6,6 +6,7 @@ else
 	base_setup=$2		# basic setup which has been initially used
 	archive_setup=$3	# location where the archive will be created, 
 						# files that are identical to the ones in the base setup will be just symbolic links
+	remove_base=${4:-false}	# remove the base after archiving (only in preparation, very dangerous)
 fi	
 
 local="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -34,10 +35,11 @@ fi
 archive_setup_dest="`awk -v setup="${archive_setup}" '{if($1==setup){print $2}}' ${setups_file_name}`"
 
 if [ -z "${archive_setup_dest}" ]; then
-	echo "Unknown setup. Please use a setup from the ${setups_file_name}."
-	exit
+	echo "Setup not found in ${setups_file_name}."
+	archive_setup_dest="${base_setup_origin}_${archive_setup}"
+	echo "We will thus create it at ${archive_setup_dest}"
 else
-	echo "Setup archive: ${archive_setup_dest}"
+	echo "Use setup archive from ${setups_file_name}: ${archive_setup_dest}"
 fi
 
 # access remote machine with base setup: get user and hostname
@@ -90,7 +92,18 @@ ssh -t "${user_at_base_setup_origin}" "echo \"\" >> ${archive_dir}/SETUP_INFO; e
 echo ssh -t "${user_at_base_setup_origin}" \""cat include.txt >> ${archive_dir}/SETUP_INFO; rm include.txt"\"
 ssh -t "${user_at_base_setup_origin}" "cat include.txt >> ${archive_dir}/SETUP_INFO; rm include.txt"
 
+# update setup info at setup location
+echo ssh -t "${user_at_base_setup_origin}" \"rsync -avz ${archive_dir}/SETUP_INFO ${setup_location}/\"
+ssh -t "${user_at_base_setup_origin}" "rsync -avz ${archive_dir}/SETUP_INFO ${setup_location}/"
+
+#if [ ${remove_base} == true ]; then
+#	ssh -t "${user_at_base_setup_origin}" "chmod -R u+w ${archive_dir}"
+#	# find all remaining links and replace them by the originals
+#	ssh -t "${user_at_base_setup_origin}" "for f in `find ${archive_dir} ! -type d ! -type f`; do mv `readlink $f` $f; done"
+#	# remove the base setup
+#	ssh -t "${user_at_base_setup_origin}" "rm -rf ${archive_dir}"
+#fi
+
 # since we are archiving the files should be write-protected
 echo ssh -t "${user_at_base_setup_origin}" \"chmod -R a-w ${archive_dir}\"
 ssh -t "${user_at_base_setup_origin}" "chmod -R a-w ${archive_dir}"
-

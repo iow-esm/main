@@ -34,7 +34,7 @@ colon=`echo "${setup_origin}" | grep ":"`
 echo ssh -t "${user_at_dest}" \"mkdir -p ${dest_folder}\"
 ssh -t "${user_at_dest}" "mkdir -p ${dest_folder}"
 if [ -z "$colon" ]; then
-	echo "Update from local setup "`whoami`@`hostname`":${setup_origin} at "`date +%Y-%m-%d_%H-%M-%S` >> "${setup_origin}"/LOCAL_SETUP_INFO
+	echo "Update from local setup "`whoami`@`hostname`":${setup_origin} at "`date +%Y-%m-%d_%H-%M-%S` >> "${setup_origin}"/UPDATE_SETUP_INFO
 	echo rsync -r -i -u ${setup_origin}/ ${dest}/.
 	rsync -r -i -u ${setup_origin}/ ${dest}/.
 else
