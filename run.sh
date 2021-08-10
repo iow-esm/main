@@ -58,7 +58,7 @@ if [ $# -gt 1 ]; then
 	echo "###############################################"
 	for ((i = ${setups_arg}; i < $#; i++)); do 
 		echo "The setup will be updated."
-		./deploy_setups.sh "$target" "${args[i]}"
+		./deploy_setups.sh "${target_keyword}" "${args[i]}"
 	done
 	echo ""
 	echo ""
