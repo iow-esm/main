@@ -34,7 +34,8 @@ Otherwise you will have to type in your account password very often.
 ### Get the component sources
 
 After cloning this repository to your local machine you have to get the component repositories as well.
-For this purpose there is the bash script `local_scripts/clone_origins.sh` which uses the file `ORIGINS`. 
+For this purpose there is the bash script `clone_origins.sh` which uses the file `ORIGINS`. 
+The one you have cloned right now contains all available components.
 **This file should not be edited and commited unless you really know what you are doing.**
 By executing in the root directory (where this `Readme.md` is located)
 
