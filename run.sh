@@ -72,9 +72,9 @@ echo ""
 
 echo "##        Gather info on last build          ##"
 echo "###############################################"
-./local_scripts/tag_build.sh ${target} ${debug} ""
+./local_scripts/tag_build.sh ${target_keyword} ${debug} ""
 # this is name of the file where the tags are stored
-last_build_file="LAST_BUILD_${target}_${debug}"
+last_build_file="LAST_BUILD_${target_keyword}_${debug}"
 cat "${last_build_file}"
 echo ""
 echo "Transfer it to the target:"
