@@ -48,6 +48,8 @@ def create_work_directory_I2LM(IOW_ESM_ROOT,        # root directory of IOW ESM
     starthours = (my_startdate - my_initdate).days*24
     finalhours = (my_enddate - my_initdate).days*24
     
+    # int2lm needs hours in start time, since we allow at maximum a daily resolution in job run time
+    # we will always start from hour zero
     start_date = start_date + '00'
     
     change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT',
@@ -66,9 +68,8 @@ def create_work_directory_I2LM(IOW_ESM_ROOT,        # root directory of IOW ESM
                      after='&DATA', before='/END', start_of_line='yncglob_institution',
                      new_value = '=\''+institution+'\',')
     
-    # STEP 2: Read model options file
-    print('opening: ' + full_directory  + '/model_settings.py')
-    exec(open(full_directory  + '/model_settings.py').read(), globals())
+    # STEP 2: Read local options file
+    exec(open(full_directory  + '/local_settings.py').read(), globals())
     
     change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT',
                      after='&DATA', before='/END', start_of_line='ylmext_lfn',
@@ -98,8 +99,9 @@ def create_work_directory_I2LM(IOW_ESM_ROOT,        # root directory of IOW ESM
     change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT',
                      after='&DATA', before='/END', start_of_line='ylm_cat',
                      new_value = '=\'' + output_dir +'\',')   
-     
-    os.mkdir(output_dir)
+    
+    if not os.path.isdir(output_dir):   
+        os.mkdir(output_dir)
                      
     change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT',
                      after='&DATA', before='/END', start_of_line='yncglob_source',

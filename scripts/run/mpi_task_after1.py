@@ -47,7 +47,8 @@ if firstinnode[my_id]:
     ###############################################################################################
     local_workdir_base = os.environ["IOW_ESM_LOCAL_WORKDIR_BASE"]
     global_workdir_base = os.environ["IOW_ESM_GLOBAL_WORKDIR_BASE"]
-    end_date = os.environ["IOW_ESM_END_DATE"]    
+    end_date = os.environ["IOW_ESM_END_DATE"] 
+    start_date = os.environ["IOW_ESM_START_DATE"]        
 
     ############################################
     # STEP 5: Check if the model run succeeded #
@@ -72,6 +73,14 @@ if firstinnode[my_id]:
             hotstartfile = local_workdir_base+'/'+my_model+'/lrfd'+end_date+'00o'
             if not files_exist(hotstartfile):  # this does not exist -> run failed
                 print('run failed because no file exists:'+hotstartfile)
+                failfile = open(global_workdir_base+'/failed_'+my_model+'.txt', 'w')
+                failfile.writelines('Model '+my_model+' failed and did not reach the end date '+end_date+'\n')
+                failfile.close()
+    if my_model[0:5]=='I2LM_':
+        if firstthread[my_id]:    # only the first thread must write a hotstart file
+            lastfile = local_workdir_base+'/'+my_model+'/'+str(start_date)+'/lbfd'+str(end_date)+'00.nc'
+            if not files_exist(lastfile):  # this does not exist -> run failed
+                print('run failed because no file exists:'+lastfile)
                 failfile = open(global_workdir_base+'/failed_'+my_model+'.txt', 'w')
                 failfile.writelines('Model '+my_model+' failed and did not reach the end date '+end_date+'\n')
                 failfile.close()

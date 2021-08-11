@@ -13,6 +13,7 @@ import create_work_directories
 
 import move_results_CCLM
 import move_results_MOM5
+import move_results_I2LM
 
 import create_namcouple 
 
@@ -212,6 +213,13 @@ for run in range(runs_per_job):
                         failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
                         failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
                         failfile.close()
+                if model[0:5]=='I2LM_':
+                    lastfile = work_directory_root+'/'+model+'/'+str(start_date)+'/lbfd'+str(end_date)+'00.nc'
+                    if not files_exist(lastfile):  # this does not exist -> run failed
+                        print('run failed because no file exists:'+lastfile)
+                        failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
+                        failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
+                        failfile.close()
 
         else:
             # DO THE LOCAL POSTPROCESSING STEP 1: POSSIBLY COPY LOCAL WORKDIRS TO THE GLOBAL ONE AND CHECK WHETHER THE JOB FAILED
@@ -219,6 +227,7 @@ for run in range(runs_per_job):
             shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+local_workdir_base+'\n')
             shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+work_directory_root+'\n')
             shellscript.writelines('export IOW_ESM_END_DATE='+str(end_date)+'\n')
+            shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
             shellscript.writelines('python3 mpi_task_after1.py')
             shellscript.close()
             st = os.stat('run_after1.sh')                 # get current permissions
@@ -279,6 +288,12 @@ for run in range(runs_per_job):
                 move_results_MOM5.move_results_MOM5(work_directory_root+'/'+model,                             #workdir
                                                     IOW_ESM_ROOT+'/output/'+run_name+'/'+model+'/'+str(start_date), #outputdir
                                                     IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+model+'/'+str(end_date)) #hotstartdir
+                                                    
+            if model[0:5]=='I2LM_':
+                move_results_I2LM.move_results_I2LM(work_directory_root+'/'+model,                             #workdir
+                                                    IOW_ESM_ROOT+'/output/'+run_name+'/'+model, #outputdir
+                                                    IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+model+'/'+str(end_date), #hotstartdir
+                                                    str(start_date))
         
     # PROCEED TO NEXT RUN
     start_date = end_date

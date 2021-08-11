@@ -6,6 +6,7 @@ import shutil
 
 import move_results_CCLM
 import move_results_MOM5
+import move_results_I2LM
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
@@ -60,4 +61,11 @@ if firstinnode[my_id]:
                                                 IOW_ESM_ROOT+'/output/'+run_name+'/'+my_model+'/'+start_date, #outputdir
                                                 IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+my_model+'/'+end_date, #hotstartdir
                                                 end_date)
+                                                
+    if my_model[0:5]=='I2LM_':
+        if firstthread[my_id]:    # only the first thread will write output and hotstarts
+            move_results_I2LM.move_results_I2LM(work_directory_root+'/'+model,                                #workdir
+                                                IOW_ESM_ROOT+'/output/'+run_name+'/'+my_model+'/'+start_date, #outputdir
+                                                IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+my_model+'/'+end_date, #hotstartdir
+                                                str(start_date))
     os.system('sync')
