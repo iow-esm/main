@@ -168,4 +168,9 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
                 exec(open('create_work_directory_flux_calculator.py').read(),globals()) # read in function create_work_directory_MOM5                      
                 create_work_directory_flux_calculator(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
                                            coupling_time_step,run_name,debug_mode)
+                                           
+            if model[0:5]=='I2LM_':
+                exec(open('create_work_directory_I2LM.py').read(),globals()) # read in function create_work_directory_I2LM                     
+                create_work_directory_I2LM(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
+                                           coupling_time_step,run_name,debug_mode)
     return
