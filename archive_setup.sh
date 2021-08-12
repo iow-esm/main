@@ -56,6 +56,13 @@ fi
 base_dir="${base_setup_origin#*:}"
 archive_dir="${archive_setup_dest#*:}"
 
+# if base and archive coincide: we want to create a base from our setup
+if [ "${base_dir}" == "${archive_dir}" ]; then
+	create_base=true
+else	
+	create_base=false
+fi
+
 # get all information of the target (machine where the setup is on at the moment)
 source ${local}/local_scripts/identify_target.sh $target
 
@@ -63,16 +70,20 @@ source ${local}/local_scripts/identify_target.sh $target
 setup_location="${dest}"
 
 # make a new directory for the setup
-echo ssh -t "${user_at_base_setup_origin}" \"mkdir -p ${archive_dir}\"
-ssh -t "${user_at_base_setup_origin}" "mkdir -p ${archive_dir}"
+echo ssh -t "${user_at_base_setup_origin}" \"mkdir -p ${archive_dir}/input\"
+ssh -t "${user_at_base_setup_origin}" "mkdir -p ${archive_dir}/input"
 
-# create symbolic links to the base setup from which we will inherit
-echo ssh -t "${user_at_base_setup_origin}" \"cp -as ${base_dir}/* ${archive_dir}/\"
-ssh -t "${user_at_base_setup_origin}" "cp -as ${base_dir}/* ${archive_dir}/"
+if [ $create_base == false ]; then
 
-# make created links modifiable
-echo ssh -t "${user_at_base_setup_origin}" \"chmod -R u+w ${archive_dir}\"
-ssh -t "${user_at_base_setup_origin}" "chmod -R u+w ${archive_dir}"
+	# create symbolic links to the base setup from which we will inherit
+	echo ssh -t "${user_at_base_setup_origin}" \"cp -as ${base_dir}/* ${archive_dir}/\"
+	ssh -t "${user_at_base_setup_origin}" "cp -as ${base_dir}/* ${archive_dir}/"
+
+	# make created links modifiable
+	echo ssh -t "${user_at_base_setup_origin}" \"chmod -R u+w ${archive_dir}\"
+	ssh -t "${user_at_base_setup_origin}" "chmod -R u+w ${archive_dir}"
+	
+fi
 
 # find out which files on the target are different (heuristic: they have different size) from the base setup
 echo ssh -t "${user_at_base_setup_origin}" \""rsync -n -r -v --size-only ${setup_location}/input/ ${base_dir}/input/ | head -n -3 | tail -n +2 > include.txt"\"
@@ -82,27 +93,52 @@ ssh -t "${user_at_base_setup_origin}" "rsync -n -r -v --size-only ${setup_locati
 echo ssh -t "${user_at_base_setup_origin}" \"rsync -avz --files-from=include.txt ${setup_location}/input/ ${archive_dir}/input/\"
 ssh -t "${user_at_base_setup_origin}" "rsync -avz --files-from=include.txt ${setup_location}/input/ ${archive_dir}/input/"
 
-# modify the setup info and give information on the archive
-echo ssh -t "${user_at_base_setup_origin}" \""cd ${archive_dir}; cp --remove-destination \$(readlink SETUP_INFO) SETUP_INFO; chmod u+w SETUP_INFO"\"
-ssh -t "${user_at_base_setup_origin}" "cd ${archive_dir}; cp --remove-destination \$(readlink SETUP_INFO) SETUP_INFO; chmod u+w SETUP_INFO"
+if [ $create_base == false ]; then	
 
-echo ssh -t "${user_at_base_setup_origin}" \""echo \"\" >> ${archive_dir}/SETUP_INFO; echo \"Setup archived from ${setup_location}/input/ at `date +%Y-%m-%d_%H-%M-%S`, differs from base setup ${base_dir}/input/ in files:\" >> ${archive_dir}/SETUP_INFO"\"
-ssh -t "${user_at_base_setup_origin}" "echo \"\" >> ${archive_dir}/SETUP_INFO; echo \"Setup archived from ${setup_location}/input/ at `date +%Y-%m-%d_%H-%M-%S`, differs from base setup from ${base_dir}/input/ in files:\" >> ${archive_dir}/SETUP_INFO"
+	# modify the setup info and give information on the archive
+	echo ssh -t "${user_at_base_setup_origin}" \""cd ${archive_dir}; cp --remove-destination \$(readlink SETUP_INFO) SETUP_INFO; chmod u+w SETUP_INFO"\"
+	ssh -t "${user_at_base_setup_origin}" "cd ${archive_dir}; cp --remove-destination \$(readlink SETUP_INFO) SETUP_INFO; chmod u+w SETUP_INFO"
+	
+	info="Setup archived from ${setup_location}/input/ at `date +%Y-%m-%d_%H-%M-%S`, differs from base setup ${base_dir}/input/ in files:"
+	
+	echo ssh -t "${user_at_base_setup_origin}" \""echo \"\" >> ${archive_dir}/SETUP_INFO; echo \"$info\" >> ${archive_dir}/SETUP_INFO"\"
+	ssh -t "${user_at_base_setup_origin}" "echo \"\" >> ${archive_dir}/SETUP_INFO; echo \"$info\" >> ${archive_dir}/SETUP_INFO"
+else
+
+	info="Setup archived from ${setup_location}/input/ at `date +%Y-%m-%d_%H-%M-%S`."$'\n'
+	info="$info""Setup correpsonds to global settings"$'\n'
+	info="$info""####################################"$'\n'
+	
+	echo ssh -t "${user_at_base_setup_origin}" \""echo \"\" >> ${archive_dir}/SETUP_INFO; echo \"$info\" >> ${archive_dir}/SETUP_INFO"\"
+	ssh -t "${user_at_base_setup_origin}" "echo \"\" >> ${archive_dir}/SETUP_INFO; echo \"$info\" >> ${archive_dir}/SETUP_INFO"
+
+	echo ssh -t "${user_at_base_setup_origin}" "cat ${archive_dir}/input/global_settings.py >> ${archive_dir}/SETUP_INFO"
+	ssh -t "${user_at_base_setup_origin}" "cat ${archive_dir}/input/global_settings.py >> ${archive_dir}/SETUP_INFO"
+
+	info="####################################"$'\n'
+	info="$info""archived files:"
+	
+	echo ssh -t "${user_at_base_setup_origin}" \""echo \"\" >> ${archive_dir}/SETUP_INFO; echo \"$info\" >> ${archive_dir}/SETUP_INFO"\"
+	ssh -t "${user_at_base_setup_origin}" "echo \"\" >> ${archive_dir}/SETUP_INFO; echo \"$info\" >> ${archive_dir}/SETUP_INFO"
+
+fi
 
 echo ssh -t "${user_at_base_setup_origin}" \""cat include.txt >> ${archive_dir}/SETUP_INFO; rm include.txt"\"
 ssh -t "${user_at_base_setup_origin}" "cat include.txt >> ${archive_dir}/SETUP_INFO; rm include.txt"
 
+#if [ ! $create_base ]; then	
+	#if [ ${remove_base} == true ]; then
+	#	ssh -t "${user_at_base_setup_origin}" "chmod -R u+w ${archive_dir}"
+	#	# find all remaining links and replace them by the originals
+	#	ssh -t "${user_at_base_setup_origin}" "for f in `find ${archive_dir} ! -type d ! -type f`; do mv `readlink $f` $f; done"
+	#	# remove the base setup
+	#	ssh -t "${user_at_base_setup_origin}" "rm -rf ${archive_dir}"
+	#fi
+#fi
+
 # update setup info at setup location
 echo ssh -t "${user_at_base_setup_origin}" \"rsync -avz ${archive_dir}/SETUP_INFO ${setup_location}/\"
 ssh -t "${user_at_base_setup_origin}" "rsync -avz ${archive_dir}/SETUP_INFO ${setup_location}/"
-
-#if [ ${remove_base} == true ]; then
-#	ssh -t "${user_at_base_setup_origin}" "chmod -R u+w ${archive_dir}"
-#	# find all remaining links and replace them by the originals
-#	ssh -t "${user_at_base_setup_origin}" "for f in `find ${archive_dir} ! -type d ! -type f`; do mv `readlink $f` $f; done"
-#	# remove the base setup
-#	ssh -t "${user_at_base_setup_origin}" "rm -rf ${archive_dir}"
-#fi
 
 # since we are archiving the files should be write-protected
 echo ssh -t "${user_at_base_setup_origin}" \"chmod -R a-w ${archive_dir}\"
