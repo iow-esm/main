@@ -49,7 +49,8 @@ def create_namcouple(IOW_ESM_ROOT,        # root directory of IOW ESM
     
     print('  copy ' + sourcefile + ' to ' + destfile, flush=True)
     if os.path.isfile(sourcefile):
-        shutil.copyfile(sourcefile,destfile)   # copy the file
+        os.system("rsync -u -i " + sourcefile + " " + destfile)
+        #shutil.copyfile(sourcefile,destfile)   # copy the file
     else:
         print('ERROR creating namcouple file: Wanted to copy the file from '+sourcefile+
           ' but that does not exist..')

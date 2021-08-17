@@ -6,7 +6,7 @@ else
 	base_setup=$2		# basic setup which has been initially used
 	archive_setup=$3	# location where the archive will be created, 
 						# files that are identical to the ones in the base setup will be just symbolic links
-	remove_base=${4:-false}	# remove the base after archiving (only in preparation, very dangerous)
+	#remove_base=${4:-false}	# remove the base after archiving (only in preparation, very dangerous)
 fi	
 
 local="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -67,7 +67,13 @@ fi
 source ${local}/local_scripts/identify_target.sh $target
 
 # location of setup to archive
-setup_location="${dest}"
+if [ "$user_at_dest" == "${user_at_base_setup_origin}" ]; then
+	# everything is on the same machine, we can copy directly to the folder
+	setup_location="${dest_folder}"
+else
+	# setup and archive are not on the same machine, we have to copy via ssh
+	setup_location="${dest}"
+fi
 
 # make a new directory for the setup
 echo ssh -t "${user_at_base_setup_origin}" \"mkdir -p ${archive_dir}/input\"
@@ -85,9 +91,9 @@ if [ $create_base == false ]; then
 	
 fi
 
-# find out which files on the target are different (heuristic: they have different size) from the base setup
-echo ssh -t "${user_at_base_setup_origin}" \""rsync -n -r -v --size-only ${setup_location}/input/ ${base_dir}/input/ | head -n -3 | tail -n +2 > include.txt"\"
-ssh -t "${user_at_base_setup_origin}" "rsync -n -r -v --size-only ${setup_location}/input/ ${base_dir}/input/ | head -n -3 | tail -n +2 > include.txt"
+# find out which files on the target are different from the base setup (important: base setup and setup on target should share the same timestamps)
+echo ssh -t "${user_at_base_setup_origin}" \""rsync -n -r -v -L ${setup_location}/input/ ${base_dir}/input/ | head -n -3 | tail -n +2 > include.txt"\"
+ssh -t "${user_at_base_setup_origin}" "rsync -n -r -v -L ${setup_location}/input/ ${base_dir}/input/ | head -n -3 | tail -n +2 > include.txt"
 
 # copy only these different files and replace the symbolic links
 echo ssh -t "${user_at_base_setup_origin}" \"rsync -avz --files-from=include.txt ${setup_location}/input/ ${archive_dir}/input/\"

@@ -32,7 +32,8 @@ def modify_cclm_restart_file(  work_directory_root, # /path/to/work/directory fo
         print(' Error: ' + nc_file + ' does not exist. Abort.')
         exit()
         
-    os.system("cp --remove-destination `readlink " + nc_file + "` " + nc_file)
+    os.system("cp --remove-destination `realpath " + nc_file + "` " + nc_file)
+    os.system("chmod u+w " + nc_file)
 
     print(' reading in restart file ' + nc_file)
     nc = netCDF4.Dataset(nc_file, 'r+')

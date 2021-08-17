@@ -44,10 +44,19 @@ else
 	# everything after the colon: /path/to/IOW_ESM
 	setup_origin_folder="${setup_origin#*:}"
 	
-	echo ssh -t "${user_at_setup_origin}" \"rsync -r -i -u ${setup_origin_folder}/ ${dest}/.\"
-	ssh -t "${user_at_setup_origin}" "rsync -r -i -u ${setup_origin_folder}/ ${dest}/."
+	if [ "${user_at_setup_origin}" != "${user_at_dest}" ]; then
+		# if setup is located on different machine we have to copy the files (by resolving the symbolic links and preserving timestamps)
+		echo ssh -t "${user_at_setup_origin}" \"rsync -r -i -u -t -L ${setup_origin_folder}/ ${dest}/.\"
+		ssh -t "${user_at_setup_origin}" "rsync -r -i -u -t -L ${setup_origin_folder}/ ${dest}/."
+		
+	else
+		# if setup is located on the machine we can use symbolic links
+		echo ssh -t "${user_at_setup_origin}" \"cp -as ${setup_origin_folder}/* ${dest_folder}/.\"
+		ssh -t "${user_at_setup_origin}" "cp -as ${setup_origin_folder}/* ${dest_folder}/."
+	fi
+	
+	# some preparation scripts require write premissions
+	echo ssh -t "${user_at_dest}" \"chmod u+w -R ${dest_folder}\"
+	ssh -t "${user_at_dest}" "chmod u+w -R ${dest_folder}"
 fi
 
-# some preparation scripts require write premissions
-echo ssh -t "${user_at_dest}" \"chmod u+w -R ${dest_folder}\"
-ssh -t "${user_at_dest}" "chmod u+w -R ${dest_folder}"
