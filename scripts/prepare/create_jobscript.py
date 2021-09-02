@@ -25,7 +25,10 @@ exec(open(IOW_ESM_ROOT+'/scripts/prepare/get_parallelization_layout.py').read(),
 parallelization_layout = get_parallelization_layout(IOW_ESM_ROOT)
 
 # copy template file
-shutil.copyfile(IOW_ESM_ROOT+'/'+jobscript_template,IOW_ESM_ROOT+'/scripts/run/jobscript')
+file_name = IOW_ESM_ROOT+'/scripts/run/jobscript'
+if os.path.islink(file_name):
+    os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
+shutil.copyfile(IOW_ESM_ROOT+'/'+jobscript_template, file_name)
 
 # replace the wildcards
 #read input file

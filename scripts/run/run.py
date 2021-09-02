@@ -153,7 +153,10 @@ for run in range(runs_per_job):
         model_threads = parallelization_layout['model_threads']
         model_executable = parallelization_layout['model_executable']
         for i,model in enumerate(models):
-            shellscript = open('run_'+model+'.sh', 'w')
+            file_name = 'run_'+model+'.sh'
+            if os.path.islink(file_name):
+                os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
+            shellscript = open(file_name, 'w')
             shellscript.writelines('#!/bin/bash\n')
             if (local_workdir_base==''):
                 shellscript.writelines('cd '+work_directory_root+'/'+model+'\n')
@@ -172,11 +175,14 @@ for run in range(runs_per_job):
             shellscript.writelines(bash_get_rank+'\n') # e.g. "my_id=${PMI_RANK}"
             shellscript.writelines('exec ./' + model_executable[i] + ' > logfile_${my_id}.txt 2>&1')
             shellscript.close()
-            st = os.stat('run_'+model+'.sh')                 # get current permissions
-            os.chmod('run_'+model+'.sh', st.st_mode | 0o777) # add a+rwx permission
+            st = os.stat(file_name)                 # get current permissions
+            os.chmod(file_name, st.st_mode | 0o777) # add a+rwx permission
         
         # WRITE mpirun APPLICATION FILE FOR THE MPMD JOB (specify how many tasks of which model are started)
-        mpmd_file = open('mpmd_file', 'w')
+        file_name = 'mpmd_file'
+        if os.path.islink(file_name):
+            os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
+        mpmd_file = open(file_name, 'w')
         for i,model in enumerate(models):
             mpmd_file.writelines(mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
         mpmd_file.close() 
@@ -223,15 +229,18 @@ for run in range(runs_per_job):
 
         else:
             # DO THE LOCAL POSTPROCESSING STEP 1: POSSIBLY COPY LOCAL WORKDIRS TO THE GLOBAL ONE AND CHECK WHETHER THE JOB FAILED
-            shellscript = open('run_after1.sh', 'w')
+            file_name = 'run_after1.sh'
+            if os.path.islink(file_name):
+                os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
+            shellscript = open(file_name, 'w')
             shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+local_workdir_base+'\n')
             shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+work_directory_root+'\n')
             shellscript.writelines('export IOW_ESM_END_DATE='+str(end_date)+'\n')
             shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
             shellscript.writelines('python3 mpi_task_after1.py')
             shellscript.close()
-            st = os.stat('run_after1.sh')                 # get current permissions
-            os.chmod('run_after1.sh', st.st_mode | 0o777) # add a+rwx permission
+            st = os.stat(file_name)                 # get current permissions
+            os.chmod(file_name, st.st_mode | 0o777) # add a+rwx permission
 
             mpmd_file = open('mpmd_file', 'w')
             mpmd_file.writelines(mpi_n_flag+' '+str(parallelization_layout['total_threads'])+' ./run_after1.sh\n')
@@ -260,14 +269,17 @@ for run in range(runs_per_job):
 
     # MOVE OUTPUT AND RESTARTS TO THE CORRESPONDING FOLDERS
     if ((local_workdir_base!='') & (copy_to_global_workdir==False)): # move files directly from local workdirs
-        shellscript = open('run_after2.sh', 'w')
+        file_name = 'run_after2.sh'
+        if os.path.islink(file_name):
+            os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
+        shellscript = open(file_name, 'w')
         shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+local_workdir_base+'\n')
         shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
         shellscript.writelines('export IOW_ESM_END_DATE='+str(end_date)+'\n')
         shellscript.writelines('python3 mpi_task_after2.py')
         shellscript.close()
-        st = os.stat('run_after2.sh')                 # get current permissions
-        os.chmod('run_after2.sh', st.st_mode | 0o777) # add a+rwx permission
+        st = os.stat(file_name)                 # get current permissions
+        os.chmod(file_name, st.st_mode | 0o777) # add a+rwx permission
 
         mpmd_file = open('mpmd_file', 'w')
         mpmd_file.writelines(mpi_n_flag+' '+str(parallelization_layout['total_threads'])+' ./run_after2.sh\n')
