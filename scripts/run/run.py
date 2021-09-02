@@ -316,3 +316,9 @@ for run in range(runs_per_job):
 # STEP 3: JOB SUCCESSFULLY FINISHED - SUBMIT NEW JOB UNLESS FINAL DATE HAS BEEN REACHED #
 #########################################################################################
 
+if int(start_date) < int(final_date):
+    print('IOW_ESM job did not reach the final date ' +final_date + '. Resubmit a new job.')
+    try:
+        os.system("cd " + IOW_ESM_ROOT + "/scripts/run; " + resubmit_command)
+    except:
+        print('No command for resubmitting specified in global_settings.py. Abort.')
