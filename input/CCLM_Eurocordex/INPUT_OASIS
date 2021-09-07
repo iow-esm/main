@@ -1,6 +1,0 @@
- &OASISCTL
-  ytype_lsm = 'terra',
-  ytype_oce = 'momBS',
-  CPL_FLG  = 1 
-  debug_oasis = 0,
- /END
