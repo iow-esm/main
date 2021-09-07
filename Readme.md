@@ -58,23 +58,26 @@ However, there is an example `DESTINATIONS.example`, please have a look.
 You see that each line consists of two elements.
 The first is the *keyword for the target*. This keyword has to match one of the following
 
-* `hlrnb`
 * `hlrng`
+* `hlrnb`
 * `haumea`
 * `phy-2`
 
 where 
 
-* `hlrnb` refers to the HLRN IV cluster located in Berlin
 * `hlrng` refers to the HLRN IV cluster located in Göttingen
+* `hlrnb` refers to the HLRN IV cluster located in Berlin
 * `haumea` is the cluster of the of the Rostock University
 * `phy-2` is one of the IOW's physics department computing servers (**ATTENTION: currently the model is not running here**)
 
 At the moment there are running build scripts only for these targets. 
 If you want to add more, it will be explained later how this can be done.
+
 The second element in a line of `DESTINATIONS.example` corresponds to the *root directory on the target*, the path, where the whole model will be deployed, built and run.
 If the path on the target does not exist, it will be created.
 Be sure that you have write permissions.
+Importantly, the location _must_ have the following format `user@host:/path/to/rootdirectory`.
+Both user and host name are use in the script and cannot be omitted although you might have some shortcuts and aliases for your accounts.
 **Now it is up to you, to create your own file `DESTINATIONS` in your local root directory, but do not commit it!**
 Note that there is also the possibility to give more advanced keywords to run several instances on the same target, see [Advanced destination keywords](#advanced-destination-keywords)
 
@@ -87,12 +90,12 @@ Therefore, you should use the `build.sh` script in the root directory.
 If you want to build the model e.g. on the HLRN cluster located in Berlin, you can run, e.g.
 
 ``` bash
-./build.sh hlrnb
+./build.sh hlrng
 ``` 
 
-This will build the model on `hlrnb` in release mode.
+This will build the model on `hlrng` in release mode.
 Note that we will stick to this specific target throughout this Readme.
-Nevertheless, if you want to work with another target for your first tests, just replace `hlrnb` with another valid keyword.
+Nevertheless, if you want to work with another target for your first tests, just replace `hlrng` with another valid keyword.
 Note that the first argument is non-optional, whereas there are two others which can be omitted, 
 see [Build single components in a different modes and configurations](#build-single-components-in-a-different-modes-and-configurations).
 
@@ -123,9 +126,14 @@ Be sure that the remote computer knows your targets and can copy files to them.
 
 #### Available setups
 
-**TODO:** Put a path here to an existing example setup for testing.
+##### HLRN in Göttingen
+You can find an example setup for a MOM5 for the Baltic sea coupled to a CCLM model for the Eurocordex domain under `/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example`.
+The corresponding line in the `SETUPS` file could then look like
+`example user@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example`,
+where `user` should be replaced by your user name on the HLRN in Göttingen.
+It might be also necessary to add the full domain to the hostname, depending on your ssh configuration.
+
 **TODO:** Explain strucutre of the setup folder (= root directoy)
-**TODO:** Give an example for a line in the `SETUPS` file with keyword `testing`.
 
 
 #### Copy setup files to target
@@ -133,7 +141,7 @@ Be sure that the remote computer knows your targets and can copy files to them.
 After creating the file `SETUPS` you can run in the root directory
 
 ``` bash
-./deploy_setup.sh hlrnb testing
+./deploy_setup.sh hlrng example
 ``` 
 
 
@@ -142,7 +150,7 @@ After creating the file `SETUPS` you can run in the root directory
 If everything is set up on your remote computer of choice, you can run the model for the first time by executing this in the root directory:
 
 ``` bash
-./run.sh hlrnb prepare-before-run
+./run.sh hlrng prepare-before-run
 ``` 
 
 The first argument of the run script is always the target keyword as specified in your `DESTINATIONS` file.
@@ -163,7 +171,7 @@ the model is started on the target.
 ### Advanced destination keywords
 
 It is possible to use not only the destination keywords given in [Configure your destinations (targets)](#configure-your-destinations-(targets)).
-You can also use something like e.g. `hlrnb_XXX` and `hlrnb_YYY` if you want to run two independent instances on the target `hlrnb`.
+You can also use something like e.g. `hlrng_XXX` and `hlrng_YYY` if you want to run two independent instances on the target `hlrng`.
 However, the string before the *first* underscore *must* be one of the keywords given above.
 
 ### Building during development
@@ -176,10 +184,10 @@ There are also build scripts in each components subdirectory which can be called
 
 ``` bash
 cd components/flux_calculator
-./build.sh hlrnb debug rebuild 
+./build.sh hlrng debug rebuild 
 ``` 
 
-This would rebuild the flux_calculator on the `hlrnb` in debug mode.
+This would rebuild the flux_calculator on the `hlrng` in debug mode.
 The defaults for the second and third argument are `release` and `fast` (which is the opposite of `rebuild`).
 The same applies likewise to the other components.
 
@@ -189,11 +197,11 @@ The same applies likewise to the other components.
 Once you execute a build command, e.g. 
 
 ``` bash
-./build.sh hlrnb
+./build.sh hlrng
 ``` 
 
-a file `LAST_BUILD_hlrnb_release` is created, 
-where the strings `hlrnb` and `release` depend on the arguments, you give to the build script.
+a file `LAST_BUILD_hlrng_release` is created, 
+where the strings `hlrng` and `release` depend on the arguments, you give to the build script.
 This file contains information on the state the source code of the components is in.
 In particular, it contains the unique commit ID, the build mode (fast/rebuild) and a time stamp of the build.
 Moreover, if the source code exhibits uncommited changes when the build script was executed,
@@ -220,17 +228,17 @@ e.g. by adding the line `update ./local_setup`.
 Then you can run the model by calling
 
 ``` bash
-./run.sh hlrnb update
+./run.sh hlrng update
 ```
 
-This will start the model on the `hlrnb` but beforehand it will synchronize the contents of the `./local_setup` to the destination.
+This will start the model on the `hlrng` but beforehand it will synchronize the contents of the `./local_setup` to the destination.
 Moreover, in `./local_setup` there is file `UPDATE_SETUP_INFO` created, which is also transferred to the target 
 and contains information and time stamp of the updating.
 
 In general the run script can be called like
 
 ``` bash
-./run.sh hlrnb [prepare-before-run] update1 update2 update3...
+./run.sh hlrng [prepare-before-run] update1 update2 update3...
 ```
 
 where `prepare-before-run` is optional and can be omitted, which is usually the case if it is not the very first run on a target.
@@ -243,18 +251,18 @@ The setup updates are transferred in the order they appear, where the last one c
 
 ### Archiving the employed setup
 
-Imagine you have started your development on `hlrnb` from the setup with the keyword `testing`, this can be viewed as the base of your current setup.
+Imagine you have started your development on `hlrng` from the setup with the keyword `testing`, this can be viewed as the base of your current setup.
 Now you made changes to some input files and you want to conserve the current state.
 This can be done by using the script
 
 ``` bash
-./archive_setup.sh hlrnb testing archive
+./archive_setup.sh hlrng testing archive
 ```
 
 First, this would produce a copy of the base setup corresponding to the keyword `testing` in the very same destination (you need write permissions there).
 The new folder has the same name as `testing` supplemented by `_archive` and it contains only symbolic links to the base setup.
-Second, it is checked where the base setup and the one residing on the `hlrnb` differ.
-Third, only files that are different will be updated from the `hlrnb` and put into the created archive folder.
+Second, it is checked where the base setup and the one residing on the `hlrng` differ.
+Third, only files that are different will be updated from the `hlrng` and put into the created archive folder.
 If you want to create your archive in a different directory then your base, you can specifiy a keyword and the corresponding destination in the `SETUPS` file.
 You can then call the setup archiving script with that keyword as the third argument.
 Note that the base setup and the archive must be available via the same machine since we are using symbolic links here. 
@@ -283,6 +291,6 @@ For the example this must be called `start_build_new-target.sh`.
 In general the name has to be `start_build_` followed by the keyword and `.sh`.
 On some targets the build is performed using the queuing system on others it can be performed on directly the login node.
 Find out which is true for your new target.
-The existing `start_build_haumea.sh` is an example for using the queue, whereas `start_build_hlrnb.sh` is an example for direct compilation on the login node.
+The existing `start_build_haumea.sh` is an example for using the queue, whereas `start_build_hlrng.sh` is an example for direct compilation on the login node.
 
 ### Add new models
