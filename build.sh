@@ -41,6 +41,35 @@ done
 
 echo ""
 echo "###############################################"
+echo "##               Building tools              ##"
+echo "###############################################"
+echo ""
+
+tools=(
+	"I2LM"
+)
+	
+for c in "${tools[@]}"; do
+	if [ -d tools/"$c" ]; then
+		echo "## Tools: $c"
+		echo "###############################################"
+		echo ""
+		cd tools/"$c"
+		./build.sh "$target" "$debug" "$fast"
+		cd -
+		echo ""
+		echo ""
+	else
+		echo "## Skipping tools/$c."
+		echo "## $c will not be built."
+		echo "###############################################"
+		echo ""
+		echo ""
+	fi
+done
+
+echo ""
+echo "###############################################"
 echo "##               Building done               ##"
 echo "###############################################"
 echo ""
