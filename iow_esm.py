@@ -10,5 +10,6 @@ exec(open('./gui/gui.py').read(),globals())
 while True:
     gui = IowEsmGui()
     gui.window.mainloop()
+    
     if not gui.restart:
         break

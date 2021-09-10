@@ -60,3 +60,5 @@ else
 	ssh -t "${user_at_dest}" "chmod u+w -R ${dest_folder}"
 fi
 
+last_deploy_name="./LAST_DEPLOYED_SETUPS_${target_keyword}"
+echo "${setup_origin} ${dest}" >> ${last_deploy_name}

@@ -1,6 +1,7 @@
 components/
 DESTINATIONS
 LAST_BUILD*
+LAST_DEPLOYED_SETUPS*
 SETUPS
 local_setup*/
 tools/
