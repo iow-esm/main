@@ -22,7 +22,6 @@ Your local machine has to provide:
 If you work on Windows, you can use e.g. `Git for Windows` which already provides these prerequisites.
 If you work on Linux you will most probably have a `bash` and you can install `git` with the package manager of your distribution.
 
-
 #### Remote
 
 You need accounts on the target servers, where you want to run the model.
@@ -30,6 +29,19 @@ You need accounts on the target servers, where you want to run the model.
 Note that it is strongly recommended to use a key agent for your account on the target server.
 Otherwise you will have to type in your account password very often.
 
+
+### Get the main project
+
+``` bash
+cd /to/your/favorite/directory
+git clone https://git.io-warnemuende.de/karsten/main.git .
+```
+
+Make all bash scripts executable
+
+``` bash
+find . -name "*.sh" -exec chmod u+x {} \;
+```
 
 ### Get the component sources
 
