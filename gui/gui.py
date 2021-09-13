@@ -74,7 +74,9 @@ class IowEsmFunctions:
             return False
         
         for setup in self.gui.current_setups:
-            self.gui.print("./deploy_setups.sh " + self.gui.current_destination + " " + setup)
+            cmd = "./deploy_setups.sh " + self.gui.current_destination + " " + setup
+            self.gui.print(cmd)
+            os.system(cmd)
             
     def deploy_setups_first_time(self):
         self.deploy_setups()
@@ -90,6 +92,7 @@ class IowEsmFunctions:
             cmd = cmd + " " + setup
             
         self.gui.print(cmd)
+        os.system(cmd)
         
     def store_file_from_tk_text(self, file_name, tk_text):
         content = tk_text.get("1.0", tk.END)
@@ -100,8 +103,9 @@ class IowEsmFunctions:
         self.gui.refresh()
         
 class FunctionButton(tk.Button):
-    def __init__(self, text, command):
+    def __init__(self, text, command, master=None):
         tk.Button.__init__(self,
+            master=master,
             text=text,
             bg="blue",
             fg="yellow",
@@ -109,8 +113,9 @@ class FunctionButton(tk.Button):
         )
         
 class SetButton(tk.Button):
-    def __init__(self, text, command):
+    def __init__(self, text, command, master=None):
         tk.Button.__init__(self,
+            master=master,
             text=text,
             command=command   
         )
@@ -134,6 +139,7 @@ class IowEsmGui:
         self.entries = {}
         self.buttons = {}
         self.texts = {}
+        self.frames = {}
         
         self.restart = False
         
@@ -158,7 +164,8 @@ class IowEsmGui:
         self.current_build_conf = "release fast"
         
         if not self._check_last_build():
-            self._build_window_first_build()
+            self._build_frame_destinations()
+            self._build_frame_build(True)
             return
         
         self.current_setups = []
@@ -168,7 +175,8 @@ class IowEsmGui:
             return
         
         if not self._check_last_deployed_setups():
-            self._build_window_first_deploy()
+            self._build_frame_destinations()
+            self._build_frame_setups(True)
             return
         
         self._build_window()
@@ -270,67 +278,111 @@ class IowEsmGui:
         
         self.texts["monitor"].pack()
         
-    def _build_window_first_build(self):
-        self.labels["destinations"] = tk.Label(text="Destinations")
-        self.labels["destinations"].pack()
+    def _build_frame_destinations(self):
+        
+        # create destinations frame
+        self.frames["destinations"] = tk.Frame(master=self.window)
+        
+        # create objects of the frame
+        self.labels["destinations"] = tk.Label(master=self.frames["destinations"], text="Destinations")
         
         for dst in self.destinations.keys():
-            self.buttons["set_" + dst] = SetButton(dst, partial(self.functions.set_destination, dst))
-            self.buttons["set_" + dst].pack()
-           
-        self.labels["current_dst"] = tk.Label(text="Current destination")
-        self.labels["current_dst"].pack()
-        
-        self.entries["current_dst"] = tk.Entry()
-        self.entries["current_dst"].pack()
+            self.buttons["set_" + dst] = SetButton(dst, partial(self.functions.set_destination, dst), master=self.frames["destinations"])
             
-        self.labels["build"] = tk.Label(text="Build")
-        self.labels["build"].pack()
+        self.labels["current_dst"] = tk.Label(text="Current destination", master=self.frames["destinations"])
+        self.entries["current_dst"] = tk.Entry(master=self.frames["destinations"])
         
-        self.buttons["build_all"] = FunctionButton("Build all", self.functions.build_origins_first_time)
-        self.buttons["build_all"].pack()
+        # pack everything on a grid
+        columnspan = len(self.destinations)
+        self.labels["destinations"].grid(row=0, columnspan=columnspan)
         
-        self.texts["monitor"].pack()
+        for c, dst in enumerate(self.destinations.keys()):
+            self.buttons["set_" + dst].grid(row=1, column=c)
+            
+        self.labels["current_dst"].grid(row=3, columnspan=columnspan)
+        self.entries["current_dst"].grid(row=4, columnspan=columnspan)
         
-    def _build_window_first_deploy(self):
-        self.labels["setups"] = tk.Label(text="Setups")
-        self.labels["setups"].pack()
+        # pack the frame
+        self.frames["destinations"].pack(padx='5', pady='5')
         
+        
+    def _build_frame_build(self, first_time):
+        
+        # create build frame
+        self.frames["build"] = tk.Frame(master=self.window)
+        
+        # label
+        self.labels["build"] = tk.Label(master=self.frames["build"], text="Build")
+        
+        if first_time:
+            self.buttons["build_all"] = FunctionButton("Build all", self.functions.build_origins_first_time, master=self.frames["build"])
+
+        else:
+            self.buttons["build_all"] = FunctionButton("Build all", self.functions.build_origins, master=self.frames["build"])
+        
+            for ori in self.origins:
+                ori_short = ori.split("/")[-1]
+                self.buttons["build_" + ori_short] = FunctionButton(ori_short, partial(self.functions.build_origin, ori), master=self.frames["build"])
+            
+        # put everything on a grid
+        columnspan = len(self.origins)
+        self.labels["build"].grid(row=0, columnspan=columnspan)
+        self.buttons["build_all"].grid(row=1, columnspan=columnspan)
+        
+        if not first_time:
+            for c, ori in enumerate(self.origins):
+                ori_short = ori.split("/")[-1]
+                self.buttons["build_" + ori_short].grid(row=2, column=c)
+        
+        self.frames["build"].pack(padx='5', pady='5')        
+        
+        if first_time:
+            self.texts["monitor"].pack()
+        
+        
+    def _build_frame_setups(self, first_time):
+        
+        # create build frame
+        self.frames["setups"] = tk.Frame(master=self.window)
+        
+        # title label
+        self.labels["setups"] = tk.Label(master=self.frames["setups"], text="Setups")
+
         for setup in self.setups.keys():
-            self.buttons["set_" + setup] = SetButton(setup, partial(self.functions.set_setup, setup))
-            self.buttons["set_" + setup].pack()
+            self.buttons["set_" + setup] = SetButton(setup, partial(self.functions.set_setup, setup), master=self.frames["setups"])
             
-        self.labels["current_setups"] = tk.Label(text="Current setups")
-        self.labels["current_setups"].pack()
+        self.labels["current_setups"] = tk.Label(text="Current setups", master=self.frames["setups"])
+        self.entries["current_setups"] = tk.Entry(master=self.frames["setups"])        
+        self.buttons["clear_setups"] = FunctionButton("Clear setups", self.functions.clear_setups, master=self.frames["setups"])
+        
+        if first_time:
+            self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups_first_time, master=self.frames["setups"])
+        else:
+            self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups, master=self.frames["setups"])
             
-        self.entries["current_setups"] = tk.Entry()
-        self.entries["current_setups"].pack()
+        # put everything on a grid
+        columnspan = len(self.setups)
+
+        self.labels["setups"].grid(row=0, columnspan=columnspan)
         
-        self.buttons["clear_setups"] = FunctionButton("Clear setups", self.functions.clear_setups)
-        self.buttons["clear_setups"].pack()
+        for c, setup in enumerate(self.setups.keys()):
+            self.buttons["set_" + setup].grid(row=1, column=c)
+            
+        self.labels["current_setups"].grid(row=2, columnspan=columnspan)
+        self.entries["current_setups"].grid(row=3, columnspan=columnspan)
+        self.buttons["clear_setups"].grid(row=4, columnspan=columnspan)
+        self.buttons["deploy_setups"].grid(row=5, columnspan=columnspan)
         
-        self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups_first_time)
-        self.buttons["deploy_setups"].pack()
+        self.frames["setups"].pack(padx='5', pady='5')
+        
+        if first_time:
+            self.texts["monitor"].pack()
         
     def _build_window(self):
-        self._build_window_first_build()
         
-        self.texts["monitor"].pack_forget()
-        
-        self.buttons["build_all"].pack_forget()
-        self.buttons["build_all"] = FunctionButton("Build all", self.functions.build_origins)
-        self.buttons["build_all"].pack()
-        
-        for ori in self.origins:
-            ori_short = ori.split("/")[-1]
-            self.buttons["build_" + ori_short] = FunctionButton(ori_short, partial(self.functions.build_origin, ori))
-            self.buttons["build_" + ori_short].pack()
-            
-        self._build_window_first_deploy()
-        
-        self.buttons["deploy_setups"].pack_forget()
-        self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups)
-        self.buttons["deploy_setups"].pack()
+        self._build_frame_destinations()
+        self._build_frame_build(False)
+        self._build_frame_setups(False)
         
         self.labels["run"] = tk.Label(text="Run the model")
         self.labels["run"].pack()
