@@ -73,6 +73,27 @@ class IowEsmFunctions:
         self.gui.current_setups = []
         self.gui.entries["current_setups"].delete(0, tk.END)
         
+    def edit_setups(self):
+        newWindow = tk.Toplevel(self.gui.window)
+        self.gui._edit_file(root_dir + "/SETUPS", root_dir + "/SETUPS", master=newWindow)
+        
+    def edit_destinations(self):
+        newWindow = tk.Toplevel(self.gui.window)
+        self.gui._edit_file(root_dir + "/DESTINATIONS", root_dir + "/DESTINATIONS", master=newWindow)
+        
+    def archive_setup(self):
+        if self.gui.current_destination == "":
+            self.gui.print("No destination is set.")
+            return False
+        
+        if len(self.gui.current_setups) > 1:
+            self.gui.print("More than one setup is selected. Take the last one as base.")
+
+        archive = self.gui.entries["archive_setup"].get()
+        cmd = "./archive_setups.sh " + self.gui.current_destination + " " + self.gui.current_setups[-1] + " " + archive
+        self.gui.print(cmd)
+        #os.system(cmd)
+            
     def deploy_setups(self):
         if self.gui.current_destination == "":
             self.gui.print("No destination is set.")
@@ -184,6 +205,7 @@ class IowEsmGui:
             cmd = "find . -name \"*.sh\" -exec chmod u+x {} \\;"
             os.system(cmd)
             self._build_window_clone_origins()
+            self.texts["monitor"].pack()
             return
         
         if not self._check_destinations():
@@ -196,6 +218,7 @@ class IowEsmGui:
         if not self._check_last_build():
             self._build_frame_destinations()
             self._build_frame_build(True)
+            self.texts["monitor"].pack()
             return
         
         self.current_setups = []
@@ -207,6 +230,7 @@ class IowEsmGui:
         if not self._check_last_deployed_setups():
             self._build_frame_destinations()
             self._build_frame_setups(True)
+            self.texts["monitor"].pack()
             return
         
         self._build_window()
@@ -261,20 +285,23 @@ class IowEsmGui:
     def _check_last_deployed_setups(self):
         return glob.glob(root_dir + "/LAST_DEPLOYED_SETUPS*") != []
         
-    def _edit_file(self, src_name, dst_name=""):
+    def _edit_file(self, src_name, dst_name="", master=None):
         
         if dst_name == "":
             dst_name = src_name
+            
+        if master == None:
+            master=self.window
             
         with open(src_name, 'r') as file:
             src_content = file.read()
         file.close()
         
-        self.texts["edit_" + dst_name] = tk.Text()
+        self.texts["edit_" + dst_name] = tk.Text(master=master)
         self.texts["edit_" + dst_name].insert(tk.END, src_content)
         self.texts["edit_" + dst_name].pack()
         
-        self.buttons["store_" + dst_name] = FunctionButton("Store " + dst_name, partial(self.functions.store_file_from_tk_text, dst_name, self.texts["edit_" + dst_name]))
+        self.buttons["store_" + dst_name] = FunctionButton("Store " + dst_name, partial(self.functions.store_file_from_tk_text, dst_name, self.texts["edit_" + dst_name]), master=master)
         self.buttons["store_" + dst_name].pack()
         
     def _build_window_clone_origins(self):
@@ -292,8 +319,6 @@ class IowEsmGui:
         
         self.frames["clone_origins"].pack()
         
-        self.texts["monitor"].pack()
-        
     def _build_window_edit_destinations(self):
         
         self.frames["edit_destinations"] = Frame(master=self.window)
@@ -309,8 +334,6 @@ class IowEsmGui:
         self.frames["edit_destinations"].pack()
         
         self._edit_file(root_dir + "/DESTINATIONS.example", root_dir + "/DESTINATIONS")
-        
-        self.texts["monitor"].pack()
         
     def _build_window_edit_setups(self):
         
@@ -328,8 +351,6 @@ class IowEsmGui:
         
         self._edit_file(root_dir + "/SETUPS.example", root_dir + "/SETUPS")
         
-        self.texts["monitor"].pack()
-        
     def _build_frame_destinations(self):
         
         # create destinations frame
@@ -340,7 +361,9 @@ class IowEsmGui:
         
         for dst in self.destinations.keys():
             self.buttons["set_" + dst] = SetButton(dst, partial(self.functions.set_destination, dst), master=self.frames["destinations"])
-            
+        
+        self.buttons["edit_destinations"] = FunctionButton("Edit", self.functions.edit_destinations, master=self.frames["destinations"])
+        
         self.labels["current_dst"] = tk.Label(text="Current destination:", master=self.frames["destinations"], bg = IowColors.blue1, fg = 'white')
         self.entries["current_dst"] = tk.Entry(master=self.frames["destinations"])
         
@@ -350,6 +373,8 @@ class IowEsmGui:
             columnspan = len(self.destinations) 
         else:
             columnspan = max_buttons_in_row
+            
+        columnspan += 1
         
         row = 0
         self.labels["destinations"].grid(row=0, columnspan=columnspan)
@@ -360,6 +385,8 @@ class IowEsmGui:
                 row += 1
             self.buttons["set_" + dst].grid(row=row, column=(c % max_buttons_in_row))
            
+        self.buttons["edit_destinations"].grid(row=row, column=columnspan-1)
+        
         row += 1
         self.labels["current_dst"].grid(row=row, columnspan=columnspan)
         
@@ -422,35 +449,61 @@ class IowEsmGui:
         for setup in self.setups.keys():
             self.buttons["set_" + setup] = SetButton(setup, partial(self.functions.set_setup, setup), master=self.frames["setups"])
             
+        self.buttons["edit_setups"] = FunctionButton("Edit", self.functions.edit_setups, master=self.frames["setups"])
+        
         self.labels["current_setups"] = tk.Label(text="Current setups:", master=self.frames["setups"], bg = IowColors.blue1, fg = 'white')
-        self.entries["current_setups"] = tk.Entry(master=self.frames["setups"])        
-        self.buttons["clear_setups"] = FunctionButton("Clear setups", self.functions.clear_setups, master=self.frames["setups"])
+        self.entries["current_setups"] = tk.Entry(master=self.frames["setups"])     
+        
+        self.frames["setups_function_buttons"] = Frame(master=self.frames["setups"])
+        
+        self.frames["archive_setup"] = Frame(master=self.frames["setups"])
+        
+        self.buttons["clear_setups"] = FunctionButton("Clear setups", self.functions.clear_setups, self.frames["setups_function_buttons"] )
         
         if first_time:
-            self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups_first_time, master=self.frames["setups"])
+            self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups_first_time, self.frames["setups_function_buttons"] )
         else:
-            self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups, master=self.frames["setups"])
-            
+            self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups, self.frames["setups_function_buttons"])
+         
+        if not first_time:
+            self.entries["archive_setup"] = tk.Entry(master=self.frames["archive_setup"]) 
+            self.buttons["archive_setup"] = FunctionButton("Archive setup", self.functions.archive_setup, self.frames["archive_setup"] )
+        
         # put everything on a grid
-        columnspan = len(self.setups)
+        columnspan = len(self.setups) + 1
 
         self.labels["setups"].grid(row=0, columnspan=columnspan)
         
         for c, setup in enumerate(self.setups.keys()):
             self.buttons["set_" + setup].grid(row=1, column=c)
             
+        self.buttons["edit_setups"].grid(row=1, column=columnspan-1)
+            
         self.labels["current_setups"].grid(row=2, columnspan=columnspan)
         self.entries["current_setups"].grid(row=3, columnspan=columnspan)
-        self.buttons["clear_setups"].grid(row=4, columnspan=columnspan)
-        self.buttons["deploy_setups"].grid(row=5, columnspan=columnspan)
         
-        blank = tk.Label(text="", master=self.frames["setups"], bg = IowColors.blue1)
-        blank.grid(row=6, columnspan=columnspan)
+        self.buttons["clear_setups"].grid(row=0, column=0)
+        self.buttons["deploy_setups"].grid(row=0, column=1)
+        blank = tk.Label(text="", master=self.frames["setups_function_buttons"], bg = IowColors.blue1)
+        blank.grid(row=1, columnspan=2)
+        
+        self.frames["setups_function_buttons"].grid(row=4, rowspan=2, columnspan=columnspan)
+        
+        if not first_time:
+            blank = tk.Label(text="", master=self.frames["archive_setup"], bg = IowColors.blue1)
+            blank.grid(row=0, columnspan=3)
+            
+            self.entries["archive_setup"].grid(row=1, column=0)
+            blank = tk.Label(text="  ", master=self.frames["archive_setup"], bg = IowColors.blue1)
+            blank.grid(row=1, column=1)
+            self.buttons["archive_setup"].grid(row=1, column=2)
+            
+            blank = tk.Label(text="  ", master=self.frames["archive_setup"], bg = IowColors.blue1)
+            blank.grid(row=2, columnspan=3)
+        
+            self.frames["archive_setup"].grid(row=5, rowspan=3, columnspan=columnspan)
         
         self.frames["setups"].pack(padx='5', pady='5')
-        
-        if first_time:
-            self.texts["monitor"].pack()
             
     def _build_frame_run(self):
         
