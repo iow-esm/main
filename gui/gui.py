@@ -9,6 +9,7 @@ import tkinter as tk
 import os
 import glob
 from functools import partial
+import subprocess
 
 root_dir = "."
 
@@ -68,6 +69,34 @@ class IowEsmFunctions:
             self.gui.entries["current_setups"].insert(tk.END, self.gui.current_setups[-1])
         else:
             self.gui.entries["current_setups"].insert(tk.END, ", " + self.gui.current_setups[-1])
+        
+    def get_setups_info(self):
+        for setup in self.gui.current_setups:
+            file_content = ""
+            
+            if ":" in self.gui.setups[setup]: 
+                user_at_host, path = self.gui.setups[setup].split(":")
+                cmd = "ssh " + user_at_host + " \"if [ -f " + path +  "/SETUP_INFO ]; then cat " + path + "/SETUP_INFO; fi\""
+                self.gui.print(cmd)
+                sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+                file_content = sp.stdout.read()
+                
+            else:
+                file_name = self.gui.setups[setup] +  "/SETUP_INFO"
+                try:
+                    with open(file_name, 'r') as file:
+                        file_content = file.read()
+                    file.close()
+                except Exception as e:
+                    self.gui.print(e)
+                    
+            if file_content != "":
+                newWindow = tk.Toplevel(self.gui.window)
+                label = tk.Label(master=newWindow, text="Info: " + setup + " (" + self.gui.setups[setup] + ")")
+                label.pack()
+                text = tk.Text(master=newWindow)
+                text.insert(tk.END, file_content)
+                text.pack()
         
     def clear_setups(self):
         self.gui.current_setups = []
@@ -458,6 +487,7 @@ class IowEsmGui:
         
         self.frames["archive_setup"] = Frame(master=self.frames["setups"])
         
+        self.buttons["get_setups_info"] = FunctionButton("Get setups info", self.functions.get_setups_info, self.frames["setups_function_buttons"] )
         self.buttons["clear_setups"] = FunctionButton("Clear setups", self.functions.clear_setups, self.frames["setups_function_buttons"] )
         
         if first_time:
@@ -482,12 +512,11 @@ class IowEsmGui:
         self.labels["current_setups"].grid(row=2, columnspan=columnspan)
         self.entries["current_setups"].grid(row=3, columnspan=columnspan)
         
-        self.buttons["clear_setups"].grid(row=0, column=0)
-        self.buttons["deploy_setups"].grid(row=0, column=1)
-        blank = tk.Label(text="", master=self.frames["setups_function_buttons"], bg = IowColors.blue1)
-        blank.grid(row=1, columnspan=2)
+        self.buttons["get_setups_info"].grid(row=0, column=0)
+        self.buttons["clear_setups"].grid(row=0, column=1)
+        self.buttons["deploy_setups"].grid(row=0, column=2)
         
-        self.frames["setups_function_buttons"].grid(row=4, rowspan=2, columnspan=columnspan)
+        self.frames["setups_function_buttons"].grid(row=4, rowspan=1, columnspan=columnspan)
         
         if not first_time:
             blank = tk.Label(text="", master=self.frames["archive_setup"], bg = IowColors.blue1)
@@ -501,7 +530,7 @@ class IowEsmGui:
             blank = tk.Label(text="  ", master=self.frames["archive_setup"], bg = IowColors.blue1)
             blank.grid(row=2, columnspan=3)
         
-            self.frames["archive_setup"].grid(row=5, rowspan=3, columnspan=columnspan)
+            self.frames["archive_setup"].grid(row=6, rowspan=3, columnspan=columnspan)
         
         self.frames["setups"].pack(padx='5', pady='5')
             
