@@ -5,241 +5,10 @@ Created on Thu Sep  9 10:26:50 2021
 @author: Sven
 """
 
-import tkinter as tk
-import os
-import glob
-from functools import partial
-import subprocess
-import json
+from iow_esm_globals import *
+from iow_esm_error_handler import *
+from iow_esm_functions import *
 
-root_dir = "."
-
-class IowColors:
-    blue1 = "#0a2b5a"
-    green1 = "#74e40d"
-    grey1 = "#4e584e"
-
-class IowEsmErrorHandler():
-    def __init__(self, gui):
-        self.gui = gui
-        
-        self.levels = {
-            "fatal" : 0,
-            "warning" : 1,
-            "info" : 2
-            }
-        
-        self.errors = {}
-        for level in self.levels.keys():
-            self.errors[level] = []
-            
-        self.log_file = root_dir + "/gui_error.log"
-        
-        self._read_log()
-    
-    def _read_log(self):
-        try:
-            with open(self.log_file, 'r') as file:
-                self.errors = json.load(file)
-            file.close()
-        except:
-            pass
-        
-    def _write_log(self):
-        with open(self.log_file, 'w') as file:
-            json.dump(self.errors, file)
-        file.close()
-        
-        
-    def report_error(self, level, info):
-        if level not in self.levels.keys():
-            self.gui.print(level + ", no such error level.")
-            return False
-        
-        self._read_log()
-        
-        self.errors[level].append(info)
-        self.gui.print(level + ": " + info)
-        
-        self._write_log()
-        return True
-        
-    def check_for_error(self, level, info=""):
-        self._read_log()
-        
-        if info == "":
-            return self.errors[level] != []
-        
-        return info in self.errors[level]
-        
-    def remove_from_log(self, level, info=""):
-        self._read_log()
-        
-        if info == "":
-            self.errors[level] = []
-        else:
-            self.errors[level] = list(filter(lambda a: a != info, self.errors[level]))
-            
-        self._write_log()
-        
-    def get_log(self):
-        return self.errors
-
-class IowEsmFunctions:
-    def __init__(self, gui):
-        self.gui = gui
-                
-    def clone_origins(self):
-        cmd = root_dir + "/clone_origins.sh"
-        self.gui.print(cmd)
-        os.system(cmd)
-        
-        for ori in read_iow_esm_configuration(root_dir + '/ORIGINS').keys():
-            if glob.glob(root_dir + "/" + ori + "/.git") == []:
-                self.gui.error_handler.report_error("fatal", "Not all origins could be cloned!")
-                self.gui.refresh()
-                return
-        
-        self.gui.error_handler.remove_from_log("fatal", "Not all origins could be cloned!")
-            
-        cmd = "find . -name \"*.*sh\" -exec chmod u+x {} \\;"
-        os.system(cmd)
-        
-        cmd = "find " + root_dir + "/components/MOM5/exp/ -name \"*\" -exec chmod u+x {} \\;"
-        os.system(cmd)
-        
-        cmd = "find " + root_dir + "/components/MOM5/bin/ -name \"*\" -exec chmod u+x {} \\;"
-        os.system(cmd)
-        
-        cmd = "find . -name \"configure\" -exec chmod u+x {} \\;"
-        os.system(cmd)
-        
-        self.gui.refresh()
-        
-    def set_destination(self, dst):
-        self.gui.current_destination = dst
-        
-        self.gui.entries["current_dst"].delete(0, tk.END)
-        self.gui.entries["current_dst"].insert(0, self.gui.current_destination)
-        
-        self.gui.print("Current destination is " + self.gui.current_destination)
-        
-    def build_origin(self, ori):
-        if self.gui.current_destination == "":
-            self.gui.print("No destination is set.")
-            return False
-        
-        cmd = "cd " + ori + "; ./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
-        self.gui.print(cmd)
-        os.system(cmd)
-        
-    def build_origins(self):
-        if self.gui.current_destination == "":
-            self.gui.print("No destination is set.")
-            return False
-        
-        cmd = "./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
-        self.gui.print(cmd)
-        os.system(cmd)
-        
-    def build_origins_first_time(self):
-        self.build_origins()
-        self.gui.refresh()
-        
-    def set_setup(self, setup):
-        self.gui.current_setups.append(setup)
-        if len(self.gui.current_setups) == 1:
-            self.gui.entries["current_setups"].insert(tk.END, self.gui.current_setups[-1])
-        else:
-            self.gui.entries["current_setups"].insert(tk.END, ", " + self.gui.current_setups[-1])
-        
-    def get_setups_info(self):
-        for setup in self.gui.current_setups:
-            file_content = ""
-            
-            if ":" in self.gui.setups[setup]: 
-                user_at_host, path = self.gui.setups[setup].split(":")
-                cmd = "ssh " + user_at_host + " \"if [ -f " + path +  "/SETUP_INFO ]; then cat " + path + "/SETUP_INFO; fi\""
-                self.gui.print(cmd)
-                sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-                file_content = sp.stdout.read()
-                
-            else:
-                file_name = self.gui.setups[setup] +  "/SETUP_INFO"
-                try:
-                    with open(file_name, 'r') as file:
-                        file_content = file.read()
-                    file.close()
-                except Exception as e:
-                    self.gui.print(e)
-                    
-            if file_content != "":
-                newWindow = tk.Toplevel(self.gui.window)
-                label = tk.Label(master=newWindow, text="Info: " + setup + " (" + self.gui.setups[setup] + ")")
-                label.pack()
-                text = tk.Text(master=newWindow)
-                text.insert(tk.END, file_content)
-                text.pack()
-        
-    def clear_setups(self):
-        self.gui.current_setups = []
-        self.gui.entries["current_setups"].delete(0, tk.END)
-        
-    def edit_setups(self):
-        newWindow = tk.Toplevel(self.gui.window)
-        self.gui._edit_file(root_dir + "/SETUPS", root_dir + "/SETUPS", master=newWindow)
-        
-    def edit_destinations(self):
-        newWindow = tk.Toplevel(self.gui.window)
-        self.gui._edit_file(root_dir + "/DESTINATIONS", root_dir + "/DESTINATIONS", master=newWindow)
-        
-    def archive_setup(self):
-        if self.gui.current_destination == "":
-            self.gui.print("No destination is set.")
-            return False
-        
-        if len(self.gui.current_setups) > 1:
-            self.gui.print("More than one setup is selected. Take the last one as base.")
-
-        archive = self.gui.entries["archive_setup"].get()
-        cmd = "./archive_setups.sh " + self.gui.current_destination + " " + self.gui.current_setups[-1] + " " + archive
-        self.gui.print(cmd)
-        os.system(cmd)
-            
-    def deploy_setups(self):
-        if self.gui.current_destination == "":
-            self.gui.print("No destination is set.")
-            return False
-        
-        for setup in self.gui.current_setups:
-            cmd = "./deploy_setups.sh " + self.gui.current_destination + " " + setup
-            self.gui.print(cmd)
-            os.system(cmd)
-            
-    def deploy_setups_first_time(self):
-        self.deploy_setups()
-        self.gui.refresh()
-            
-    def run(self):
-        if self.gui.current_destination == "":
-            self.gui.print("No destination is set.")
-            return False 
-        
-        cmd = root_dir + "/run.sh " + self.gui.current_destination
-        for setup in self.gui.current_setups:
-            cmd = cmd + " " + setup
-            
-        self.gui.print(cmd)
-        os.system(cmd)
-        
-    def store_file_from_tk_text(self, file_name, tk_text):
-        content = tk_text.get("1.0", tk.END)
-        with open(file_name, 'w') as file:
-            file.write(content)
-        file.close()
-        
-        self.gui.refresh()
-        
 class FunctionButton(tk.Button):
     def __init__(self, text, command, master=None):
         tk.Button.__init__(self,
@@ -276,19 +45,7 @@ class Frame(tk.Frame):
             master=master,
             bg = IowColors.blue1
         )
-    
-def read_iow_esm_configuration(file_name):
-    
-    config = {}
-    with open(file_name, "r") as f:
-        for line in f:
-            try:
-                (key, val) = line.split()
-                config[key] = val
-            except:
-                pass
-            
-    return config
+
 
 class IowEsmGui:
     def __init__(self):
@@ -306,7 +63,7 @@ class IowEsmGui:
         self.restart = False
         
         self.functions = IowEsmFunctions(self)
-        self.error_handler = IowEsmErrorHandler(self)
+        
         
         self.labels["greeting"] = tk.Label(text="Welcome to the IOW_ESM GUI!", bg = IowColors.blue1, fg = 'white')
         self.labels["greeting"].pack()
@@ -317,9 +74,11 @@ class IowEsmGui:
         
         self.texts["monitor"] = tk.Text()
         
+        self.error_handler = IowEsmErrorHandler(self)
+        
         self.print("Last error log:")
         self.print(self.error_handler.get_log())
-
+        
         if not self._check_origins() or self.error_handler.check_for_error("fatal", "Not all origins could be cloned!"):
 
             cmd = "find . -name \"*.sh\" -exec chmod u+x {} \\;"
@@ -352,6 +111,11 @@ class IowEsmGui:
             self._build_frame_setups(True)
             self.texts["monitor"].pack()
             return
+        
+        # everything is normal, remove old log
+        self.error_handler.remove_from_log("fatal")
+        self.error_handler.remove_from_log("warning")
+        self.error_handler.remove_from_log("info")
         
         self._build_window()
         

@@ -4,8 +4,9 @@ Created on Thu Sep  9 13:51:29 2021
 
 @author: Sven
 """
-
-exec(open('./gui/gui.py').read(),globals())
+import sys
+sys.path.append('./gui')
+from gui import *
 
 while True:
     gui = IowEsmGui()

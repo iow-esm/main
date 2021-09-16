@@ -6,3 +6,5 @@ SETUPS
 local_setup*/
 tools/
 input/
+gui/__pycache__/
+gui_error.log
