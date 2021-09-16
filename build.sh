@@ -2,6 +2,8 @@ target=$1
 debug=${2:-"release"}
 fast=${3:-"fast"}
 
+set -e
+
 components=(
 	"OASIS3-MCT"
 	"flux_calculator"

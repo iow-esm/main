@@ -35,7 +35,9 @@ awk -v local="$local" '{
 	print " echo \""dir" is already a git repository. Just pull from "remote"\""
 	print "else"
 	print " mkdir -p "local"/"dir
-	print " git clone "remote" "local"/"dir
+	print " if ! git clone "remote" "local"/"dir"; then"
+	print "  rm -r "local"/"dir
+	print " fi"
 	print "fi"
 
 }' ${origins_file_name} > ${temporary_name}
