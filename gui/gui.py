@@ -94,7 +94,7 @@ class IowEsmGui:
         self.current_destination = ""
         self.current_build_conf = "release fast"
         
-        if not self._check_last_build():
+        if not self._check_last_build() or self.error_handler.check_for_error("fatal", "No origin could be built!"):
             self._build_frame_destinations()
             self._build_frame_build(True)
             self.texts["monitor"].pack()

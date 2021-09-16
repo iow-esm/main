@@ -57,7 +57,7 @@ class IowEsmFunctions:
         
     def build_origins(self):
         if self.gui.current_destination == "":
-            self.gui.print("No destination is set.")
+            self.gui.error_handler.report_error("warning", "No destination is set.")
             return False
         
         cmd = "./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
@@ -66,6 +66,12 @@ class IowEsmFunctions:
         
     def build_origins_first_time(self):
         self.build_origins()
+        
+        if glob.glob(root_dir + "/LAST_BUILD_" + self.gui.current_destination + "_" + self.gui.current_build_conf.split(" ")[0]) == []:
+            self.gui.error_handler.report_error("fatal", "No origin could be built!")
+        else:
+            self.gui.error_handler.remove_from_log("fatal", "No origin could be built!")
+            
         self.gui.refresh()
         
     def set_setup(self, setup):
