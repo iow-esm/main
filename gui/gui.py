@@ -10,6 +10,7 @@ import os
 import glob
 from functools import partial
 import subprocess
+import json
 
 root_dir = "."
 
@@ -17,6 +18,72 @@ class IowColors:
     blue1 = "#0a2b5a"
     green1 = "#74e40d"
     grey1 = "#4e584e"
+
+class IowEsmErrorHandler():
+    def __init__(self, gui):
+        self.gui = gui
+        
+        self.levels = {
+            "fatal" : 0,
+            "warning" : 1,
+            "info" : 2
+            }
+        
+        self.errors = {}
+        for level in self.levels.keys():
+            self.errors[level] = []
+            
+        self.log_file = root_dir + "/gui_error.log"
+        
+        self._read_log()
+    
+    def _read_log(self):
+        try:
+            with open(self.log_file, 'r') as file:
+                self.errors = json.load(file)
+            file.close()
+        except:
+            pass
+        
+    def _write_log(self):
+        with open(self.log_file, 'w') as file:
+            json.dump(self.errors, file)
+        file.close()
+        
+        
+    def report_error(self, level, info):
+        if level not in self.levels.keys():
+            self.gui.print(level + ", no such error level.")
+            return False
+        
+        self._read_log()
+        
+        self.errors[level].append(info)
+        self.gui.print(level + ": " + info)
+        
+        self._write_log()
+        return True
+        
+    def check_for_error(self, level, info=""):
+        self._read_log()
+        
+        if info == "":
+            return self.errors[level] != []
+        
+        return info in self.errors[level]
+        
+    def remove_from_log(self, level, info=""):
+        self._read_log()
+        
+        if info == "":
+            self.errors[level] = []
+        else:
+            self.errors[level] = list(filter(lambda a: a != info, self.errors[level]))
+            
+        self._write_log()
+        
+    def get_log(self):
+        return self.errors
 
 class IowEsmFunctions:
     def __init__(self, gui):
@@ -27,7 +94,21 @@ class IowEsmFunctions:
         self.gui.print(cmd)
         os.system(cmd)
         
-        cmd = "find . -name \"*.sh\" -exec chmod u+x {} \\;"
+        for ori in read_iow_esm_configuration(root_dir + '/ORIGINS').keys():
+            if glob.glob(root_dir + "/" + ori + "/.git") == []:
+                self.gui.error_handler.report_error("fatal", "Not all origins could be cloned!")
+                self.gui.refresh()
+                return
+        
+        self.gui.error_handler.remove_from_log("fatal", "Not all origins could be cloned!")
+            
+        cmd = "find . -name \"*.*sh\" -exec chmod u+x {} \\;"
+        os.system(cmd)
+        
+        cmd = "find " + root_dir + "/components/MOM5/exp/ -name \"*\" -exec chmod u+x {} \\;"
+        os.system(cmd)
+        
+        cmd = "find " + root_dir + "/components/MOM5/bin/ -name \"*\" -exec chmod u+x {} \\;"
         os.system(cmd)
         
         cmd = "find . -name \"configure\" -exec chmod u+x {} \\;"
@@ -48,7 +129,9 @@ class IowEsmFunctions:
             self.gui.print("No destination is set.")
             return False
         
-        self.gui.print("cd " + ori + "; ./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf)
+        cmd = "cd " + ori + "; ./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
+        self.gui.print(cmd)
+        os.system(cmd)
         
     def build_origins(self):
         if self.gui.current_destination == "":
@@ -121,7 +204,7 @@ class IowEsmFunctions:
         archive = self.gui.entries["archive_setup"].get()
         cmd = "./archive_setups.sh " + self.gui.current_destination + " " + self.gui.current_setups[-1] + " " + archive
         self.gui.print(cmd)
-        #os.system(cmd)
+        os.system(cmd)
             
     def deploy_setups(self):
         if self.gui.current_destination == "":
@@ -199,8 +282,11 @@ def read_iow_esm_configuration(file_name):
     config = {}
     with open(file_name, "r") as f:
         for line in f:
-            (key, val) = line.split()
-            config[key] = val
+            try:
+                (key, val) = line.split()
+                config[key] = val
+            except:
+                pass
             
     return config
 
@@ -220,6 +306,7 @@ class IowEsmGui:
         self.restart = False
         
         self.functions = IowEsmFunctions(self)
+        self.error_handler = IowEsmErrorHandler(self)
         
         self.labels["greeting"] = tk.Label(text="Welcome to the IOW_ESM GUI!", bg = IowColors.blue1, fg = 'white')
         self.labels["greeting"].pack()
@@ -229,8 +316,12 @@ class IowEsmGui:
         #self.labels["logo"].pack()
         
         self.texts["monitor"] = tk.Text()
+        
+        self.print("Last error log:")
+        self.print(self.error_handler.get_log())
 
-        if not self._check_origins():
+        if not self._check_origins() or self.error_handler.check_for_error("fatal", "Not all origins could be cloned!"):
+
             cmd = "find . -name \"*.sh\" -exec chmod u+x {} \\;"
             os.system(cmd)
             self._build_window_clone_origins()
@@ -280,13 +371,13 @@ class IowEsmGui:
             exit()
         
         for ori in available_origins:
-            if os.path.isdir(root_dir + "/" + ori):
+            if os.path.isdir(root_dir + "/" + ori + "/.git"):
                 self.origins.append(root_dir + "/" + ori)
 
         self.print("Available origins:")
         self.print(self.origins)
         
-        return self.origins != []
+        return self.origins != [] 
     
     def _check_destinations(self):
         try:
