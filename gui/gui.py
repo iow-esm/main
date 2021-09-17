@@ -278,7 +278,7 @@ class IowEsmGui:
         self.entries["current_dst"] = tk.Entry(master=self.frames["destinations"])
         
         # pack everything on a grid
-        max_buttons_in_row = 6
+        max_buttons_in_row = 3
         if len(self.destinations) < max_buttons_in_row:
             columnspan = len(self.destinations) 
         else:
@@ -293,7 +293,7 @@ class IowEsmGui:
         for c, dst in enumerate(self.destinations.keys()):
             if (c % max_buttons_in_row) == 0:
                 row += 1
-            self.buttons["set_" + dst].grid(row=row, column=(c % max_buttons_in_row))
+            self.buttons["set_" + dst].grid(row=row, column=(c % max_buttons_in_row), sticky='ew')
            
         self.buttons["edit_destinations"].grid(row=row, column=columnspan-1)
         
@@ -308,7 +308,10 @@ class IowEsmGui:
         blank.grid(row=row, columnspan=columnspan)
         
         # pack the frame
-        self.frames["destinations"].grid(row=self.row, column=0)
+        self.frames["destinations"].grid(row=self.row, column=0, sticky='nsew')
+        for i in range(0, columnspan):
+            self.frames["destinations"].grid_columnconfigure(i, weight=1)
+        self.frames["destinations"].grid_rowconfigure(0, weight=1)
         self.row += 1
         
         ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
@@ -318,7 +321,7 @@ class IowEsmGui:
     def _build_frame_build(self, first_time):
         
         # create build frame
-        self.frames["build"] = Frame(master=self.window, bg=IowColors.blue1)
+        self.frames["build"] = Frame(master=self.window, bg=IowColors.blue2)
         
         # label
         self.labels["build"] = FrameTitleLabel(master=self.frames["build"], text="Build")      
@@ -345,7 +348,7 @@ class IowEsmGui:
         if not first_time:
             for c, ori in enumerate(self.origins):
                 ori_short = ori.split("/")[-1]
-                self.buttons["build_" + ori_short].grid(row=row, column=c)
+                self.buttons["build_" + ori_short].grid(row=row, column=c, sticky='ew')
         
             row += 1
         
@@ -353,7 +356,10 @@ class IowEsmGui:
         blank.grid(row=row, columnspan=columnspan)
         row += 1
         
-        self.frames["build"].grid(row=self.row, column=0)
+        self.frames["build"].grid(row=self.row, column=0, sticky='nsew')
+        for i in range(0, columnspan):
+            self.frames["build"].grid_columnconfigure(i, weight=1)
+        self.frames["build"].grid_rowconfigure(0, weight=1)
         self.row += 1  
         
         ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
@@ -367,7 +373,7 @@ class IowEsmGui:
     def _build_frame_setups(self, first_time):
         
         # create build frame
-        self.frames["setups"] = Frame(master=self.window, bg=IowColors.blue1)
+        self.frames["setups"] = Frame(master=self.window, bg=IowColors.blue3)
         
         # title label
         self.labels["setups"] = FrameTitleLabel(master=self.frames["setups"], text="Setups")
@@ -405,7 +411,7 @@ class IowEsmGui:
         row += 1
         
         for c, setup in enumerate(self.setups.keys()):
-            self.buttons["set_" + setup].grid(row=row, column=c)
+            self.buttons["set_" + setup].grid(row=row, column=c, sticky='ew')
             
         self.buttons["edit_setups"].grid(row=row, column=columnspan-1)
         row += 1
@@ -446,8 +452,10 @@ class IowEsmGui:
             self.frames["archive_setup"].grid(row=row, columnspan=columnspan)
             row += 1
            
-        self.frames["setups"].grid(row=self.row, column=0)     
-        
+        self.frames["setups"].grid(row=self.row, column=0, sticky='nsew')
+        for i in range(0, columnspan):
+            self.frames["setups"].grid_columnconfigure(i, weight=1)
+        self.frames["setups"].grid_rowconfigure(0, weight=1)
         self.row += 1
         
         ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
@@ -455,7 +463,7 @@ class IowEsmGui:
             
     def _build_frame_run(self):
         
-        self.frames["run"] = Frame(master=self.window, bg = IowColors.blue1)
+        self.frames["run"] = Frame(master=self.window, bg = IowColors.blue4)
         
         self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model")
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
@@ -471,8 +479,10 @@ class IowEsmGui:
         blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
         blank.grid(row=row)
         row += 1
-
-        self.frames["run"].grid(row=self.row, column=0)
+        
+        self.frames["run"].grid(row=self.row, sticky='nsew')
+        self.frames["run"].grid_columnconfigure(0, weight=1)
+        self.frames["run"].grid_rowconfigure(0, weight=1)
         self.row += 1
         
     def _build_window(self):
