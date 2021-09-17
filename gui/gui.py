@@ -32,20 +32,27 @@ class SetButton(tk.Button):
         )
         
 class FrameTitleLabel(tk.Label):
-    def __init__(self, text, master=None):
+    def __init__(self, text, master=None, bg=""):
+        
+        if master is not None and bg == "":
+            bg=master["background"]
+            
         tk.Label.__init__(self,
             master=master,
             text=text, 
-            bg = IowColors.blue1, 
+            bg = bg, 
             fg = 'white'
         )
         self.config(font=("Meat Plus", 24))
         
+        
 class Frame(tk.Frame):
-    def __init__(self, master=None):
+    def __init__(self, master=None, bg=IowColors.blue1):
         tk.Frame.__init__(self,
             master=master,
-            bg = IowColors.blue1
+            bg = bg,
+            #width = 400,
+            #height = 200
         )
 
 
@@ -53,7 +60,7 @@ class IowEsmGui:
     def __init__(self):
         self.window = tk.Tk(className="IOW_ESM")
         self.window.configure(background=IowColors.blue1)
-        self.window.geometry("500x900")
+        #self.window.geometry("500x900")
         
         self.labels = {}
         self.entries = {}
@@ -67,9 +74,12 @@ class IowEsmGui:
         self.error_handler = IowEsmErrorHandler(self)
         self.functions = IowEsmFunctions(self)
         
+        self.row = 0
+        
         
         self.labels["greeting"] = tk.Label(text="Welcome to the IOW_ESM GUI!", bg = IowColors.blue1, fg = 'white')
-        self.labels["greeting"].pack()
+        self.labels["greeting"].grid(row=self.row, sticky='nsew')
+        self.row += 1
         
         #img = tk.PhotoImage(file=root_dir + "/gui/logo_iow_englisch_rgb.gif")
         #self.labels["logo"] = tk.Label(image=img)
@@ -85,7 +95,7 @@ class IowEsmGui:
             cmd = "find . -name \"*.sh\" -exec chmod u+x {} \\;"
             os.system(cmd)
             self._build_window_clone_origins()
-            self.texts["monitor"].pack()
+            self.texts["monitor"].grid(row=self.row)
             return
         
         if not self._check_destinations():
@@ -98,7 +108,7 @@ class IowEsmGui:
         if not self._check_last_build() or self.error_handler.check_for_error(*IowEsmErrors.build_origins_first_time):
             self._build_frame_destinations()
             self._build_frame_build(True)
-            self.texts["monitor"].pack()
+            self.texts["monitor"].grid(row=self.row)
             return
         
         self.current_setups = []
@@ -110,7 +120,7 @@ class IowEsmGui:
         if not self._check_last_deployed_setups():
             self._build_frame_destinations()
             self._build_frame_setups(True)
-            self.texts["monitor"].pack()
+            self.texts["monitor"].grid(row=self.row)
             return
         
         # everything is normal, remove old log
@@ -184,25 +194,31 @@ class IowEsmGui:
         
         self.texts["edit_" + dst_name] = tk.Text(master=master)
         self.texts["edit_" + dst_name].insert(tk.END, src_content)
-        self.texts["edit_" + dst_name].pack()
+        self.texts["edit_" + dst_name].grid(row=self.row)
+        self.row += 1
         
         self.buttons["store_" + dst_name] = FunctionButton("Store " + dst_name, partial(self.functions.store_file_from_tk_text, dst_name, self.texts["edit_" + dst_name]), master=master)
-        self.buttons["store_" + dst_name].pack()
+        self.buttons["store_" + dst_name].grid(row=self.row)
+        self.row += 1
         
     def _build_window_clone_origins(self):
         
         self.frames["clone_origins"] = Frame(master=self.window)
         
         self.labels["clone_origins_title"] = FrameTitleLabel(master=self.frames["clone_origins"], text="You are using the IOW_ESM for the first time.")
-        self.labels["clone_origins_title"].pack()
+        self.labels["clone_origins_title"].grid(row=self.row)
+        self.row += 1
         
         self.labels["clone_origins"] = tk.Label(master=self.frames["clone_origins"], text="You have to clone the origins of the components first:", bg = IowColors.blue1, fg = 'white')
-        self.labels["clone_origins"].pack()
+        self.labels["clone_origins"].grid(row=self.row)
+        self.row += 1
         
         self.buttons["clone_origins"] = FunctionButton("Clone origins", self.functions.clone_origins, master=self.frames["clone_origins"])
-        self.buttons["clone_origins"].pack()
+        self.buttons["clone_origins"].grid(row=self.row)
+        self.row += 1
         
-        self.frames["clone_origins"].pack()
+        self.frames["clone_origins"].grid(row=self.row)
+        self.row += 1
         
     def _build_window_edit_destinations(self):
         
@@ -210,13 +226,16 @@ class IowEsmGui:
         
         self.labels["edit_destinations_title"] = FrameTitleLabel(master=self.frames["edit_destinations"], text="You are using the IOW_ESM for the first time.")
         self.labels["edit_destinations_title"].pack()
+        self.row += 1
         
         self.labels["edit_destinations"] = tk.Label(master=self.frames["edit_destinations"],
             text="You have to edit your DESTINATIONS file:", bg = IowColors.blue1, fg = 'white'
         )
         self.labels["edit_destinations"].pack()
+        self.row += 1
         
-        self.frames["edit_destinations"].pack()
+        self.frames["edit_destinations"].grid(row=self.row, sticky='nsew')
+        self.row += 1
         
         self._edit_file(root_dir + "/DESTINATIONS.example", root_dir + "/DESTINATIONS")
         
@@ -225,21 +244,27 @@ class IowEsmGui:
         self.frames["edit_setups"] = Frame(master=self.window)
         
         self.labels["edit_setups_title"] = FrameTitleLabel(master=self.frames["edit_setups"], text="You are using the IOW_ESM for the first time.")
-        self.labels["edit_setups_title"].pack()
+        self.labels["edit_setups_title"].grid(row=self.row)
+        self.row += 1
         
         self.labels["edit_setups"] = tk.Label(master=self.frames["edit_setups"],
             text="You have to edit your SETUPS file:",  bg = IowColors.blue1, fg = 'white'
         )
-        self.labels["edit_setups"].pack()
+        self.labels["edit_setups"].grid(row=self.row)
+        self.row += 1
         
-        self.frames["edit_setups"].pack()
+        self.frames["edit_setups"].grid(row=self.row)
+        self.row += 1
         
         self._edit_file(root_dir + "/SETUPS.example", root_dir + "/SETUPS")
         
     def _build_frame_destinations(self):
         
+        ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
+        self.row += 1
+        
         # create destinations frame
-        self.frames["destinations"] = Frame(master=self.window)
+        self.frames["destinations"] = Frame(master=self.window, bg=IowColors.blue1)
         
         # create objects of the frame
         self.labels["destinations"] = FrameTitleLabel(master=self.frames["destinations"], text="Destinations")
@@ -261,13 +286,10 @@ class IowEsmGui:
             
         columnspan += 1
         
-        row = 0
-        ttk.Separator(self.frames["destinations"], orient=tk.HORIZONTAL).grid(row=row, columnspan=columnspan, sticky='ew')
-
-        row += 1
+        row =  0
         self.labels["destinations"].grid(row=row, columnspan=columnspan)
-        
         row += 1
+        
         for c, dst in enumerate(self.destinations.keys()):
             if (c % max_buttons_in_row) == 0:
                 row += 1
@@ -285,21 +307,21 @@ class IowEsmGui:
         blank = tk.Label(text="", master=self.frames["destinations"], bg = IowColors.blue1)
         blank.grid(row=row, columnspan=columnspan)
         
-        row += 1
-        ttk.Separator(self.frames["destinations"], orient=tk.HORIZONTAL).grid(row=row, columnspan=columnspan, sticky='ew')
-
         # pack the frame
-        self.frames["destinations"].pack(padx='5', pady='5')
+        self.frames["destinations"].grid(row=self.row, column=0)
+        self.row += 1
+        
+        ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
+        self.row += 1
         
         
     def _build_frame_build(self, first_time):
         
         # create build frame
-        self.frames["build"] = Frame(master=self.window)
+        self.frames["build"] = Frame(master=self.window, bg=IowColors.blue1)
         
         # label
-        self.labels["build"] = FrameTitleLabel(master=self.frames["build"], text="Build")
-        
+        self.labels["build"] = FrameTitleLabel(master=self.frames["build"], text="Build")      
         if first_time:
             self.buttons["build_all"] = FunctionButton("Build all", self.functions.build_origins_first_time, master=self.frames["build"])
 
@@ -312,29 +334,40 @@ class IowEsmGui:
             
         # put everything on a grid
         columnspan = len(self.origins)
-        self.labels["build"].grid(row=0, columnspan=columnspan)
-        self.buttons["build_all"].grid(row=1, columnspan=columnspan)
+        
+        row = 0
+        self.labels["build"].grid(row=row, columnspan=columnspan)
+        row += 1
+        
+        self.buttons["build_all"].grid(row=row, columnspan=columnspan)
+        row += 1
         
         if not first_time:
             for c, ori in enumerate(self.origins):
                 ori_short = ori.split("/")[-1]
-                self.buttons["build_" + ori_short].grid(row=2, column=c)
+                self.buttons["build_" + ori_short].grid(row=row, column=c)
         
-        blank = tk.Label(text="", master=self.frames["build"], bg = IowColors.blue1)
-        blank.grid(row=3, columnspan=columnspan)
+            row += 1
         
-        ttk.Separator(self.frames["build"], orient=tk.HORIZONTAL).grid(row=4, columnspan=columnspan, sticky='ew')
+        blank = tk.Label(text="", master=self.frames["build"], bg = self.frames["build"]["background"])
+        blank.grid(row=row, columnspan=columnspan)
+        row += 1
         
-        self.frames["build"].pack(padx='5', pady='5')        
+        self.frames["build"].grid(row=self.row, column=0)
+        self.row += 1  
+        
+        ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
+        self.row += 1
         
         if first_time:
-            self.texts["monitor"].pack()
+            self.texts["monitor"].grid(row=self.row)
+            self.row += 1
         
         
     def _build_frame_setups(self, first_time):
         
         # create build frame
-        self.frames["setups"] = Frame(master=self.window)
+        self.frames["setups"] = Frame(master=self.window, bg=IowColors.blue1)
         
         # title label
         self.labels["setups"] = FrameTitleLabel(master=self.frames["setups"], text="Setups")
@@ -344,12 +377,12 @@ class IowEsmGui:
             
         self.buttons["edit_setups"] = FunctionButton("Edit", self.functions.edit_setups, master=self.frames["setups"])
         
-        self.labels["current_setups"] = tk.Label(text="Current setups:", master=self.frames["setups"], bg = IowColors.blue1, fg = 'white')
+        self.labels["current_setups"] = tk.Label(text="Current setups:", master=self.frames["setups"], bg = self.frames["setups"]["background"], fg = 'white')
         self.entries["current_setups"] = tk.Entry(master=self.frames["setups"])     
         
         self.frames["setups_function_buttons"] = Frame(master=self.frames["setups"])
         
-        self.frames["archive_setup"] = Frame(master=self.frames["setups"])
+        self.frames["archive_setup"] = Frame(master=self.frames["setups"], bg = self.frames["setups"]["background"])
         
         self.buttons["get_setups_info"] = FunctionButton("Get setups info", self.functions.get_setups_info, self.frames["setups_function_buttons"] )
         self.buttons["clear_setups"] = FunctionButton("Clear setups", self.functions.clear_setups, self.frames["setups_function_buttons"] )
@@ -366,59 +399,81 @@ class IowEsmGui:
         # put everything on a grid
         columnspan = len(self.setups) + 1
 
-        self.labels["setups"].grid(row=0, columnspan=columnspan)
+        row = 0
+        
+        self.labels["setups"].grid(row=row, columnspan=columnspan)
+        row += 1
         
         for c, setup in enumerate(self.setups.keys()):
-            self.buttons["set_" + setup].grid(row=1, column=c)
+            self.buttons["set_" + setup].grid(row=row, column=c)
             
-        self.buttons["edit_setups"].grid(row=1, column=columnspan-1)
+        self.buttons["edit_setups"].grid(row=row, column=columnspan-1)
+        row += 1
             
-        self.labels["current_setups"].grid(row=2, columnspan=columnspan)
-        self.entries["current_setups"].grid(row=3, columnspan=columnspan)
+        self.labels["current_setups"].grid(row=row, columnspan=columnspan)
+        row += 1
+        
+        self.entries["current_setups"].grid(row=row, columnspan=columnspan)
+        row += 1
         
         self.buttons["get_setups_info"].grid(row=0, column=0)
         self.buttons["clear_setups"].grid(row=0, column=1)
         self.buttons["deploy_setups"].grid(row=0, column=2)
         
-        self.frames["setups_function_buttons"].grid(row=4, rowspan=1, columnspan=columnspan)
+        self.frames["setups_function_buttons"].grid(row=row, rowspan=1, columnspan=columnspan)
+        row += 1
         
-        blank = tk.Label(text="", master=self.frames["setups"], bg = IowColors.blue1)
-        blank.grid(row=5, columnspan=columnspan)
+        blank = tk.Label(text="", master=self.frames["setups"], bg = self.frames["setups"]["background"])
+        blank.grid(row=row, columnspan=columnspan)
+        row += 1
         
         if not first_time:
             
-            ttk.Separator(self.frames["setups"], orient=tk.HORIZONTAL).grid(row=6, columnspan=columnspan, sticky='ew')
-
-            blank = tk.Label(text="", master=self.frames["archive_setup"], bg = IowColors.blue1)
+            ttk.Separator(self.frames["setups"], orient=tk.HORIZONTAL).grid(row=row, columnspan=columnspan, sticky='ew')
+            row += 1
+            
+            blank = tk.Label(text="", master=self.frames["archive_setup"], bg = self.frames["setups"]["background"])
             blank.grid(row=0, columnspan=3)
             
             self.entries["archive_setup"].grid(row=1, column=0)
-            blank = tk.Label(text="  ", master=self.frames["archive_setup"], bg = IowColors.blue1)
+            blank = tk.Label(text="  ", master=self.frames["archive_setup"], bg = self.frames["setups"]["background"])
             blank.grid(row=1, column=1)
             self.buttons["archive_setup"].grid(row=1, column=2)
             
-            blank = tk.Label(text="", master=self.frames["archive_setup"], bg = IowColors.blue1)
+            blank = tk.Label(text="", master=self.frames["archive_setup"], bg = self.frames["setups"]["background"])
             blank.grid(row=2, columnspan=3)
         
-            self.frames["archive_setup"].grid(row=7, columnspan=columnspan)
+            self.frames["archive_setup"].grid(row=row, columnspan=columnspan)
+            row += 1
+           
+        self.frames["setups"].grid(row=self.row, column=0)     
         
-        ttk.Separator(self.frames["setups"], orient=tk.HORIZONTAL).grid(row=8, columnspan=columnspan, sticky='ew')
-        self.frames["setups"].pack(padx='5', pady='5')
+        self.row += 1
+        
+        ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
+        self.row += 1
             
     def _build_frame_run(self):
         
-        self.frames["run"] = Frame(master=self.window)
+        self.frames["run"] = Frame(master=self.window, bg = IowColors.blue1)
         
         self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model")
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
 
-        self.labels["run"].grid(row=0)
-        self.buttons["run"] .grid(row=1)
+        row = 0
         
-        blank = tk.Label(text="", bg = IowColors.blue1, master=self.frames["run"])
-        blank.grid(row=2)
+        self.labels["run"].grid(row=row)
+        row += 1
         
-        self.frames["run"].pack()
+        self.buttons["run"].grid(row=row)
+        row += 1
+        
+        blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
+        blank.grid(row=row)
+        row += 1
+
+        self.frames["run"].grid(row=self.row, column=0)
+        self.row += 1
         
     def _build_window(self):
         
@@ -433,6 +488,7 @@ class IowEsmGui:
         self._build_frame_run()
 
     
-        self.texts["monitor"].pack()
+        self.texts["monitor"].grid(row=self.row)
+        self.row += 1
         
         

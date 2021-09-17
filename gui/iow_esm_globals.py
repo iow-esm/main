@@ -16,6 +16,9 @@ root_dir = "."
 
 class IowColors:
     blue1 = "#0a2b5a"
+    blue2 = "#305790"
+    blue3 = "#6e85b5"
+    blue4 = "#a1aed0"
     green1 = "#74e40d"
     grey1 = "#4e584e"
         
