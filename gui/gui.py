@@ -9,6 +9,8 @@ from iow_esm_globals import *
 from iow_esm_error_handler import *
 from iow_esm_functions import *
 
+import tkinter.ttk as ttk
+
 class FunctionButton(tk.Button):
     def __init__(self, text, command, master=None):
         tk.Button.__init__(self,
@@ -51,7 +53,7 @@ class IowEsmGui:
     def __init__(self):
         self.window = tk.Tk(className="IOW_ESM")
         self.window.configure(background=IowColors.blue1)
-        #self.window.geometry("500x500")
+        self.window.geometry("500x900")
         
         self.labels = {}
         self.entries = {}
@@ -62,6 +64,7 @@ class IowEsmGui:
         
         self.restart = False
         
+        self.error_handler = IowEsmErrorHandler(self)
         self.functions = IowEsmFunctions(self)
         
         
@@ -74,12 +77,10 @@ class IowEsmGui:
         
         self.texts["monitor"] = tk.Text()
         
-        self.error_handler = IowEsmErrorHandler(self)
-        
         self.print("Last error log:")
         self.print(self.error_handler.get_log())
         
-        if not self._check_origins() or self.error_handler.check_for_error("fatal", "Not all origins could be cloned!"):
+        if not self._check_origins() or self.error_handler.check_for_error(*IowEsmErrors.clone_origins):
 
             cmd = "find . -name \"*.sh\" -exec chmod u+x {} \\;"
             os.system(cmd)
@@ -94,7 +95,7 @@ class IowEsmGui:
         self.current_destination = ""
         self.current_build_conf = "release fast"
         
-        if not self._check_last_build() or self.error_handler.check_for_error("fatal", "No origin could be built!"):
+        if not self._check_last_build() or self.error_handler.check_for_error(*IowEsmErrors.build_origins_first_time):
             self._build_frame_destinations()
             self._build_frame_build(True)
             self.texts["monitor"].pack()
@@ -113,9 +114,9 @@ class IowEsmGui:
             return
         
         # everything is normal, remove old log
-        self.error_handler.remove_from_log("fatal")
-        self.error_handler.remove_from_log("warning")
-        self.error_handler.remove_from_log("info")
+        self.error_handler.remove_from_log(IowEsmErrorLevels.fatal)
+        self.error_handler.remove_from_log(IowEsmErrorLevels.warning)
+        self.error_handler.remove_from_log(IowEsmErrorLevels.info)
         
         self._build_window()
         
@@ -261,7 +262,10 @@ class IowEsmGui:
         columnspan += 1
         
         row = 0
-        self.labels["destinations"].grid(row=0, columnspan=columnspan)
+        ttk.Separator(self.frames["destinations"], orient=tk.HORIZONTAL).grid(row=row, columnspan=columnspan, sticky='ew')
+
+        row += 1
+        self.labels["destinations"].grid(row=row, columnspan=columnspan)
         
         row += 1
         for c, dst in enumerate(self.destinations.keys()):
@@ -276,11 +280,14 @@ class IowEsmGui:
         
         row += 1
         self.entries["current_dst"].grid(row=row, columnspan=columnspan)
-        
+                
         row += 1
         blank = tk.Label(text="", master=self.frames["destinations"], bg = IowColors.blue1)
         blank.grid(row=row, columnspan=columnspan)
         
+        row += 1
+        ttk.Separator(self.frames["destinations"], orient=tk.HORIZONTAL).grid(row=row, columnspan=columnspan, sticky='ew')
+
         # pack the frame
         self.frames["destinations"].pack(padx='5', pady='5')
         
@@ -315,6 +322,8 @@ class IowEsmGui:
         
         blank = tk.Label(text="", master=self.frames["build"], bg = IowColors.blue1)
         blank.grid(row=3, columnspan=columnspan)
+        
+        ttk.Separator(self.frames["build"], orient=tk.HORIZONTAL).grid(row=4, columnspan=columnspan, sticky='ew')
         
         self.frames["build"].pack(padx='5', pady='5')        
         
@@ -373,7 +382,13 @@ class IowEsmGui:
         
         self.frames["setups_function_buttons"].grid(row=4, rowspan=1, columnspan=columnspan)
         
+        blank = tk.Label(text="", master=self.frames["setups"], bg = IowColors.blue1)
+        blank.grid(row=5, columnspan=columnspan)
+        
         if not first_time:
+            
+            ttk.Separator(self.frames["setups"], orient=tk.HORIZONTAL).grid(row=6, columnspan=columnspan, sticky='ew')
+
             blank = tk.Label(text="", master=self.frames["archive_setup"], bg = IowColors.blue1)
             blank.grid(row=0, columnspan=3)
             
@@ -382,11 +397,12 @@ class IowEsmGui:
             blank.grid(row=1, column=1)
             self.buttons["archive_setup"].grid(row=1, column=2)
             
-            blank = tk.Label(text="  ", master=self.frames["archive_setup"], bg = IowColors.blue1)
+            blank = tk.Label(text="", master=self.frames["archive_setup"], bg = IowColors.blue1)
             blank.grid(row=2, columnspan=3)
         
-            self.frames["archive_setup"].grid(row=6, rowspan=3, columnspan=columnspan)
+            self.frames["archive_setup"].grid(row=7, columnspan=columnspan)
         
+        ttk.Separator(self.frames["setups"], orient=tk.HORIZONTAL).grid(row=8, columnspan=columnspan, sticky='ew')
         self.frames["setups"].pack(padx='5', pady='5')
             
     def _build_frame_run(self):
@@ -407,6 +423,8 @@ class IowEsmGui:
     def _build_window(self):
         
         self._build_frame_destinations()
+        
+        
         
         self._build_frame_build(False)
         

@@ -7,21 +7,31 @@ Created on Thu Sep 16 14:43:21 2021
 
 from iow_esm_globals import *
 
+class IowEsmErrorLevels():
+    fatal = "fatal"
+    warning = "warning"
+    info = "info"
+
+class IowEsmErrors():
+    clone_origins = (IowEsmErrorLevels.fatal, "Not all origins could be cloned!")
+    build_origins_first_time = (IowEsmErrorLevels.fatal, "Not all origins could be built!")
+    destination_not_set = (IowEsmErrorLevels.warning, "Destination not set.")
+
 class IowEsmErrorHandler():
     def __init__(self, gui):
         self.gui = gui
         
         self.levels = {
-            "fatal" : 0,
-            "warning" : 1,
-            "info" : 2
+            IowEsmErrorLevels.fatal : 0,
+            IowEsmErrorLevels.warning : 1,
+            IowEsmErrorLevels.info : 2
             }
         
         self.errors = {}
         for level in self.levels.keys():
             self.errors[level] = []
             
-        self.log_file = root_dir + "/gui_error.log"
+        self.log_file = root_dir + "/gui.log"
         
         self._read_log()
     

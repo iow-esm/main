@@ -6,10 +6,12 @@ Created on Thu Sep 16 14:55:17 2021
 """
 
 from iow_esm_globals import *
+from iow_esm_error_handler import IowEsmErrors
 
 class IowEsmFunctions:
     def __init__(self, gui):
         self.gui = gui
+        self.eh = self.gui.error_handler
                 
     def clone_origins(self):
         cmd = root_dir + "/clone_origins.sh"
@@ -18,11 +20,10 @@ class IowEsmFunctions:
         
         for ori in read_iow_esm_configuration(root_dir + '/ORIGINS').keys():
             if glob.glob(root_dir + "/" + ori + "/.git") == []:
-                self.gui.error_handler.report_error("fatal", "Not all origins could be cloned!")
-                self.gui.refresh()
+                self.eh.report_error(*IowEsmErrors.clone_origins)
                 return
         
-        self.gui.error_handler.remove_from_log("fatal", "Not all origins could be cloned!")
+        self.eh.remove_from_log(*IowEsmErrors.clone_origins)
             
         cmd = "find . -name \"*.*sh\" -exec chmod u+x {} \\;"
         os.system(cmd)
@@ -48,7 +49,7 @@ class IowEsmFunctions:
         
     def build_origin(self, ori):
         if self.gui.current_destination == "":
-            self.gui.error_handler.report_error("warning", "No destination is set.")
+            self.eh.report_error(*IowEsmErrors.destination_not_set)
             return False
         
         cmd = "cd " + ori + "; ./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
@@ -57,20 +58,36 @@ class IowEsmFunctions:
         
     def build_origins(self):
         if self.gui.current_destination == "":
-            self.gui.error_handler.report_error("warning", "No destination is set.")
+            self.eh.report_error(*IowEsmErrors.destination_not_set)
             return False
         
         cmd = "./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
         self.gui.print(cmd)
         os.system(cmd)
+        return True
         
     def build_origins_first_time(self):
-        self.build_origins()
+        if not self.build_origins():
+            return False
         
-        if glob.glob(root_dir + "/LAST_BUILD_" + self.gui.current_destination + "_" + self.gui.current_build_conf.split(" ")[0]) == []:
-            self.gui.error_handler.report_error("fatal", "No origin could be built!")
-        else:
-            self.gui.error_handler.remove_from_log("fatal", "No origin could be built!")
+        last_build_file = root_dir + "/LAST_BUILD_" + self.gui.current_destination + "_" + self.gui.current_build_conf.split(" ")[0]
+        
+        if glob.glob(last_build_file) == []:
+            self.eh.report_error(*IowEsmErrors.build_origins_first_time)
+            #self.gui.refresh()
+            return False
+
+        with open(last_build_file, 'r') as file:
+            file_content = file.read()
+        file.close()
+        
+        for ori in self.gui.origins:
+            if ori.split("/")[-1] not in file_content:
+                self.eh.report_error(*IowEsmErrors.build_origins_first_time)
+                #self.gui.refresh()
+                return False
+
+        self.eh.remove_from_log(*IowEsmErrors.build_origins_first_time)
             
         self.gui.refresh()
         
@@ -123,7 +140,7 @@ class IowEsmFunctions:
         
     def archive_setup(self):
         if self.gui.current_destination == "":
-            self.gui.print("No destination is set.")
+            self.eh.report_error(*IowEsmErrors.destination_not_set)
             return False
         
         if len(self.gui.current_setups) > 1:
@@ -136,7 +153,7 @@ class IowEsmFunctions:
             
     def deploy_setups(self):
         if self.gui.current_destination == "":
-            self.gui.print("No destination is set.")
+            self.eh.report_error(*IowEsmErrors.destination_not_set)
             return False
         
         for setup in self.gui.current_setups:
@@ -150,7 +167,7 @@ class IowEsmFunctions:
             
     def run(self):
         if self.gui.current_destination == "":
-            self.gui.print("No destination is set.")
+            self.eh.report_error(*IowEsmErrors.destination_not_set)
             return False 
         
         cmd = root_dir + "/run.sh " + self.gui.current_destination
