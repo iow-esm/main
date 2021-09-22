@@ -15,11 +15,15 @@ import json
 root_dir = "."
 
 class IowColors:
-    blue1 = "#0a2b5a"
+    blue1 = "#10427a" 
+    #"#0a2b5a"
     blue2 = "#305790"
     blue3 = "#6e85b5"
     blue4 = "#a1aed0"
-    green1 = "#74e40d"
+    green1 = "#96d543"
+    green2 = "#abdd64"
+    green3 = "#cbe999"
+    green4 = "#e0f2c0"
     grey1 = "#4e584e"
         
 def read_iow_esm_configuration(file_name):

@@ -17,7 +17,7 @@ class FunctionButton(tk.Button):
             master=master,
             text=text,
             bg=IowColors.green1,
-            fg=IowColors.blue1,
+            fg="black",#IowColors.grey1,
             command=command   
         )
         
@@ -43,7 +43,7 @@ class FrameTitleLabel(tk.Label):
             bg = bg, 
             fg = 'white'
         )
-        self.config(font=("Meat Plus", 24))
+        self.config(font=("Meat Plus", 20))
         
         
 class Frame(tk.Frame):
@@ -68,6 +68,7 @@ class IowEsmGui:
         self.texts = {}
         self.frames = {}
         self.messages = {}
+        self.windows = {}
         
         self.restart = False
         
@@ -76,16 +77,9 @@ class IowEsmGui:
         
         self.row = 0
         
+        self._build_frame_greeting()
         
-        self.labels["greeting"] = tk.Label(text="Welcome to the IOW_ESM GUI!", bg = IowColors.blue1, fg = 'white')
-        self.labels["greeting"].grid(row=self.row, sticky='nsew')
-        self.row += 1
-        
-        #img = tk.PhotoImage(file=root_dir + "/gui/logo_iow_englisch_rgb.gif")
-        #self.labels["logo"] = tk.Label(image=img)
-        #self.labels["logo"].pack()
-        
-        self.texts["monitor"] = tk.Text()
+        self._build_window_monitor()
         
         self.print("Last error log:")
         self.print(self.error_handler.get_log())
@@ -95,7 +89,6 @@ class IowEsmGui:
             cmd = "find . -name \"*.sh\" -exec chmod u+x {} \\;"
             os.system(cmd)
             self._build_window_clone_origins()
-            self.texts["monitor"].grid(row=self.row)
             return
         
         if not self._check_destinations():
@@ -108,7 +101,6 @@ class IowEsmGui:
         if not self._check_last_build() or self.error_handler.check_for_error(*IowEsmErrors.build_origins_first_time):
             self._build_frame_destinations()
             self._build_frame_build(True)
-            self.texts["monitor"].grid(row=self.row)
             return
         
         self.current_setups = []
@@ -120,7 +112,6 @@ class IowEsmGui:
         if not self._check_last_deployed_setups():
             self._build_frame_destinations()
             self._build_frame_setups(True)
-            self.texts["monitor"].grid(row=self.row)
             return
         
         # everything is normal, remove old log
@@ -130,11 +121,24 @@ class IowEsmGui:
         
         self._build_window()
         
+    def _destroy_monitor_callback(self):
+        self.monitor = False
+        self.windows["monitor"].destroy()
+        
     def refresh(self):
         self.window.destroy()
         self.restart = True
         
     def print(self, text):
+        if not self.monitor:
+            print(text)
+            #self.windows["monitor"] = tk.Toplevel(self.window)
+            #self.windows["monitor"].protocol("WM_DELETE_WINDOW", self._destroy_monitor_callback)
+            #self.texts["monitor"] = tk.Text(master = self.windows["monitor"], bg = IowColors.blue1, fg='white')
+            #self.texts["monitor"].grid(row=0)
+            #self.monitor = True
+            return
+            
         self.texts["monitor"].insert(tk.END, str(text) + "\n")
         
     def _check_origins(self):
@@ -201,6 +205,36 @@ class IowEsmGui:
         self.buttons["store_" + dst_name].grid(row=self.row)
         self.row += 1
         
+        
+    def _build_frame_greeting(self):
+        self.frames["greeting"] = Frame(master=self.window, bg=IowColors.blue4)
+        
+        self.iow_logo = tk.PhotoImage(file=root_dir + '/gui/iow_logo_small.png')
+        self.labels["greeting"] = tk.Label(master=self.frames["greeting"], image=self.iow_logo, bg = IowColors.blue4)
+        self.labels["greeting"].grid(sticky='w')
+        
+        self.frames["greeting"].grid(row=self.row, sticky='nsew')
+        self.frames["greeting"].grid_columnconfigure(0, weight=1)
+        self.frames["greeting"].grid_rowconfigure(0, weight=1)
+        self.row += 1
+        
+    def _build_window_monitor(self):
+        self.windows["monitor"] = tk.Toplevel(self.window)
+        self.windows["monitor"].configure(background=IowColors.blue2)
+        self.windows["monitor"].protocol("WM_DELETE_WINDOW", self._destroy_monitor_callback)
+        self.labels["monitor"] = FrameTitleLabel("Monitor:", master = self.windows["monitor"], bg = self.windows["monitor"]["background"])
+        self.texts["monitor"] = tk.Text(master = self.windows["monitor"], bg=IowColors.blue1, fg="white")
+        
+        row=0
+        
+        self.labels["monitor"].grid(row=row, sticky='w')
+        row += 1
+        
+        self.texts["monitor"].grid(row=row)
+        row += 1
+        
+        self.monitor = True        
+        
     def _build_window_clone_origins(self):
         
         self.frames["clone_origins"] = Frame(master=self.window)
@@ -264,17 +298,17 @@ class IowEsmGui:
         self.row += 1
         
         # create destinations frame
-        self.frames["destinations"] = Frame(master=self.window, bg=IowColors.blue1)
+        self.frames["destinations"] = Frame(master=self.window, bg=IowColors.blue4)
         
         # create objects of the frame
-        self.labels["destinations"] = FrameTitleLabel(master=self.frames["destinations"], text="Destinations")
+        self.labels["destinations"] = FrameTitleLabel(master=self.frames["destinations"], text="Destinations:")
         
         for dst in self.destinations.keys():
             self.buttons["set_" + dst] = SetButton(dst, partial(self.functions.set_destination, dst), master=self.frames["destinations"])
         
         self.buttons["edit_destinations"] = FunctionButton("Edit", self.functions.edit_destinations, master=self.frames["destinations"])
         
-        self.labels["current_dst"] = tk.Label(text="Current destination:", master=self.frames["destinations"], bg = IowColors.blue1, fg = 'white')
+        self.labels["current_dst"] = tk.Label(text="Current destination:", master=self.frames["destinations"], bg = self.frames["destinations"]["background"], fg = 'white')
         self.entries["current_dst"] = tk.Entry(master=self.frames["destinations"])
         
         # pack everything on a grid
@@ -287,13 +321,14 @@ class IowEsmGui:
         columnspan += 1
         
         row =  0
-        self.labels["destinations"].grid(row=row, columnspan=columnspan)
+        self.labels["destinations"].grid(row=row, columnspan=columnspan, sticky='w')
         row += 1
         
         for c, dst in enumerate(self.destinations.keys()):
             if (c % max_buttons_in_row) == 0:
                 row += 1
-            self.buttons["set_" + dst].grid(row=row, column=(c % max_buttons_in_row), sticky='ew')
+            
+            self.buttons["set_" + dst].grid(row=row, column=(c % max_buttons_in_row), sticky='we')
            
         self.buttons["edit_destinations"].grid(row=row, column=columnspan-1)
         
@@ -304,11 +339,11 @@ class IowEsmGui:
         self.entries["current_dst"].grid(row=row, columnspan=columnspan)
                 
         row += 1
-        blank = tk.Label(text="", master=self.frames["destinations"], bg = IowColors.blue1)
+        blank = tk.Label(text="", master=self.frames["destinations"], bg = self.frames["destinations"]["background"])
         blank.grid(row=row, columnspan=columnspan)
         
         # pack the frame
-        self.frames["destinations"].grid(row=self.row, column=0, sticky='nsew')
+        self.frames["destinations"].grid(row=self.row, sticky='nsew')
         for i in range(0, columnspan):
             self.frames["destinations"].grid_columnconfigure(i, weight=1)
         self.frames["destinations"].grid_rowconfigure(0, weight=1)
@@ -321,10 +356,10 @@ class IowEsmGui:
     def _build_frame_build(self, first_time):
         
         # create build frame
-        self.frames["build"] = Frame(master=self.window, bg=IowColors.blue2)
+        self.frames["build"] = Frame(master=self.window, bg=IowColors.blue3)
         
         # label
-        self.labels["build"] = FrameTitleLabel(master=self.frames["build"], text="Build")      
+        self.labels["build"] = FrameTitleLabel(master=self.frames["build"], text="Build:")      
         if first_time:
             self.buttons["build_all"] = FunctionButton("Build all", self.functions.build_origins_first_time, master=self.frames["build"])
 
@@ -339,24 +374,23 @@ class IowEsmGui:
         columnspan = len(self.origins)
         
         row = 0
-        self.labels["build"].grid(row=row, columnspan=columnspan)
+        self.labels["build"].grid(row=row, columnspan=columnspan, sticky='w')
         row += 1
         
-        self.buttons["build_all"].grid(row=row, columnspan=columnspan)
+        self.buttons["build_all"].grid(row=row, columnspan=columnspan, sticky='ew')
         row += 1
         
         if not first_time:
             for c, ori in enumerate(self.origins):
                 ori_short = ori.split("/")[-1]
-                self.buttons["build_" + ori_short].grid(row=row, column=c, sticky='ew')
-        
+                self.buttons["build_" + ori_short].grid(row=row, column=c, sticky='we')
             row += 1
         
         blank = tk.Label(text="", master=self.frames["build"], bg = self.frames["build"]["background"])
         blank.grid(row=row, columnspan=columnspan)
         row += 1
         
-        self.frames["build"].grid(row=self.row, column=0, sticky='nsew')
+        self.frames["build"].grid(row=self.row, sticky='nsew')
         for i in range(0, columnspan):
             self.frames["build"].grid_columnconfigure(i, weight=1)
         self.frames["build"].grid_rowconfigure(0, weight=1)
@@ -365,18 +399,14 @@ class IowEsmGui:
         ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
         self.row += 1
         
-        if first_time:
-            self.texts["monitor"].grid(row=self.row)
-            self.row += 1
-        
         
     def _build_frame_setups(self, first_time):
         
         # create build frame
-        self.frames["setups"] = Frame(master=self.window, bg=IowColors.blue3)
+        self.frames["setups"] = Frame(master=self.window, bg=IowColors.blue2)
         
         # title label
-        self.labels["setups"] = FrameTitleLabel(master=self.frames["setups"], text="Setups")
+        self.labels["setups"] = FrameTitleLabel(master=self.frames["setups"], text="Setups:")
 
         for setup in self.setups.keys():
             self.buttons["set_" + setup] = SetButton(setup, partial(self.functions.set_setup, setup), master=self.frames["setups"])
@@ -407,7 +437,7 @@ class IowEsmGui:
 
         row = 0
         
-        self.labels["setups"].grid(row=row, columnspan=columnspan)
+        self.labels["setups"].grid(row=row, columnspan=columnspan, sticky='w')
         row += 1
         
         for c, setup in enumerate(self.setups.keys()):
@@ -422,11 +452,19 @@ class IowEsmGui:
         self.entries["current_setups"].grid(row=row, columnspan=columnspan)
         row += 1
         
-        self.buttons["get_setups_info"].grid(row=0, column=0)
-        self.buttons["clear_setups"].grid(row=0, column=1)
-        self.buttons["deploy_setups"].grid(row=0, column=2)
+        blank = tk.Label(text="", master=self.frames["setups"], bg = self.frames["setups"]["background"])
+        blank.grid(row=row, columnspan=columnspan)
+        row += 1
         
-        self.frames["setups_function_buttons"].grid(row=row, rowspan=1, columnspan=columnspan)
+        self.buttons["get_setups_info"].grid(row=0, column=0, sticky='ew')
+        self.buttons["clear_setups"].grid(row=0, column=1, sticky='ew')
+        self.buttons["deploy_setups"].grid(row=0, column=2, sticky='ew')
+        
+        self.frames["setups_function_buttons"].grid(row=row, columnspan=columnspan, sticky='ew')
+        self.frames["setups_function_buttons"].grid_rowconfigure(0, weight=1)
+        self.frames["setups_function_buttons"].grid_columnconfigure(0, weight=1)
+        self.frames["setups_function_buttons"].grid_columnconfigure(1, weight=1)
+        self.frames["setups_function_buttons"].grid_columnconfigure(2, weight=1)
         row += 1
         
         blank = tk.Label(text="", master=self.frames["setups"], bg = self.frames["setups"]["background"])
@@ -451,8 +489,8 @@ class IowEsmGui:
         
             self.frames["archive_setup"].grid(row=row, columnspan=columnspan)
             row += 1
-           
-        self.frames["setups"].grid(row=self.row, column=0, sticky='nsew')
+        
+        self.frames["setups"].grid(row=self.row, sticky='nsew')
         for i in range(0, columnspan):
             self.frames["setups"].grid_columnconfigure(i, weight=1)
         self.frames["setups"].grid_rowconfigure(0, weight=1)
@@ -463,17 +501,17 @@ class IowEsmGui:
             
     def _build_frame_run(self):
         
-        self.frames["run"] = Frame(master=self.window, bg = IowColors.blue4)
+        self.frames["run"] = Frame(master=self.window, bg = IowColors.blue1)
         
-        self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model")
+        self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model:")
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
 
         row = 0
         
-        self.labels["run"].grid(row=row)
+        self.labels["run"].grid(row=row, sticky='w')
         row += 1
         
-        self.buttons["run"].grid(row=row)
+        self.buttons["run"].grid(row=row, sticky='ew')
         row += 1
         
         blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
@@ -489,16 +527,11 @@ class IowEsmGui:
         
         self._build_frame_destinations()
         
-        
-        
         self._build_frame_build(False)
         
         self._build_frame_setups(False)
         
         self._build_frame_run()
 
-    
-        self.texts["monitor"].grid(row=self.row)
-        self.row += 1
         
         
