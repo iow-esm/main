@@ -433,7 +433,13 @@ class IowEsmGui:
             self.buttons["archive_setup"] = FunctionButton("Archive setup", self.functions.archive_setup, self.frames["archive_setup"] )
         
         # put everything on a grid
-        columnspan = len(self.setups) + 1
+        max_buttons_in_row = 3
+        if len(self.setups) < max_buttons_in_row:
+            columnspan = len(self.setups) 
+        else:
+            columnspan = max_buttons_in_row
+            
+        columnspan += 1
 
         row = 0
         
@@ -441,7 +447,10 @@ class IowEsmGui:
         row += 1
         
         for c, setup in enumerate(self.setups.keys()):
-            self.buttons["set_" + setup].grid(row=row, column=c, sticky='ew')
+            if (c % max_buttons_in_row) == 0:
+                row += 1
+                
+            self.buttons["set_" + setup].grid(row=row, column=(c % max_buttons_in_row), sticky='ew')
             
         self.buttons["edit_setups"].grid(row=row, column=columnspan-1)
         row += 1
