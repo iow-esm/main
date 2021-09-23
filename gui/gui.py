@@ -95,10 +95,18 @@ class IowEsmGui:
             cmd = "find . -name \"*.sh\" -exec chmod u+x {} \\;"
             os.system(cmd)
             self._build_window_clone_origins()
+        
+            # place monitor after everything is built up
+            self.windows["monitor"].geometry('+%d+%d' % (self.window.winfo_width() + self.x_offset * (1.1), self.y_offset))
+
             return
         
         if not self._check_destinations():
             self._build_window_edit_destinations()
+            
+            # place monitor after everything is built up
+            self.windows["monitor"].geometry('+%d+%d' % (self.window.winfo_width() + self.x_offset * (1.1), self.y_offset))
+
             return
         
         self.current_destination = ""
@@ -107,17 +115,29 @@ class IowEsmGui:
         if not self._check_last_build() or self.error_handler.check_for_error(*IowEsmErrors.build_origins_first_time):
             self._build_frame_destinations()
             self._build_frame_build(True)
+            
+            # place monitor after everything is built up
+            self.windows["monitor"].geometry('+%d+%d' % (self.window.winfo_width() + self.x_offset * (1.1), self.y_offset))
+
             return
         
         self.current_setups = []
         
         if not self._check_setups():
             self._build_window_edit_setups()
+            
+            # place monitor after everything is built up
+            self.windows["monitor"].geometry('+%d+%d' % (self.window.winfo_width() + self.x_offset * (1.1), self.y_offset))
+
             return
         
         if not self._check_last_deployed_setups():
             self._build_frame_destinations()
             self._build_frame_setups(True)
+            
+            # place monitor after everything is built up
+            self.windows["monitor"].geometry('+%d+%d' % (self.window.winfo_width() + self.x_offset * (1.1), self.y_offset))
+
             return
         
         # everything is normal, remove old log
