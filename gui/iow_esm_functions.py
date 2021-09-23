@@ -26,8 +26,7 @@ class IowEsmFunctions:
                 
     def clone_origins(self):
         cmd = root_dir + "/clone_origins.sh"
-        self.gui.print(cmd)
-        os.system(cmd)
+        self.execute_shell_cmd(cmd)
         
         for ori in read_iow_esm_configuration(root_dir + '/ORIGINS').keys():
             if glob.glob(root_dir + "/" + ori + "/.git") == []:
@@ -73,8 +72,8 @@ class IowEsmFunctions:
             return False
         
         cmd = "./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
-        self.gui.print(cmd)
-        os.system(cmd)
+        self.execute_shell_cmd(cmd)
+        
         return True
         
     def build_origins_first_time(self):
@@ -171,9 +170,9 @@ class IowEsmFunctions:
             self.gui.print("More than one setup is selected. Take the last one as base.")
 
         archive = self.gui.entries["archive_setup"].get()
+        
         cmd = "./archive_setups.sh " + self.gui.current_destination + " " + self.gui.current_setups[-1] + " " + archive
-        self.gui.print(cmd)
-        os.system(cmd)
+        self.execute_shell_cmd(cmd)
             
     def deploy_setups(self):
         if self.gui.current_destination == "":
@@ -182,8 +181,8 @@ class IowEsmFunctions:
         
         for setup in self.gui.current_setups:
             cmd = "./deploy_setups.sh " + self.gui.current_destination + " " + setup
-            self.gui.print(cmd)
-            os.system(cmd)
+            
+            self.execute_shell_cmd(cmd)
             
     def deploy_setups_first_time(self):
         self.deploy_setups()
@@ -198,8 +197,7 @@ class IowEsmFunctions:
         for setup in self.gui.current_setups:
             cmd = cmd + " " + setup
             
-        self.gui.print(cmd)
-        os.system(cmd)
+        self.execute_shell_cmd(cmd)
         
     def store_file_from_tk_text(self, file_name, tk_text):
         content = tk_text.get("1.0", tk.END)
