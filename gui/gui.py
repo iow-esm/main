@@ -43,7 +43,7 @@ class FrameTitleLabel(tk.Label):
             bg = bg, 
             fg = 'white'
         )
-        self.config(font=("Meat Plus", 20))
+        self.config(font=("Meta Plus", 20))
         
         
 class Frame(tk.Frame):
@@ -55,12 +55,18 @@ class Frame(tk.Frame):
             #height = 200
         )
 
-
 class IowEsmGui:
     def __init__(self):
         self.window = tk.Tk(className="IOW_ESM")
         self.window.configure(background=IowColors.blue1)
-        #self.window.geometry("500x900")
+        
+        self.screen_width = self.window.winfo_screenwidth() # width of the screen
+        self.screen_height = self.window.winfo_screenheight() # height of the screen
+        
+        self.x_offset = self.screen_width / 30
+        self.y_offset = 0
+        
+        self.window.geometry('+%d+%d' % (self.x_offset, self.y_offset))
         
         self.labels = {}
         self.entries = {}
@@ -121,6 +127,13 @@ class IowEsmGui:
         
         self._build_window()
         
+        self.window.attributes('-topmost', 1)
+        self.window.attributes('-topmost', 0)
+        self.window.update_idletasks()
+        
+        # place monitor after everything is built up
+        self.windows["monitor"].geometry('+%d+%d' % (self.window.winfo_width() + self.x_offset * (1.1), self.y_offset))
+        
     def _destroy_monitor_callback(self):
         self.monitor = False
         self.windows["monitor"].destroy()
@@ -138,8 +151,13 @@ class IowEsmGui:
             #self.texts["monitor"].grid(row=0)
             #self.monitor = True
             return
-            
+        
+        self.windows["monitor"].attributes('-topmost', 1)
+        self.windows["monitor"].attributes('-topmost', 0)
+        
         self.texts["monitor"].insert(tk.END, str(text) + "\n")
+        self.texts["monitor"].see(tk.END)
+        self.window.update_idletasks()
         
     def _check_origins(self):
         self.origins = []
@@ -220,10 +238,17 @@ class IowEsmGui:
         
     def _build_window_monitor(self):
         self.windows["monitor"] = tk.Toplevel(self.window)
-        self.windows["monitor"].configure(background=IowColors.blue2)
+        self.windows["monitor"].configure(background=IowColors.blue3)
         self.windows["monitor"].protocol("WM_DELETE_WINDOW", self._destroy_monitor_callback)
+        
+        
+        
         self.labels["monitor"] = FrameTitleLabel("Monitor:", master = self.windows["monitor"], bg = self.windows["monitor"]["background"])
-        self.texts["monitor"] = tk.Text(master = self.windows["monitor"], bg=IowColors.blue1, fg="white")
+        self.texts["monitor"] = tk.Text(master = self.windows["monitor"], 
+                                        bg=IowColors.blue1, 
+                                        fg="white", 
+                                        width=self.screen_width // 15, 
+                                        height=self.screen_height // 30)
         
         row=0
         
@@ -370,9 +395,24 @@ class IowEsmGui:
                 ori_short = ori.split("/")[-1]
                 self.buttons["build_" + ori_short] = FunctionButton(ori_short, partial(self.functions.build_origin, ori), master=self.frames["build"])
             
-        # put everything on a grid
-        columnspan = len(self.origins)
+            self.labels["build_configs"] = tk.Label(text="Build configurations:", master=self.frames["build"], bg = self.frames["build"]["background"], fg = 'white')
+            
+            
+            build_modes = ["release", "debug", "fast", "rebuild"]
+            
+            for mode in build_modes:
+                self.buttons["build_" + mode] = SetButton(mode, partial(self.functions.set_build_config, mode), master=self.frames["build"])
         
+            self.labels["current_build_config"] = tk.Label(text="Current build configuration:", master=self.frames["build"], bg = self.frames["build"]["background"], fg = 'white')
+            self.entries["current_build_config"] = tk.Entry(master=self.frames["build"])
+         
+        # put everything on a grid
+        
+        if first_time:
+            columnspan = len(self.origins)
+        else:
+            columnspan = max(len(self.origins), len(build_modes))
+            
         row = 0
         self.labels["build"].grid(row=row, columnspan=columnspan, sticky='w')
         row += 1
@@ -385,6 +425,26 @@ class IowEsmGui:
                 ori_short = ori.split("/")[-1]
                 self.buttons["build_" + ori_short].grid(row=row, column=c, sticky='we')
             row += 1
+            
+            blank = tk.Label(text="", master=self.frames["build"], bg = self.frames["build"]["background"])
+            blank.grid(row=row, columnspan=columnspan)
+            row += 1
+        
+            self.labels["build_configs"].grid(row=row, column=0, sticky='w')
+            row += 1
+            
+            for c, mode in enumerate(build_modes):
+                self.buttons["build_" + mode].grid(row=row, column=c, sticky='we')
+            row += 1
+            
+            self.labels["current_build_config"].grid(row=row, columnspan=columnspan)
+            row += 1
+            
+            self.entries["current_build_config"].grid(row=row, columnspan=columnspan)
+            row += 1
+            
+            self.entries["current_build_config"].delete(0, tk.END)
+            self.entries["current_build_config"].insert(0, self.current_build_conf)
         
         blank = tk.Label(text="", master=self.frames["build"], bg = self.frames["build"]["background"])
         blank.grid(row=row, columnspan=columnspan)

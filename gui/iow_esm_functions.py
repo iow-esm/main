@@ -12,6 +12,17 @@ class IowEsmFunctions:
     def __init__(self, gui):
         self.gui = gui
         self.eh = self.gui.error_handler
+        
+    def execute_shell_cmd(self, cmd):
+        self.gui.print("Executing: \"" + cmd + "\"...")
+        
+        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        
+        while(p.poll() is None):
+            line = p.stdout.readline()
+            self.gui.print(" " + str(line.decode("utf-8")[:-1]))
+            
+        self.gui.print("...done")
                 
     def clone_origins(self):
         cmd = root_dir + "/clone_origins.sh"
@@ -45,7 +56,7 @@ class IowEsmFunctions:
         self.gui.entries["current_dst"].delete(0, tk.END)
         self.gui.entries["current_dst"].insert(0, self.gui.current_destination)
         
-        self.gui.print("Current destination is " + self.gui.current_destination)
+        self.gui.print("Current destination: " + self.gui.current_destination)
         
     def build_origin(self, ori):
         if self.gui.current_destination == "":
@@ -53,8 +64,8 @@ class IowEsmFunctions:
             return False
         
         cmd = "cd " + ori + "; ./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
-        self.gui.print(cmd)
-        os.system(cmd)
+
+        self.execute_shell_cmd(cmd)
         
     def build_origins(self):
         if self.gui.current_destination == "":
@@ -91,12 +102,25 @@ class IowEsmFunctions:
             
         self.gui.refresh()
         
+    def set_build_config(self, mode):
+        if mode == "release" or mode == "debug":
+            self.gui.current_build_conf = mode + " " + self.gui.current_build_conf.split()[1]
+        
+        if mode == "fast" or mode == "rebuild":
+            self.gui.current_build_conf = self.gui.current_build_conf.split()[0] + " " + mode
+        
+        self.gui.entries["current_build_config"].delete(0, tk.END)
+        self.gui.entries["current_build_config"].insert(0, self.gui.current_build_conf)
+        self.gui.print("Current build configuration: " + self.gui.current_build_conf)
+        
     def set_setup(self, setup):
         self.gui.current_setups.append(setup)
         if len(self.gui.current_setups) == 1:
             self.gui.entries["current_setups"].insert(tk.END, self.gui.current_setups[-1])
         else:
             self.gui.entries["current_setups"].insert(tk.END, ", " + self.gui.current_setups[-1])
+            
+        self.gui.print("Current setups: " + str(self.gui.current_setups))
         
     def get_setups_info(self):
         for setup in self.gui.current_setups:
