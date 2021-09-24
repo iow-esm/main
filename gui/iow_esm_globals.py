@@ -12,8 +12,8 @@ from functools import partial
 import subprocess
 import json
 
-root_dir = "."
-#root_dir = os.getcwd()
+#root_dir = "."
+root_dir = os.getcwd()
 
 class IowColors:
     blue1 = "#10427a" 

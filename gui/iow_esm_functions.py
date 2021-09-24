@@ -8,13 +8,24 @@ Created on Thu Sep 16 14:55:17 2021
 from iow_esm_globals import *
 from iow_esm_error_handler import IowEsmErrors
 
+import platform
+
 class IowEsmFunctions:
     def __init__(self, gui):
         self.gui = gui
         self.eh = self.gui.error_handler
         
+        if platform.system() == "Linux":
+            self.bash = ""
+        if platform.system() == "Windows":
+            self.bash = "\"C:\\Program Files\\Git\\usr\\bin\\env.exe\" MSYSTEM=MINGW64 /bin/bash -l -c "
+        
     def execute_shell_cmd(self, cmd):
         self.gui.print("Executing: \"" + cmd + "\"...")
+        
+
+        if self.bash != "":
+            cmd = self.bash + "\"" + cmd.replace("\\","/") + "\""
         
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         
@@ -72,7 +83,7 @@ class IowEsmFunctions:
             self.eh.report_error(*IowEsmErrors.destination_not_set)
             return False
         
-        cmd = "./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
+        cmd = root_dir + "/build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
         self.execute_shell_cmd(cmd)
         
         return True
