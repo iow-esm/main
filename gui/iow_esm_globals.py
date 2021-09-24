@@ -13,6 +13,7 @@ import subprocess
 import json
 
 root_dir = "."
+#root_dir = os.getcwd()
 
 class IowColors:
     blue1 = "#10427a" 
@@ -24,7 +25,10 @@ class IowColors:
     green2 = "#abdd64"
     green3 = "#cbe999"
     green4 = "#e0f2c0"
-    grey1 = "#4e584e"
+    grey1 = "#4c564c"
+    grey2 = "#6b766b"
+    grey3 = "#9ea89d"
+    grey4 = "#c3cac2"
         
 def read_iow_esm_configuration(file_name):
     
