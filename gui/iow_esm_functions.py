@@ -55,7 +55,8 @@ class IowEsmFunctions:
         self.gui.entries["current_dst"].delete(0, tk.END)
         self.gui.entries["current_dst"].insert(0, self.gui.current_destination)
         
-        self.gui.print("Current destination: " + self.gui.current_destination)
+        self.gui.print("Current destination: ")
+        self.gui.print(" " + self.gui.current_destination + " (" + self.gui.destinations[self.gui.current_destination] + ")" )
         
     def build_origin(self, ori):
         if self.gui.current_destination == "":
@@ -119,7 +120,9 @@ class IowEsmFunctions:
         else:
             self.gui.entries["current_setups"].insert(tk.END, ", " + self.gui.current_setups[-1])
             
-        self.gui.print("Current setups: " + str(self.gui.current_setups))
+        self.gui.print("Current setups: ")
+        for setup in self.gui.current_setups:
+            self.gui.print(" " + setup + " (" + str(self.gui.setups[setup]) + ")")
         
     def get_setups_info(self):
         for setup in self.gui.current_setups:
@@ -194,6 +197,10 @@ class IowEsmFunctions:
             return False 
         
         cmd = root_dir + "/run.sh " + self.gui.current_destination
+        
+        if self.gui.prepare_before_run.get() != 0:
+            cmd += " prepare-before-run"
+        
         for setup in self.gui.current_setups:
             cmd = cmd + " " + setup
             

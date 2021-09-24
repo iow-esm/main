@@ -30,6 +30,24 @@ class SetButton(tk.Button):
             bg = IowColors.grey1,
             fg = "white"
         )
+                
+class CheckButton(tk.Checkbutton):
+    def __init__(self, text, variable, master=None):
+        #if master is not None:
+        #    bg = master["background"]
+        #else:
+        bg = IowColors.grey1,
+        tk.Checkbutton.__init__(self,
+            master=master,
+            text=text,
+            var=variable,
+            fg = "white",
+            bg = bg,
+            #activebackground = bg,
+            #activeforeground = "white",
+            selectcolor=bg,
+            #bd=5
+        )
         
 class FrameTitleLabel(tk.Label):
     def __init__(self, text, master=None, bg=""):
@@ -77,6 +95,8 @@ class IowEsmGui:
         self.windows = {}
         
         self.restart = False
+        
+        self.prepare_before_run = tk.IntVar(value=0)
         
         self.error_handler = IowEsmErrorHandler(self)
         self.functions = IowEsmFunctions(self)
@@ -594,10 +614,14 @@ class IowEsmGui:
         
         self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model:")
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
+        self.buttons["prepare_before_run"] = CheckButton("prepare before run", self.prepare_before_run, master=self.frames["run"])
 
         row = 0
         
         self.labels["run"].grid(row=row, sticky='w')
+        row += 1
+        
+        self.buttons["prepare_before_run"].grid(row=row, sticky="ew")
         row += 1
         
         self.buttons["run"].grid(row=row, sticky='ew')
