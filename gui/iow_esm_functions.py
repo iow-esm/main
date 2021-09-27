@@ -16,16 +16,14 @@ class IowEsmFunctions:
         self.eh = self.gui.error_handler
         
         if platform.system() == "Linux":
-            self.bash = ""
+            self.bash = "`which bash`"
         if platform.system() == "Windows":
-            self.bash = "\"C:\\Program Files\\Git\\usr\\bin\\env.exe\" MSYSTEM=MINGW64 /bin/bash -l -c "
+            self.bash = "\"C:\\msys64\\usr\\bin\\env.exe\" MSYSTEM=MINGW64 /bin/bash"
         
     def execute_shell_cmd(self, cmd):
         self.gui.print("Executing: \"" + cmd + "\"...")
         
-
-        if self.bash != "":
-            cmd = self.bash + "\"" + cmd.replace("\\","/") + "\""
+        cmd = self.bash + " -l -c \"cd " + root_dir.replace("\\","/") + "; " + cmd + "\""
         
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         
@@ -36,7 +34,7 @@ class IowEsmFunctions:
         self.gui.print("...done")
                 
     def clone_origins(self):
-        cmd = root_dir + "/clone_origins.sh"
+        cmd = "./clone_origins.sh"
         self.execute_shell_cmd(cmd)
         
         for ori in read_iow_esm_configuration(root_dir + '/ORIGINS').keys():
@@ -46,17 +44,17 @@ class IowEsmFunctions:
         
         self.eh.remove_from_log(*IowEsmErrors.clone_origins)
             
-        cmd = "find . -name \"*.*sh\" -exec chmod u+x {} \\;"
-        os.system(cmd)
+        cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
         
-        cmd = "find " + root_dir + "/components/MOM5/exp/ -name \"*\" -exec chmod u+x {} \\;"
-        os.system(cmd)
+        cmd = "find ./components/MOM5/exp/ -name \\\"*\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
         
-        cmd = "find " + root_dir + "/components/MOM5/bin/ -name \"*\" -exec chmod u+x {} \\;"
-        os.system(cmd)
+        cmd = "find ./components/MOM5/bin/ -name \\\"*\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
         
-        cmd = "find . -name \"configure\" -exec chmod u+x {} \\;"
-        os.system(cmd)
+        cmd = "find . -name \\\"configure\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
         
         self.gui.refresh()
         
@@ -83,7 +81,7 @@ class IowEsmFunctions:
             self.eh.report_error(*IowEsmErrors.destination_not_set)
             return False
         
-        cmd = root_dir + "/build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
+        cmd = "./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
         self.execute_shell_cmd(cmd)
         
         return True
