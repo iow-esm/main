@@ -72,6 +72,7 @@ class IowEsmFunctions:
             self.eh.report_error(*IowEsmErrors.destination_not_set)
             return False
         
+        ori = ori.replace("\\","/")
         cmd = "cd " + ori + "; ./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
 
         self.execute_shell_cmd(cmd)
@@ -183,7 +184,7 @@ class IowEsmFunctions:
 
         archive = self.gui.entries["archive_setup"].get()
         
-        cmd = "./archive_setups.sh " + self.gui.current_destination + " " + self.gui.current_setups[-1] + " " + archive
+        cmd = "./archive_setup.sh " + self.gui.current_destination + " " + self.gui.current_setups[-1] + " " + archive
         self.execute_shell_cmd(cmd)
             
     def deploy_setups(self):
@@ -205,7 +206,7 @@ class IowEsmFunctions:
             self.eh.report_error(*IowEsmErrors.destination_not_set)
             return False 
         
-        cmd = root_dir + "/run.sh " + self.gui.current_destination
+        cmd = "./run.sh " + self.gui.current_destination
         
         if self.gui.prepare_before_run.get() != 0:
             cmd += " prepare-before-run"
