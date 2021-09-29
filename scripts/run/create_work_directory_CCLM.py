@@ -53,7 +53,7 @@ def create_work_directory_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
                      new_value = '='+str(starthours)+','+str(finalhours)+','+str(finalhours-starthours)+',')
     change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT_IO',
                      after='&GRIBOUT', before='/END', start_of_line='hcomb',
-                     new_value = '='+str(starthours)+','+str(finalhours)+',1,', repeated=True)
+                     new_value = '='+str(starthours)+','+str(finalhours)+',_*_,', repeated=True) # mask out ('_*_') the print interval, should be used as is
     change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT_ORG',
                      after='&RUNCTL', before='/END', start_of_line='ydate_ini',
                      new_value = '=\''+str(init_date)+'00\' ydate_end=\''+str(end_date)+'00\',')
