@@ -166,6 +166,8 @@ class IowEsmFunctions:
         self.gui.current_setups = []
         self.gui.entries["current_setups"].delete(0, tk.END)
         
+        self.gui.print("Current setups: []")
+        
     def edit_setups(self):
         newWindow = tk.Toplevel(self.gui.window)
         self.gui._edit_file(root_dir + "/SETUPS", root_dir + "/SETUPS", master=newWindow)
@@ -196,6 +198,7 @@ class IowEsmFunctions:
             cmd = "./deploy_setups.sh " + self.gui.current_destination + " " + setup
             
             self.execute_shell_cmd(cmd)
+            self.clear_setups()
             
     def deploy_setups_first_time(self):
         self.deploy_setups()
