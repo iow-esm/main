@@ -221,7 +221,7 @@ class IowEsmFunctions:
         
     def store_file_from_tk_text(self, file_name, tk_text):
         content = tk_text.get("1.0", tk.END)
-        with open(file_name, 'w') as file:
+        with open(file_name, 'w', newline='') as file: # newline='' avoids carriage return under Windows
             file.write(content)
         file.close()
         
