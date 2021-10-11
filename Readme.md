@@ -6,42 +6,81 @@ Further information will follow.
 **!!!ATTENTION!!! This not yet a working project and cannot be used at the moment**
 
 
-## First steps
+## Prerequisites
 
 
-### Prerequisites
-
-
-#### Local
+### Local
 
 Your local machine has to provide:
 
-* bash
-* configured git instance
+* `bash`
+* configured `git` instance
+* optional: `python` (with the [`tkinter`](https://docs.python.org/3/library/tkinter.html) module) for using the graphical user interface 
 
-If you work on Windows, you can use e.g. `Git for Windows` which already provides these prerequisites.
+
+#### Windows
+
+If you work on Windows, you can use e.g. the [`MSYS2`](https://www.msys2.org/) software distribution and building platform. 
+For installation, follow the instructions given on the project web site.
+After successful installation you can open an `MSYS2` shell via hitting the Windows key on your keyboard, typing "msys" and opening the installed app.
+In the opnend shell you can then install `git` and `rsync` which are needed by executing
+
+``` bash
+pacman -S git
+pacman -S rsync
+```
+
+
+#### Linux
+
 If you work on Linux you will most probably have a `bash` and you can install `git` with the package manager of your distribution.
 
-#### Remote
+
+### Remote
 
 You need accounts on the target servers, where you want to run the model.
+
 **TODO:** How to setup correctly `.bashrc`and `.bash_profile`?
-Note that it is strongly recommended to use a key agent for your account on the target server.
-Otherwise you will have to type in your account password very often.
 
 
 ### Get the main project
+
+Open a shell (`MSYS2` on Windows or `bash` on Linux) and execute
 
 ``` bash
 cd /to/your/favorite/directory
 git clone https://git.io-warnemuende.de/karsten/main.git .
 ```
 
-Make all bash scripts executable
+The place holder `/to/your/favorite/directory` will become the _root directory_ of this project so choose it resonably.
+
+Note that it is strongly recommended to use a [key agent](https://www.ssh.com/academy/ssh/agent) for connecting to the target servers.
+Otherwise you will have to type in your account password very often.
+Assuming you have generated RSA key pairs for the target machines as described in the [phywiki](http://phywiki.io-warnemuende.de/do/view/Server/GenerateRsakeys) or as required for the HLRN, you can start a key agent via
 
 ``` bash
-find . -name "*.sh" -exec chmod u+x {} \;
+eval `ssh-agent`
+ssh-add ~/.ssh/<private-key>
 ```
+
+where the `<private-key>` should be the private key generated for the desired target.
+
+### Working with the GUI
+
+If you would like to work with graphical user interface you have to start corresponding python script from a shell
+(`MSYS2` on Windows or `bash` on Linux) by executing the following in the root directory (where this `Readme.md` is located)
+
+``` bash
+/path/to/python iow_esm.py
+```
+
+The shell where this is executed should be the same as where the key agent is running.
+
+The GUI will guide you step by step throught the first steps that are described in the following for the command line application.
+
+
+## First steps
+
 
 ### Get the component sources
 
