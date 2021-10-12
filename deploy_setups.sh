@@ -33,8 +33,11 @@ colon=`echo "${setup_origin}" | grep ":"`
 
 echo ssh -t "${user_at_dest}" \"mkdir -p ${dest_folder}\"
 ssh -t "${user_at_dest}" "mkdir -p ${dest_folder}"
+
+last_deploy_name="./LAST_DEPLOYED_SETUPS_${target_keyword}"
+
 if [ -z "$colon" ]; then
-	echo "Update from local setup "`whoami`@`hostname`":${setup_origin} at "`date +%Y-%m-%d_%H-%M-%S` >> "${setup_origin}"/UPDATE_SETUP_INFO
+	echo "Update from local setup "`whoami`@`hostname`":${setup_origin} to ${dest} at " `date +%Y-%m-%d_%H-%M-%S` >> ${last_deploy_name}
 	echo rsync -r -i -u ${setup_origin}/ ${dest}/.
 	rsync -r -i -u ${setup_origin}/ ${dest}/.
 else
@@ -58,10 +61,9 @@ else
 	# some preparation scripts require write premissions
 	echo ssh -t "${user_at_dest}" \"chmod u+w -R ${dest_folder}\"
 	ssh -t "${user_at_dest}" "chmod u+w -R ${dest_folder}"
+	
+	echo "Update from setup ${setup_origin} to ${dest} at " `date +%Y-%m-%d_%H-%M-%S` >> ${last_deploy_name}
 fi
 
-last_deploy_name="./LAST_DEPLOYED_SETUPS_${target_keyword}"
-echo "${setup_origin} ${dest}" >> ${last_deploy_name}
-
 echo scp "${last_deploy_name}" ${user_at_dest}:${dest_folder}/LAST_DEPLOYED_SETUPS
-scp "${last_build_file}" ${user_at_dest}:${dest_folder}/LAST_DEPLOYED_SETUPS
+scp "${last_deploy_name}" ${user_at_dest}:${dest_folder}/LAST_DEPLOYED_SETUPS
