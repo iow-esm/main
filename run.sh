@@ -78,8 +78,8 @@ last_build_file="LAST_BUILD_${target_keyword}_${debug}"
 cat "${last_build_file}"
 echo ""
 echo "Transfer it to the target:"
-echo scp "${last_build_file}" ${user_at_dest}:${dest_folder}/
-scp "${last_build_file}" ${user_at_dest}:${dest_folder}/
+echo scp "${last_build_file}" ${user_at_dest}:${dest_folder}/LAST_BUILD_${debug}
+scp "${last_build_file}" ${user_at_dest}:${dest_folder}/LAST_BUILD_${debug}
 echo ""
 echo ""
 

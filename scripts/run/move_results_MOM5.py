@@ -18,6 +18,9 @@ def move_results_MOM5(workdir,        # work directory of this model instance
 
     # STEP 2: MOVE OUTPUT
     os.system('mv '+workdir+'/*.nc.???? '+outputdir+'/out_raw/.')
+    
+    if os.path.isfile(workdir + '/RUN_INFO'):
+        os.system('mv '+workdir+'/RUN_INFO '+outputdir+'/.')
 
     # STEP 3: MOVE HOTSTART
     os.system('mv '+workdir+'/RESTART/* '+hotstartdir+'/.')  # MOM hotstart files

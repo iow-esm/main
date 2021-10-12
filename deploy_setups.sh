@@ -62,3 +62,6 @@ fi
 
 last_deploy_name="./LAST_DEPLOYED_SETUPS_${target_keyword}"
 echo "${setup_origin} ${dest}" >> ${last_deploy_name}
+
+echo scp "${last_deploy_name}" ${user_at_dest}:${dest_folder}/LAST_DEPLOYED_SETUPS
+scp "${last_build_file}" ${user_at_dest}:${dest_folder}/LAST_DEPLOYED_SETUPS
