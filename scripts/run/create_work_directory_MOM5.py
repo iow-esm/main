@@ -6,6 +6,7 @@ import os
 import shutil
 
 import change_in_namelist
+import get_run_information
 
 def create_work_directory_MOM5(IOW_ESM_ROOT,        # root directory of IOW ESM
                                work_directory_root, # /path/to/work/directory for all models
@@ -72,5 +73,10 @@ def create_work_directory_MOM5(IOW_ESM_ROOT,        # root directory of IOW ESM
         os.system('cp '+hotstart_folder+'/*.res.nc '+full_directory+'/INPUT/')    # copy MOM5 hotstart files
         os.system('cp '+hotstart_folder+'/coupler.res '+full_directory+'/INPUT/') # copy MOM5 file stating present date
         os.system('cp '+hotstart_folder+'/res*.nc '+full_directory+'/')           # copy OASIS3 hotstart files
+        
+    info_file_name = full_directory + "/RUN_INFO"
+    with open(info_file_name, 'w') as file:
+        file.write(get_run_information.get_run_information(IOW_ESM_ROOT, debug_mode))
+    file.close()
 
     return

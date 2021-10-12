@@ -8,6 +8,7 @@ import shutil
 import change_in_namelist
 
 import modify_cclm_restart_file
+import get_run_information
 
 def create_work_directory_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
                                work_directory_root, # /path/to/work/directory for all models
@@ -75,5 +76,10 @@ def create_work_directory_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
     if coupling_time_step > 0:
         beginning_of_month = start_date[:6] + "01" + start_date[8:]
         modify_cclm_restart_file.modify_cclm_restart_file(work_directory_root, my_directory, beginning_of_month)
-
+    
+    info_file_name = full_directory + "/RUN_INFO"
+    with open(info_file_name, 'w') as file:
+        file.write(get_run_information.get_run_information(IOW_ESM_ROOT, debug_mode))
+    file.close()
+    
     return
