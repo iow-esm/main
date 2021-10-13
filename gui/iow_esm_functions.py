@@ -58,6 +58,29 @@ class IowEsmFunctions:
         
         self.gui.refresh()
         
+    def clone_origin(self, origin):
+
+        cmd = "./clone_origins.sh " + origin
+        self.execute_shell_cmd(cmd)
+        
+        if glob.glob(root_dir + "/" + origin + "/.git") == []:
+            self.eh.report_error(*IowEsmErrors.clone_origins)
+            return
+        
+        self.eh.remove_from_log(*IowEsmErrors.clone_origins)
+            
+        cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
+        
+        cmd = "find ./components/MOM5/exp/ -name \\\"*\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
+        
+        cmd = "find ./components/MOM5/bin/ -name \\\"*\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
+        
+        cmd = "find . -name \\\"configure\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
+        
     def set_destination(self, dst):
         self.gui.current_destination = dst
         

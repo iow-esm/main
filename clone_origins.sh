@@ -27,8 +27,13 @@ fi
 temporary_name=clone_origins_tmp.sh
 
 # go through ORIGINS file and create temporary script for cloning
-awk -v local="$local" '{
+awk -v local="$local" -v ori="$1" '{
 	dir=$1
+	if (ori != ""){
+		if (dir != ori){
+			next
+		}
+	}
 	remote=$2
 	
 	print "if [ -d "local"/"dir"/.git ]; then"

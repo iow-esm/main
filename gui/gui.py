@@ -112,7 +112,7 @@ class IowEsmGui:
         
         if not self._check_origins() or self.error_handler.check_for_error(*IowEsmErrors.clone_origins):
 
-            cmd = "find . -name \"*.sh\" -exec chmod u+x {} \\;"
+            cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
             os.system(cmd)
             self._build_window_clone_origins()
         
@@ -305,18 +305,46 @@ class IowEsmGui:
         self.frames["clone_origins"] = Frame(master=self.window)
         
         self.labels["clone_origins_title"] = FrameTitleLabel(master=self.frames["clone_origins"], text="You are using the IOW_ESM for the first time.")
-        self.labels["clone_origins_title"].grid(row=self.row)
-        self.row += 1
-        
+
         self.labels["clone_origins"] = tk.Label(master=self.frames["clone_origins"], text="You have to clone the origins of the components first:", bg = IowColors.blue1, fg = 'white')
-        self.labels["clone_origins"].grid(row=self.row)
-        self.row += 1
+
+        self.buttons["clone_origins"] = FunctionButton("Clone all origins", self.functions.clone_origins, master=self.frames["clone_origins"])
         
-        self.buttons["clone_origins"] = FunctionButton("Clone origins", self.functions.clone_origins, master=self.frames["clone_origins"])
-        self.buttons["clone_origins"].grid(row=self.row)
-        self.row += 1
+        origins = read_iow_esm_configuration(root_dir + '/ORIGINS').keys()
         
-        self.frames["clone_origins"].grid(row=self.row)
+        for origin in origins:
+            self.buttons["clone_" + origin] = FunctionButton(origin, partial(self.functions.clone_origin, origin), master=self.frames["clone_origins"])        
+        
+        columnspan = len(origins)
+        
+        self.buttons["continue"] = FunctionButton("Continue", self.refresh, master=self.frames["clone_origins"])
+        
+        row = 0
+        self.labels["clone_origins_title"].grid(row=row, columnspan=columnspan)
+        row += 1
+        
+        self.labels["clone_origins"].grid(row=row, columnspan=columnspan)
+        row += 1
+        
+        self.buttons["clone_origins"].grid(row=row, columnspan=columnspan, sticky='ew')
+        row += 1
+        
+        for c, origin in enumerate(origins):
+            self.buttons["clone_" + origin].grid(row=row, column=c, sticky='ew')
+        row += 1
+        
+        blank = tk.Label(text="", master=self.frames["clone_origins"], bg = self.frames["clone_origins"]["background"])
+        blank.grid(row=row, columnspan=columnspan)
+        row += 1
+        
+        self.buttons["continue"].grid(row=row, columnspan=columnspan)
+        row += 1
+        
+        self.frames["clone_origins"].grid(row=self.row, sticky='nsew')
+        for i in range(0, columnspan):
+            self.frames["clone_origins"].grid_columnconfigure(i, weight=1)
+        self.frames["clone_origins"].grid_rowconfigure(0, weight=1)
+        
         self.row += 1
         
     def _build_window_edit_destinations(self):
