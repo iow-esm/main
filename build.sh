@@ -4,12 +4,10 @@ fast=${3:-"fast"}
 
 set -e
 
-components=(
-	"OASIS3-MCT"
-	"flux_calculator"
-	"CCLM"
-	"MOM5"
-)
+# location of this script
+local="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+origins=(`awk '{print $1}' ${local}/ORIGINS`)
 
 echo "###############################################"
 echo "##                                           ##"
@@ -18,53 +16,18 @@ echo "##                                           ##"
 echo "###############################################"
 echo ""
 echo "###############################################"
-echo "##            Building components            ##"
+echo "##             Building origins              ##"
 echo "###############################################"
 echo ""
 	
-for c in "${components[@]}"; do
-	if [ -d components/"$c" ]; then
-		echo "## Component: $c"
+for c in "${origins[@]}"; do
+	if [ -f "${local}/${c}/build.sh" ]; then
+		echo "## Build: $c"
 		echo "###############################################"
 		echo ""
-		cd components/"$c"
+		cd "${local}/$c"
 		./build.sh "$target" "$debug" "$fast"
 		cd -
-		echo ""
-		echo ""
-	else
-		echo "## Skipping components/$c."
-		echo "## $c will not be built."
-		echo "###############################################"
-		echo ""
-		echo ""
-	fi
-done
-
-echo ""
-echo "###############################################"
-echo "##               Building tools              ##"
-echo "###############################################"
-echo ""
-
-tools=(
-	"I2LM"
-)
-	
-for c in "${tools[@]}"; do
-	if [ -d tools/"$c" ]; then
-		echo "## Tools: $c"
-		echo "###############################################"
-		echo ""
-		cd tools/"$c"
-		./build.sh "$target" "$debug" "$fast"
-		cd -
-		echo ""
-		echo ""
-	else
-		echo "## Skipping tools/$c."
-		echo "## $c will not be built."
-		echo "###############################################"
 		echo ""
 		echo ""
 	fi
