@@ -32,6 +32,19 @@ class IowEsmFunctions:
             self.gui.print(" " + str(line.decode("utf-8")[:-1]))
             
         self.gui.print("...done")
+        
+    def apply_necessary_permisssions(self):
+        cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
+        
+        cmd = "find ./components/MOM5/exp/ -name \\\"*\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
+        
+        cmd = "find ./components/MOM5/bin/ -name \\\"*\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
+        
+        cmd = "find . -name \\\"configure\\\" -exec chmod u+x {} \\;"
+        self.execute_shell_cmd(cmd)
                 
     def clone_origins(self):
         cmd = "./clone_origins.sh"
@@ -44,17 +57,7 @@ class IowEsmFunctions:
         
         self.eh.remove_from_log(*IowEsmErrors.clone_origins)
             
-        cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
-        
-        cmd = "find ./components/MOM5/exp/ -name \\\"*\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
-        
-        cmd = "find ./components/MOM5/bin/ -name \\\"*\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
-        
-        cmd = "find . -name \\\"configure\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
+        self.apply_necessary_permisssions()
         
         self.gui.refresh()
         
@@ -69,17 +72,7 @@ class IowEsmFunctions:
         
         self.eh.remove_from_log(*IowEsmErrors.clone_origins)
             
-        cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
-        
-        cmd = "find ./components/MOM5/exp/ -name \\\"*\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
-        
-        cmd = "find ./components/MOM5/bin/ -name \\\"*\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
-        
-        cmd = "find . -name \\\"configure\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
+        self.apply_necessary_permisssions()
         
     def set_destination(self, dst):
         self.gui.current_destination = dst
