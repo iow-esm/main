@@ -30,6 +30,16 @@ class SetButton(tk.Button):
             bg = IowColors.grey1,
             fg = "white"
         )
+        
+class NewWindowButton(tk.Button):
+    def __init__(self, text, command, master=None):
+        tk.Button.__init__(self,
+            master=master,
+            text=text,
+            command=command,
+            bg = IowColors.grey4,
+            fg = "black"
+        )
                 
 class CheckButton(tk.Checkbutton):
     def __init__(self, text, variable, master=None):
@@ -113,7 +123,8 @@ class IowEsmGui:
         if not self._check_origins() or self.error_handler.check_for_error(*IowEsmErrors.clone_origins):
 
             cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
-            os.system(cmd)
+            self.functions.execute_shell_cmd(cmd)
+            
             self._build_window_clone_origins()
         
             # place monitor after everything is built up
@@ -302,63 +313,118 @@ class IowEsmGui:
         
     def _build_window_clone_origins(self):
         
-        self.frames["clone_origins"] = Frame(master=self.window)
+        self.frames["clone_origins"] = Frame(master=self.window, bg=IowColors.blue3)
         
-        self.labels["clone_origins_title"] = FrameTitleLabel(master=self.frames["clone_origins"], text="You are using the IOW_ESM for the first time.")
+        self.labels["clone_origins_title"] = FrameTitleLabel(master=self.frames["clone_origins"], text="Hello! You use the IOW_ESM for the first time.")
 
-        self.labels["clone_origins"] = tk.Label(master=self.frames["clone_origins"], text="You have to clone the origins of the components first:", bg = IowColors.blue1, fg = 'white')
+        self.labels["clone_origins"] = tk.Label(master=self.frames["clone_origins"], text="You have to clone the origins of the components first:", bg = self.frames["clone_origins"]["background"], fg = 'white')
 
         self.buttons["clone_origins"] = FunctionButton("Clone all origins", self.functions.clone_origins, master=self.frames["clone_origins"])
+        
+        self.buttons["clone_origins_advanced"] = NewWindowButton("Advanced", self._build_window_clone_origins_advanced, master=self.frames["clone_origins"])
+
+        
+        ttk.Separator(master=self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
+        self.row += 1
+        
+        row = 0
+        self.labels["clone_origins_title"].grid(row=row, sticky='w')
+        row += 1
+        
+        blank = tk.Label(text="", master=self.frames["clone_origins"], bg = self.frames["clone_origins"]["background"])
+        blank.grid(row=row)
+        row += 1
+        
+        self.labels["clone_origins"].grid(row=row, sticky='w')
+        row += 1
+        
+        self.buttons["clone_origins"].grid(row=row, sticky='ew')
+        row += 1
+        
+        self.buttons["clone_origins_advanced"].grid(row=row, sticky='ew')
+        row += 1
+        
+        self.frames["clone_origins"].grid(row=self.row, sticky='nsew')
+        self.frames["clone_origins"].grid_rowconfigure(0, weight=1)
+        self.frames["clone_origins"].grid_columnconfigure(0, weight=1)
+        self.row += 1
+        
+    def _build_frame_clone_origin(self):
+        
+        self.frames["clone_origin"] = Frame(master=self.windows["clone_origins_advanced"], bg=IowColors.blue2)
+        
+        self.labels["clone_origin_title"] = FrameTitleLabel("Clone individual origins:", self.frames["clone_origin"])
+        
+        self.labels["clone_origin"] = tk.Label(master=self.frames["clone_origin"], text="You can also clone the origins of individual components:", bg = self.frames["clone_origin"]["background"], fg = 'white')
         
         origins = read_iow_esm_configuration(root_dir + '/ORIGINS').keys()
         
         for origin in origins:
-            self.buttons["clone_" + origin] = FunctionButton(origin, partial(self.functions.clone_origin, origin), master=self.frames["clone_origins"])        
+            self.buttons["clone_" + origin] = FunctionButton(origin, partial(self.functions.clone_origin, origin), master=self.frames["clone_origin"])        
         
-        columnspan = len(origins)
+
+        self.labels["continue"] = tk.Label(master=self.frames["clone_origin"], text="Continue, when you have everything you need:", bg = self.frames["clone_origin"]["background"], fg = 'white')
         
-        self.buttons["continue"] = FunctionButton("Continue", self.refresh, master=self.frames["clone_origins"])
-        
+        self.buttons["continue"] = FunctionButton("Continue", self.refresh, master=self.frames["clone_origin"])
+
         row = 0
-        self.labels["clone_origins_title"].grid(row=row, columnspan=columnspan)
+        
+        max_buttons_in_row = 3
+        if len(origins) < max_buttons_in_row:
+            columnspan = len(origins) 
+        else:
+            columnspan = max_buttons_in_row
+            
+        self.labels["clone_origin_title"].grid(row=row, columnspan=columnspan, sticky='w')
         row += 1
         
-        self.labels["clone_origins"].grid(row=row, columnspan=columnspan)
-        row += 1
-        
-        self.buttons["clone_origins"].grid(row=row, columnspan=columnspan, sticky='ew')
+        self.labels["clone_origin"].grid(row=row, columnspan=columnspan, sticky='w')
         row += 1
         
         for c, origin in enumerate(origins):
-            self.buttons["clone_" + origin].grid(row=row, column=c, sticky='ew')
+            if (c % max_buttons_in_row) == 0:
+                row += 1
+            self.buttons["clone_" + origin].grid(row=row, column=(c % max_buttons_in_row), sticky='ew')
         row += 1
         
-        blank = tk.Label(text="", master=self.frames["clone_origins"], bg = self.frames["clone_origins"]["background"])
+        blank = tk.Label(text="", master=self.frames["clone_origin"], bg = self.frames["clone_origin"]["background"])
         blank.grid(row=row, columnspan=columnspan)
         row += 1
         
-        self.buttons["continue"].grid(row=row, columnspan=columnspan)
+        self.labels["continue"].grid(row=row, columnspan=columnspan, sticky='w')
         row += 1
         
-        self.frames["clone_origins"].grid(row=self.row, sticky='nsew')
-        for i in range(0, columnspan):
-            self.frames["clone_origins"].grid_columnconfigure(i, weight=1)
-        self.frames["clone_origins"].grid_rowconfigure(0, weight=1)
+        self.buttons["continue"].grid(row=row, columnspan=columnspan, sticky='ew')
+        row += 1
         
-        self.row += 1
+        self.frames["clone_origin"].grid(row=self.row, sticky='nsew')
+        for i in range(0, columnspan):
+            self.frames["clone_origin"].grid_columnconfigure(i, weight=1)
+        self.frames["clone_origin"].grid_rowconfigure(0, weight=1)
+
+        
+    def _build_window_clone_origins_advanced(self):
+        
+        self.windows["clone_origins_advanced"] = tk.Toplevel(self.window)
+        
+        self._build_frame_clone_origin()
+        
+        self.windows["clone_origins_advanced"].geometry('+%d+%d' 
+                                              % (self.x_offset, 
+                                                 1.2*self.window.winfo_height()))
         
     def _build_window_edit_destinations(self):
         
-        self.frames["edit_destinations"] = Frame(master=self.window)
+        self.frames["edit_destinations"] = Frame(master=self.window, bg = IowColors.blue3)
         
-        self.labels["edit_destinations_title"] = FrameTitleLabel(master=self.frames["edit_destinations"], text="You are using the IOW_ESM for the first time.")
-        self.labels["edit_destinations_title"].pack()
+        self.labels["edit_destinations_title"] = FrameTitleLabel(master=self.frames["edit_destinations"], text="Hello! You use the IOW_ESM for the first time.")
+        self.labels["edit_destinations_title"].grid(row=self.row, sticky = 'w')
         self.row += 1
         
         self.labels["edit_destinations"] = tk.Label(master=self.frames["edit_destinations"],
-            text="You have to edit your DESTINATIONS file:", bg = IowColors.blue1, fg = 'white'
+            text="You have to edit your DESTINATIONS file:", bg = self.frames["edit_destinations"]["background"], fg = 'white'
         )
-        self.labels["edit_destinations"].pack()
+        self.labels["edit_destinations"].grid(row=self.row, sticky = 'w')
         self.row += 1
         
         self.frames["edit_destinations"].grid(row=self.row, sticky='nsew')
@@ -399,7 +465,7 @@ class IowEsmGui:
         for dst in self.destinations.keys():
             self.buttons["set_" + dst] = SetButton(dst, partial(self.functions.set_destination, dst), master=self.frames["destinations"])
         
-        self.buttons["edit_destinations"] = FunctionButton("Edit", self.functions.edit_destinations, master=self.frames["destinations"])
+        self.buttons["edit_destinations"] = NewWindowButton("Edit", self.functions.edit_destinations, master=self.frames["destinations"])
         
         self.labels["current_dst"] = tk.Label(text="Current destination:", master=self.frames["destinations"], bg = self.frames["destinations"]["background"], fg = 'white')
         self.entries["current_dst"] = tk.Entry(master=self.frames["destinations"])
@@ -527,6 +593,43 @@ class IowEsmGui:
         ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
         self.row += 1
         
+    def _build_window_setups_advanced(self):
+        self.windows["setups_advanced"] = tk.Toplevel(self.window)
+        
+        self._build_frame_archive_setup()
+        
+        self.windows["setups_advanced"].geometry('+%d+%d' % (1.1*self.window.winfo_width() + self.x_offset, 1.1*self.windows["monitor"].winfo_height()))
+     
+    def _build_frame_archive_setup(self):
+        
+        self.frames["archive_setup"] = Frame(master=self.windows["setups_advanced"], bg = self.frames["setups"]["background"])
+  
+        self.labels["archive_setup_title"] = FrameTitleLabel("Archive setup:", self.frames["archive_setup"])
+        self.labels["archive_setup"] = tk.Label(text="You can archive the setup from your current destination:", master=self.frames["archive_setup"], bg = self.frames["archive_setup"]["background"], fg = 'white')
+
+        self.entries["archive_setup"] = tk.Entry(master=self.frames["archive_setup"]) 
+        self.buttons["archive_setup"] = FunctionButton("Archive setup", self.functions.archive_setup, self.frames["archive_setup"] )
+
+        row=0
+        
+        self.labels["archive_setup_title"].grid(row=row, columnspan=3, sticky = 'w')
+        row += 1
+        
+        self.labels["archive_setup"].grid(row=row, columnspan=3, sticky = 'w')
+        row += 1
+        
+        self.entries["archive_setup"].grid(row=row, column=0)
+
+        blank = tk.Label(text="  ", master=self.frames["archive_setup"], bg = self.frames["setups"]["background"])
+        blank.grid(row=row, column=1)
+
+        self.buttons["archive_setup"].grid(row=row, column=2)
+        row += 1
+        
+        blank = tk.Label(text="", master=self.frames["archive_setup"], bg = self.frames["setups"]["background"])
+        blank.grid(row=row, columnspan=3)
+    
+        self.frames["archive_setup"].grid(sticky='nesw')
         
     def _build_frame_setups(self, first_time):
         
@@ -539,14 +642,12 @@ class IowEsmGui:
         for setup in self.setups.keys():
             self.buttons["set_" + setup] = SetButton(setup, partial(self.functions.set_setup, setup), master=self.frames["setups"])
             
-        self.buttons["edit_setups"] = FunctionButton("Edit", self.functions.edit_setups, master=self.frames["setups"])
+        self.buttons["edit_setups"] = NewWindowButton("Edit", self.functions.edit_setups, master=self.frames["setups"])
         
         self.labels["current_setups"] = tk.Label(text="Current setups:", master=self.frames["setups"], bg = self.frames["setups"]["background"], fg = 'white')
         self.entries["current_setups"] = tk.Entry(master=self.frames["setups"])     
         
         self.frames["setups_function_buttons"] = Frame(master=self.frames["setups"])
-        
-        self.frames["archive_setup"] = Frame(master=self.frames["setups"], bg = self.frames["setups"]["background"])
         
         self.buttons["get_setups_info"] = FunctionButton("Get setups info", self.functions.get_setups_info, self.frames["setups_function_buttons"] )
         self.buttons["clear_setups"] = FunctionButton("Clear setups", self.functions.clear_setups, self.frames["setups_function_buttons"] )
@@ -557,8 +658,7 @@ class IowEsmGui:
             self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups, self.frames["setups_function_buttons"])
          
         if not first_time:
-            self.entries["archive_setup"] = tk.Entry(master=self.frames["archive_setup"]) 
-            self.buttons["archive_setup"] = FunctionButton("Archive setup", self.functions.archive_setup, self.frames["archive_setup"] )
+            self.buttons["setups_advanced"] = NewWindowButton("Advanced", self._build_window_setups_advanced, self.frames["setups"] )
         
         # put everything on a grid
         max_buttons_in_row = 3
@@ -604,27 +704,12 @@ class IowEsmGui:
         self.frames["setups_function_buttons"].grid_columnconfigure(2, weight=1)
         row += 1
         
-        blank = tk.Label(text="", master=self.frames["setups"], bg = self.frames["setups"]["background"])
-        blank.grid(row=row, columnspan=columnspan)
-        row += 1
-        
         if not first_time:
-            
-            ttk.Separator(self.frames["setups"], orient=tk.HORIZONTAL).grid(row=row, columnspan=columnspan, sticky='ew')
+            self.buttons["setups_advanced"].grid(row=row, columnspan=columnspan, sticky='ew')
             row += 1
             
-            blank = tk.Label(text="", master=self.frames["archive_setup"], bg = self.frames["setups"]["background"])
-            blank.grid(row=0, columnspan=3)
-            
-            self.entries["archive_setup"].grid(row=1, column=0)
-            blank = tk.Label(text="  ", master=self.frames["archive_setup"], bg = self.frames["setups"]["background"])
-            blank.grid(row=1, column=1)
-            self.buttons["archive_setup"].grid(row=1, column=2)
-            
-            blank = tk.Label(text="", master=self.frames["archive_setup"], bg = self.frames["setups"]["background"])
-            blank.grid(row=2, columnspan=3)
-        
-            self.frames["archive_setup"].grid(row=row, columnspan=columnspan)
+            blank = tk.Label(text="", master=self.frames["setups"], bg = self.frames["setups"]["background"])
+            blank.grid(row=row, columnspan=columnspan)
             row += 1
         
         self.frames["setups"].grid(row=self.row, sticky='nsew')
