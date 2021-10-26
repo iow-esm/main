@@ -8,7 +8,7 @@ Created on Thu Sep  9 10:26:50 2021
 from iow_esm_globals import *
 from iow_esm_error_handler import *
 from iow_esm_functions import *
-import postprocessing
+import postprocess_window
 import tkinter.ttk as ttk
 
 from iow_esm_buttons_and_labels import *
@@ -658,7 +658,7 @@ class IowEsmGui:
         self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model:")
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
         self.buttons["prepare_before_run"] = CheckButton("prepare before run", self.prepare_before_run, master=self.frames["run"])
-        self.buttons["postprocessing"] = NewWindowButton("Postprocessing", partial(postprocessing.PostprocessingWindow, self), master=self.frames["run"])
+        self.buttons["postprocess"] = NewWindowButton("Postprocess", partial(postprocess_window.PostprocessWindow, self), master=self.frames["run"])
 
         row = 0
         
@@ -671,7 +671,7 @@ class IowEsmGui:
         self.buttons["run"].grid(row=row, sticky='ew')
         row += 1
         
-        self.buttons["postprocessing"].grid(row=row, sticky='ew')
+        self.buttons["postprocess"].grid(row=row, sticky='ew')
         row += 1
         
         blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])

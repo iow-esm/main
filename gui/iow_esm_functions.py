@@ -20,18 +20,25 @@ class IowEsmFunctions:
         if platform.system() == "Windows":
             self.bash = "\"C:\\msys64\\usr\\bin\\env.exe\" MSYSTEM=MINGW64 /bin/bash"
         
-    def execute_shell_cmd(self, cmd):
-        self.gui.print("Executing: \"" + cmd + "\"...")
+    def execute_shell_cmd(self, cmd, print=True):
+        if print:
+            self.gui.print("Executing: \"" + cmd + "\"...")
         
         cmd = self.bash + " -l -c \"cd " + root_dir.replace("\\","/") + "; " + cmd + "\""
-        
+
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         
         while(p.poll() is None):
-            line = p.stdout.readline()
-            self.gui.print(" " + str(line.decode("utf-8")[:-1]))
+            if print:
+                line = p.stdout.readline()
+                self.gui.print(" " + str(line.decode("utf-8")[:-1]))
+            else:
+                pass
             
-        self.gui.print("...done")
+        if print:
+            self.gui.print("...done")
+            
+        return str(p.stdout.read().decode("utf-8"))
         
     def apply_necessary_permisssions(self):
         cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
