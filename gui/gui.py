@@ -53,7 +53,7 @@ class IowEsmGui:
         if not self._check_origins() or self.error_handler.check_for_error(*IowEsmErrors.clone_origins):
 
             cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
-            self.functions.execute_shell_cmd(cmd)
+            self.functions.execute_shell_cmd(cmd, print=False)
             
             self._build_window_clone_origins()
         

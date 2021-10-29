@@ -42,16 +42,16 @@ class IowEsmFunctions:
         
     def apply_necessary_permisssions(self):
         cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
+        self.execute_shell_cmd(cmd, print=False)
         
         cmd = "find ./components/MOM5/exp/ -name \\\"*\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
+        self.execute_shell_cmd(cmd, print=False)
         
         cmd = "find ./components/MOM5/bin/ -name \\\"*\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
+        self.execute_shell_cmd(cmd, print=False)
         
         cmd = "find . -name \\\"configure\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd)
+        self.execute_shell_cmd(cmd, print=False)
                 
     def clone_origins(self):
         cmd = "./clone_origins.sh"
