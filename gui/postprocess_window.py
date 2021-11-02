@@ -6,6 +6,7 @@ Created on Thu Sep 16 14:43:44 2021
 """
 from iow_esm_globals import *
 from iow_esm_buttons_and_labels import *
+from check_dependencies import get_dependency_ordered_list
 
 class PostprocessWindow():
     
@@ -61,6 +62,7 @@ class PostprocessWindow():
         self.labels[model] = FrameTitleLabel(text = model, master=self.frames[model], bg = self.frames[model]["background"])
         
         tasks = [task.replace("\\", "/").split("/")[-1] for task in glob.glob(root_dir + "/postprocess/" + model + "/*")]
+        tasks = get_dependency_ordered_list(root_dir + "/postprocess/" + model, tasks)
         for task in tasks:
             self.buttons["run_" + task] = FunctionButton(task, partial(self.run_task, model, task), master=self.frames[model])
 
