@@ -77,6 +77,9 @@ if last_complete_hotstart_date < 0:
 else:
     start_date = last_complete_hotstart_date
 
+# memorize initial start date for the postprocessing step (see below)
+initial_start_date = start_date
+
 # write out when our job will start
 print('Starting the IOW_ESM job at '+str(start_date), flush=True)
 
@@ -306,11 +309,14 @@ for run in range(runs_per_job):
                                                     IOW_ESM_ROOT+'/output/'+run_name+'/'+model, #outputdir
                                                     IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+model+'/'+str(end_date), #hotstartdir
                                                     str(start_date))
+                                                    
+
         
     # PROCEED TO NEXT RUN
     start_date = end_date
     # but wait until hotstart files are copied
     time.sleep(5.0)    
+
 
 #########################################################################################
 # STEP 3: JOB SUCCESSFULLY FINISHED - SUBMIT NEW JOB UNLESS FINAL DATE HAS BEEN REACHED #
@@ -322,3 +328,27 @@ if int(start_date) < int(final_date):
         os.system("cd " + IOW_ESM_ROOT + "/scripts/run; " + resubmit_command)
     except:
         print('No command for resubmitting specified in global_settings.py. Abort.')
+  
+  
+#########################################################################################
+# STEP 4: JOB SUCCESSFULLY FINISHED - START PROCESSSING OF RAW OUTPUT (IF WANTED)       #
+#########################################################################################                                             
+try:
+    if process_raw_output:
+        print('Start postprocessing of raw output in background.')
+        for model in models:
+        
+            if model == "flux_calculator":
+                continue
+                
+            if glob.glob(IOW_ESM_ROOT + "/postprocess/" + model.split("_")[0] + "/process_raw_output") != []:
+                command = "cd " + IOW_ESM_ROOT + "/postprocess/" + model.split("_")[0] + "/process_raw_output; "
+                command += "./postprocess.sh " + IOW_ESM_ROOT+'/output/'+run_name+'/'+model + " " + str(initial_start_date) + " " + str(end_date)
+                os.system(command)
+            else:
+                print("No postprocessing task \"process_raw_output\" could be found for model " + model.split("_")[0])
+except:
+    print("Raw output remains unprocessed.")
+
+
+
