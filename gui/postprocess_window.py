@@ -6,7 +6,8 @@ Created on Thu Sep 16 14:43:44 2021
 """
 from iow_esm_globals import *
 from iow_esm_buttons_and_labels import *
-from check_dependencies import get_dependency_ordered_list
+from check_dependencies import get_dependency_ordered_groups
+import tkinter.ttk as ttk
 
 class PostprocessWindow():
     
@@ -57,12 +58,16 @@ class PostprocessWindow():
     
     def build_postprocess_model_frame(self, model):
         
+        if self.model_domains != {}:
+            if model not in self.model_domains.keys():
+                return
+            
         self.frames[model] = Frame(master=self.window, bg = getattr(IowColors, "blue" + str(4 - (self.nframes % 4))))
         
-        self.labels[model] = FrameTitleLabel(text = model, master=self.frames[model], bg = self.frames[model]["background"])
+        self.labels[model] = FrameTitleLabel(text = model + ":", master=self.frames[model], bg = self.frames[model]["background"])
         
         tasks = [task.replace("\\", "/").split("/")[-1] for task in glob.glob(root_dir + "/postprocess/" + model + "/*")]
-        tasks = get_dependency_ordered_list(root_dir + "/postprocess/" + model, tasks)
+        #tasks = get_dependency_ordered_list(root_dir + "/postprocess/" + model, tasks)
         for task in tasks:
             self.buttons["run_" + task] = FunctionButton(task, partial(self.run_task, model, task), master=self.frames[model])
 
@@ -96,13 +101,26 @@ class PostprocessWindow():
         self.labels[model].grid(row=row, sticky='w')
         row += 1
         
-        for c, task in enumerate(tasks):
-            if (c % max_buttons_in_row) == 0:
+        ttk.Separator(master=self.frames[model], orient=tk.HORIZONTAL).grid(row=row, sticky='ew', columnspan=columnspan)
+        row += 1
+        
+        groups = get_dependency_ordered_groups(root_dir + "/postprocess/" + model, tasks)
+        for i, tasks in enumerate(groups):
+            
+            if len(groups) > 1:
+                tk.Label(text = "task group #" + str(i) + ":", master=self.frames[model], bg = self.frames[model]["background"], fg="white").grid(row=row, sticky='w')
                 row += 1
                 
-            self.buttons["run_" + task].grid(row=row, column=(c % max_buttons_in_row), sticky='ew')
-
-        row += 1
+            for c, task in enumerate(tasks):
+                if (c % max_buttons_in_row) == 0:
+                    row += 1
+                    
+                self.buttons["run_" + task].grid(row=row, column=(c % max_buttons_in_row), sticky='ew')
+                
+            row += 1
+            
+            ttk.Separator(master=self.frames[model], orient=tk.HORIZONTAL).grid(row=row, sticky='ew', columnspan=columnspan)
+            row += 1
         
         self.labels["current_outdir_" + model].grid(row=row, column=0)
         self.labels["current_from_date_" + model].grid(row=row, column=1)

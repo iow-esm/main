@@ -37,28 +37,47 @@ def go_through_depencies(model, task, found_dependencies):
     
     return dependencies
 
-def get_dependency_ordered_list(model, tasks):
+def get_dependency_group(dependencies, groups, last_group):
     
-    number_of_deps = {}
+    # start with empty current group
+    current_group = []
+   
+    # go through all tasks
+    for task in dependencies.keys():
+        
+        # if task is already listed do not consider it further
+        if task in last_group:
+            continue
+
+        # check if the dependencies of this task are all present in the previously listed tasks
+        if set(dependencies[task]).issubset(set(last_group)):
+            # if yes add it to the current group
+            current_group.append(task)
+    
+    # if all tasks are already listed we stop here      
+    if current_group == []:
+        return
+            
+    # add this group to the list of groups
+    groups.append(current_group)
+    
+    # add it also to the flat list of groups
+    last_group += current_group
+    
+    # go on with next group
+    get_dependency_group(dependencies, groups, last_group) 
+                
+            
+def get_dependency_ordered_groups(model, tasks):
+    
+    dependencies = {}
 
     for task in tasks:
 
         # gather all dependencies
-        dependencies = go_through_depencies(model, task, [])
-        
-        # sort according to occurence (the more occurences the more basis is the task)
-        dependencies.sort(key=Counter(dependencies).get, reverse=False)
-        
-        # make list unique but preserve the order
-        dependencies = list(dict.fromkeys(dependencies))
-        
-        # get the number of occurences
-        number_of_deps[task] = len(dependencies)
-    
-    # return a list that is ordered accodring to occurences
-    return [x for _, x in sorted(zip(number_of_deps.values(), number_of_deps.keys()))]
+        dependencies[task] = go_through_depencies(model, task, [])
 
-                
-            
-        
+    groups = []
+    get_dependency_group(dependencies, groups, [])
+    return groups        
         
