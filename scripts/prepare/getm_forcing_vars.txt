@@ -1,8 +1,0 @@
-getm_varname;getm_longname;getm_unit;orig_filename;orig_varname;orig_unit;unit_factor;unit_offset;comment
-precip;Total precipitation;m/s;https://bmip:Ws5Km1it3de4Qt2@thredds-iow.io-warnemuende.de/thredds/dodsC/BMIP/IOW-THREDDS-BMIP_uerra_forcing_2019-10-21-11-rain.nc;RAIN;kg/m2;2.88;0.0;3.6 for conversion * 0.8 for correction
-sh;Specific humidity;kg/kg;https://bmip:Ws5Km1it3de4Qt2@thredds-iow.io-warnemuende.de/thredds/dodsC/BMIP/IOW-THREDDS-BMIP_uerra_forcing_2019-10-21-11-shumid.nc;SHUMID;kg/kg;1.0;0.0;
-slp;Sea level pressure;Pa;https://bmip:Ws5Km1it3de4Qt2@thredds-iow.io-warnemuende.de/thredds/dodsC/BMIP/IOW-THREDDS-BMIP_uerra_forcing_2019-10-21-11-pres.nc;PRES;Pa;1.0;0.0;
-t2;2 metre temperature;K;https://bmip:Ws5Km1it3de4Qt2@thredds-iow.io-warnemuende.de/thredds/dodsC/BMIP/IOW-THREDDS-BMIP_uerra_forcing_2019-10-21-11-tair.nc;TAIR;K;1.0;0.0;
-tcc;Total cloud cover;1;https://bmip:Ws5Km1it3de4Qt2@thredds-iow.io-warnemuende.de/thredds/dodsC/BMIP/IOW-THREDDS-BMIP_coastdat_cloudiness_2019-11-15-10.nc;clour;1;1.0;0.0;
-u10;10 metre eastward wind;m/s;https://bmip:Ws5Km1it3de4Qt2@thredds-iow.io-warnemuende.de/thredds/dodsC/BMIP/IOW-THREDDS-BMIP_uerra_forcing_2019-10-21-11-uv.nc;U;m/s;1.0;0.0;
-v10;10 metre northward wind;m/s;https://bmip:Ws5Km1it3de4Qt2@thredds-iow.io-warnemuende.de/thredds/dodsC/BMIP/IOW-THREDDS-BMIP_uerra_forcing_2019-10-21-11-uv.nc;V;m/s;1.0;0.0;
