@@ -16,6 +16,7 @@ import move_results_MOM5
 import move_results_I2LM
 
 import create_namcouple 
+import start_postprocessing
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
@@ -333,22 +334,23 @@ if int(start_date) < int(final_date):
 #########################################################################################
 # STEP 4: JOB SUCCESSFULLY FINISHED - START PROCESSSING OF RAW OUTPUT (IF WANTED)       #
 #########################################################################################                                             
+# try if process_raw_output has been defined in global_settings.py
 try:
-    if process_raw_output:
-        print('Start postprocessing of raw output in background.')
-        for model in models:
-        
-            if model == "flux_calculator":
-                continue
-                
-            if glob.glob(IOW_ESM_ROOT + "/postprocess/" + model.split("_")[0] + "/process_raw_output") != []:
-                command = "cd " + IOW_ESM_ROOT + "/postprocess/" + model.split("_")[0] + "/process_raw_output; "
-                command += "./postprocess.sh " + IOW_ESM_ROOT+'/output/'+run_name+'/'+model + " " + str(initial_start_date) + " " + str(end_date)
-                os.system(command)
-            else:
-                print("No postprocessing task \"process_raw_output\" could be found for model " + model.split("_")[0])
+    process_raw_output
+# if not, set it to false
 except:
+    process_raw_output = False
+    
+if process_raw_output:
+    print('Start postprocessing of raw output.')
+    for model in models:
+        start_postprocessing.start_postprocessing(IOW_ESM_ROOT, run_name, model, initial_start_date, end_date)
+else:
     print("Raw output remains unprocessed.")
+
+
+
+    
 
 
 
