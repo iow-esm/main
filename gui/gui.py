@@ -150,6 +150,8 @@ class IowEsmGui:
         
         for ori in available_origins:
             if os.path.isdir(root_dir + "/" + ori + "/.git"):
+                if glob.glob(root_dir + "/" + ori + "/build.sh") == []:
+                    continue
                 self.origins.append(root_dir + "/" + ori)
 
         self.print("Available origins:")

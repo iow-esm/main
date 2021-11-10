@@ -3,3 +3,4 @@ components/flux_calculator https://git.io-warnemuende.de/karsten/components.flux
 components/MOM5 https://git.io-warnemuende.de/karsten/components.mom5.git
 components/CCLM https://git.io-warnemuende.de/karsten/components.cclm.git
 tools/I2LM https://git.io-warnemuende.de/karsten/tools.i2lm.git
+postprocess https://git.io-warnemuende.de/karsten/postprocess.git
