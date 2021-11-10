@@ -8,80 +8,10 @@ Created on Thu Sep  9 10:26:50 2021
 from iow_esm_globals import *
 from iow_esm_error_handler import *
 from iow_esm_functions import *
-
+import postprocess_window
 import tkinter.ttk as ttk
 
-class FunctionButton(tk.Button):
-    def __init__(self, text, command, master=None):
-        tk.Button.__init__(self,
-            master=master,
-            text=text,
-            bg=IowColors.green1,
-            fg="black",#IowColors.grey1,
-            command=command   
-        )
-        
-class SetButton(tk.Button):
-    def __init__(self, text, command, master=None):
-        tk.Button.__init__(self,
-            master=master,
-            text=text,
-            command=command,
-            bg = IowColors.grey1,
-            fg = "white"
-        )
-        
-class NewWindowButton(tk.Button):
-    def __init__(self, text, command, master=None):
-        tk.Button.__init__(self,
-            master=master,
-            text=text,
-            command=command,
-            bg = IowColors.grey4,
-            fg = "black"
-        )
-                
-class CheckButton(tk.Checkbutton):
-    def __init__(self, text, variable, master=None):
-        #if master is not None:
-        #    bg = master["background"]
-        #else:
-        bg = IowColors.grey1,
-        tk.Checkbutton.__init__(self,
-            master=master,
-            text=text,
-            var=variable,
-            fg = "white",
-            bg = bg,
-            #activebackground = bg,
-            #activeforeground = "white",
-            selectcolor=bg,
-            #bd=5
-        )
-        
-class FrameTitleLabel(tk.Label):
-    def __init__(self, text, master=None, bg=""):
-        
-        if master is not None and bg == "":
-            bg=master["background"]
-            
-        tk.Label.__init__(self,
-            master=master,
-            text=text, 
-            bg = bg, 
-            fg = 'white'
-        )
-        self.config(font=("Meta Plus", 20))
-        
-        
-class Frame(tk.Frame):
-    def __init__(self, master=None, bg=IowColors.blue1):
-        tk.Frame.__init__(self,
-            master=master,
-            bg = bg,
-            #width = 400,
-            #height = 200
-        )
+from iow_esm_buttons_and_labels import *
 
 class IowEsmGui:
     def __init__(self):
@@ -123,7 +53,7 @@ class IowEsmGui:
         if not self._check_origins() or self.error_handler.check_for_error(*IowEsmErrors.clone_origins):
 
             cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
-            self.functions.execute_shell_cmd(cmd)
+            self.functions.execute_shell_cmd(cmd, print=False)
             
             self._build_window_clone_origins()
         
@@ -728,6 +658,7 @@ class IowEsmGui:
         self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model:")
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
         self.buttons["prepare_before_run"] = CheckButton("prepare before run", self.prepare_before_run, master=self.frames["run"])
+        self.buttons["postprocess"] = NewWindowButton("Postprocess", partial(postprocess_window.PostprocessWindow, self), master=self.frames["run"])
 
         row = 0
         
@@ -739,6 +670,10 @@ class IowEsmGui:
         
         self.buttons["run"].grid(row=row, sticky='ew')
         row += 1
+        
+        if glob.glob(root_dir + "/postprocess") != []:
+            self.buttons["postprocess"].grid(row=row, sticky='ew')
+            row += 1
         
         blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
         blank.grid(row=row)

@@ -5,6 +5,7 @@ LAST_DEPLOYED_SETUPS*
 SETUPS
 local_setup*/
 tools/
+postprocess/
 input/
 gui/__pycache__/
 gui.log
