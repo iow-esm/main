@@ -35,11 +35,13 @@ class PostprocessWindow():
             self.init_date = init_date
             self.final_date = final_date
             self.model_domains = model_domains
+            self.dependencies = dependencies
         except:
             self.run_name = ""
             self.init_date = ""
             self.final_date = ""
             self.model_domains = {}
+            self.dependencies = {}
         
         # get all directories in the postprocess directory
         posts = [post.replace("\\", "/").split("/")[-1] for post in glob.glob(root_dir + "/postprocess/*")]
@@ -104,7 +106,7 @@ class PostprocessWindow():
         ttk.Separator(master=self.frames[model], orient=tk.HORIZONTAL).grid(row=row, sticky='ew', columnspan=columnspan)
         row += 1
         
-        groups = get_dependency_ordered_groups(root_dir + "/postprocess/" + model, tasks)
+        groups = get_dependency_ordered_groups(model, tasks, self.dependencies)
         for i, tasks in enumerate(groups):
             
             if len(groups) > 1:
@@ -197,6 +199,33 @@ class PostprocessWindow():
         cmd = "ssh " + user_at_host + " ' echo model_domains = {}; for d in \`ls " + path + "/output/" + run_name + "\`; do model=\${d%_*}; dom=\${d#*_}; echo model_domains[\\\\\\\"\$model\\\\\\\"] = \\\\\\\"\$dom\\\\\\\"; done'"
         file_content = self.master.functions.execute_shell_cmd(cmd, print=False)
         
+        exec(file_content, globals())
+        
+        
+
+        cmd = "ssh " + user_at_host + " 'for c in " + path + "/postprocess/*/*/config.py; do echo \$c \`cat \$c | grep \"dependencies\"\`; done\'"
+        file_content = self.master.functions.execute_shell_cmd(cmd, print=False)
+        
+
+        lines = file_content.splitlines()
+        
+        file_content = "dependencies = {}\n"
+        for line in lines:
+            try:
+                line = line.split("dependencies")
+                model = line[0].split("/")[-3]
+                task = line[0].split("/")[-2]
+                dependencies = line[1]
+    
+                file_content += "try:\n"
+                file_content += " dependencies[\"" + model + "\"][\"" + task + "\"]" + dependencies + "\n"
+                file_content += "except:\n"
+                file_content += " dependencies[\"" + model + "\"]={}\n"    
+                file_content += " dependencies[\"" + model + "\"][\"" + task + "\"]" + dependencies+ "\n"          
+            except:
+                pass
+            
+
         exec(file_content, globals())
 
                 

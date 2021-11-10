@@ -10,30 +10,24 @@ import sys
 
 from collections import Counter
 
-def go_through_depencies(model, task, found_dependencies):
+def go_through_depencies(model, task, found_dependencies, flat_dependencies):
     # found_dependencies: to memorize found dependencies to avoid cyclic recursion 
     
     # avoid cyclic recursion
     if task in found_dependencies:
         return []
-
-    ldict = {"dependencies" : []}
     
-    # try to get dependencies from local task config
     try:
-        exec(open(model + "/" + task + "/config.py").read(), globals(), ldict)
+        dependencies = flat_dependencies[model][task]
     except:
-        pass
-    
-    # store content to local variable
-    dependencies = ldict["dependencies"]
+        dependencies = []
     
     # append newly found dependencies, next level of recursion can check if task itself is already in (-> cyclic dependency)
     found_dependencies += dependencies
     
     # go recursively into the dependencies and concatenate the results
     for dep in dependencies:
-        dependencies += go_through_depencies(model, dep, found_dependencies)
+        dependencies += go_through_depencies(model, dep, found_dependencies, flat_dependencies)
     
     return dependencies
 
@@ -68,16 +62,15 @@ def get_dependency_group(dependencies, groups, last_group):
     get_dependency_group(dependencies, groups, last_group) 
                 
             
-def get_dependency_ordered_groups(model, tasks):
+def get_dependency_ordered_groups(model, tasks, flat_dependencies):
     
-    dependencies = {}
+    deep_dependencies = {}
 
     for task in tasks:
+        deep_dependencies[task] = go_through_depencies(model, task, [], flat_dependencies)
 
-        # gather all dependencies
-        dependencies[task] = go_through_depencies(model, task, [])
 
     groups = []
-    get_dependency_group(dependencies, groups, [])
+    get_dependency_group(deep_dependencies, groups, [])
     return groups        
         
