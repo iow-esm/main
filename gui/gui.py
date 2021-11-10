@@ -671,8 +671,9 @@ class IowEsmGui:
         self.buttons["run"].grid(row=row, sticky='ew')
         row += 1
         
-        self.buttons["postprocess"].grid(row=row, sticky='ew')
-        row += 1
+        if glob.glob(root_dir + "/postprocess") != []:
+            self.buttons["postprocess"].grid(row=row, sticky='ew')
+            row += 1
         
         blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
         blank.grid(row=row)
