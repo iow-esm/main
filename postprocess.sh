@@ -37,5 +37,8 @@ ssh -t "${user_at_dest}" "mkdir -p ${dest_folder}/postprocess/${model_task}"
 echo rsync -r -i -u ${local}/postprocess/${model_task}/ ${dest}/postprocess/${model_task}/.
 rsync -r -i -u ${local}/postprocess/${model_task}/ ${dest}/postprocess/${model_task}/.
 
-echo ssh "${user_at_dest}" \"echo Process started in background on \`hostname\`";" cd ${dest_folder}/postprocess/${model_task}/";" nohup ./postprocess.sh ${path_to_output} ${from_date} ${to_date} \> nohup.out 2\>\&1 \& \"
-ssh "${user_at_dest}" "echo Process started in background on \`hostname\`; cd ${dest_folder}/postprocess/${model_task}/; nohup ./postprocess.sh ${path_to_output} ${from_date} ${to_date} > nohup.out 2>&1 &"
+echo rsync -r -i -u ${local}/postprocess/load_modules_${target}.sh ${dest}/postprocess/load_modules.sh
+rsync -r -i -u ${local}/postprocess/load_modules_${target}.sh ${dest}/postprocess/load_modules.sh
+
+echo ssh "${user_at_dest}" \"echo Process started in background on \`hostname\`";" cd ${dest_folder}/postprocess/${model_task}/";" source ../../load_modules_${target}.sh";" nohup ./postprocess.sh ${path_to_output} ${from_date} ${to_date} \> nohup.out 2\>\&1 \& \"
+ssh "${user_at_dest}" "echo Process started in background on \`hostname\`; cd ${dest_folder}/postprocess/${model_task}/; source ../../load_modules_${target}.sh; nohup ./postprocess.sh ${path_to_output} ${from_date} ${to_date} > nohup.out 2>&1 &"

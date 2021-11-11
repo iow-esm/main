@@ -21,12 +21,14 @@ def start_postprocessing(IOW_ESM_ROOT, run_name, model, initial_start_date, end_
     # if file sbatch_header is present put the job into the SLURM queue 
     if glob.glob(model_postprocess_dir + "/sbatch_header"):
         command += "cat sbatch_header > postprocess_job; "
+        command += "echo \"\" >> postprocess_job; "
+        command += "echo \"source ../../load_modules.sh\" >> postprocess_job; "
         command += "echo \"./postprocess.sh " + IOW_ESM_ROOT+'/output/'+run_name+'/'+model + " " + str(initial_start_date) + " " + str(end_date) + "\" >> postprocess_job; "
         command += "chmod u+x postprocess_job; sbatch postprocess_job"
     # here could be the implementation for other queueing systems
     # if no header is there, start the script from where we are
     else:
-        command += "./postprocess.sh " + IOW_ESM_ROOT+'/output/'+run_name+'/'+model + " " + str(initial_start_date) + " " + str(end_date)
+        command += "source ../../load_modules.sh; ./postprocess.sh " + IOW_ESM_ROOT+'/output/'+run_name+'/'+model + " " + str(initial_start_date) + " " + str(end_date)
     
     # execute the command    
     os.system(command)

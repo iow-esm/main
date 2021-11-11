@@ -70,6 +70,14 @@ echo "###############################################"
 echo ""
 echo ""
 
+if [ -d ./postprocess ]; then
+	echo "## Sync postprocessing scripts to the target ##"
+	echo "###############################################"
+	./local_scripts/sync_postprocess.sh ${target} ${user_at_dest} ${dest_folder}
+	echo ""
+	echo ""
+fi
+
 echo "##        Gather info on last build          ##"
 echo "###############################################"
 ./local_scripts/tag_build.sh ${target_keyword} ${debug} ""
