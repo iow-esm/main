@@ -29,19 +29,13 @@ class PostprocessWindow():
         self.current_from_dates = {}
         self.current_to_dates = {}
         
+        self.run_name = ""
+        self.init_date = ""
+        self.final_date = ""
+        self.model_domains = {}
+        self.dependencies = {}
+        
         self.get_global_settings()
-        try:
-            self.run_name = run_name
-            self.init_date = init_date
-            self.final_date = final_date
-            self.model_domains = model_domains
-            self.dependencies = dependencies
-        except:
-            self.run_name = ""
-            self.init_date = ""
-            self.final_date = ""
-            self.model_domains = {}
-            self.dependencies = {}
         
         # get all directories in the postprocess directory
         posts = [post.replace("\\", "/").split("/")[-1] for post in glob.glob(root_dir + "/postprocess/*")]
@@ -68,8 +62,8 @@ class PostprocessWindow():
         
         self.labels[model] = FrameTitleLabel(text = model + ":", master=self.frames[model], bg = self.frames[model]["background"])
         
-        tasks = [task.replace("\\", "/").split("/")[-1] for task in glob.glob(root_dir + "/postprocess/" + model + "/*")]
-        #tasks = get_dependency_ordered_list(root_dir + "/postprocess/" + model, tasks)
+        tasks = [task.replace("\\", "/").split("/")[-2] for task in glob.glob(root_dir + "/postprocess/" + model + "/*/")] # list only directories!
+
         for task in tasks:
             self.buttons["run_" + task] = FunctionButton(task, partial(self.run_task, model, task), master=self.frames[model])
 
@@ -82,8 +76,7 @@ class PostprocessWindow():
         self.entries["current_outdir_" + model] = tk.Entry(master=self.frames[model])
         
         try:
-            user_at_host, path = self.master.destinations[self.master.current_destination].split(":")
-            self.entries["current_outdir_" + model].insert(0, self.run_name + "/" + model +"_" + model_domains[model])
+            self.entries["current_outdir_" + model].insert(0, self.run_name + "/" + model +"_" + self.model_domains[model])
         except:
             self.entries["current_outdir_" + model].insert(0, "")
         
@@ -189,24 +182,31 @@ class PostprocessWindow():
         user_at_host, path = self.master.destinations[self.master.current_destination].split(":")
         cmd = "ssh " + user_at_host + " \\\"if [ -f " + path +  "/input/global_settings.py ]; then cat " + path + "/input/global_settings.py; fi; \\\""
         file_content = self.master.functions.execute_shell_cmd(cmd, print=False)
-            
                 
-        if file_content == "":
-            return False
-                        
-        exec(file_content, globals())
+        ldict = {"run_name" : "", "init_date" : "", "final_date" : "", "model_domains" : {}, "dependencies" : {}}
         
-        cmd = "ssh " + user_at_host + " ' echo model_domains = {}; for d in \`ls " + path + "/output/" + run_name + "\`; do model=\${d%_*}; dom=\${d#*_}; echo model_domains[\\\\\\\"\$model\\\\\\\"] = \\\\\\\"\$dom\\\\\\\"; done'"
-        file_content = self.master.functions.execute_shell_cmd(cmd, print=False)
+        try:
+            exec(file_content, globals(), ldict)
+            self.run_name = ldict["run_name"]
+            self.init_date = ldict["init_date"]
+            self.final_date = ldict["final_date"]
+        except:
+            pass
         
-        exec(file_content, globals())
+        file_content = ""
+        if self.run_name != "":
+            cmd = "ssh " + user_at_host + " ' echo model_domains = {}; for d in \`ls " + path + "/output/" + self.run_name + "\`; do model=\${d%_*}; dom=\${d#*_}; echo model_domains[\\\\\\\"\$model\\\\\\\"] = \\\\\\\"\$dom\\\\\\\"; done'"
+            file_content = self.master.functions.execute_shell_cmd(cmd, print=False)
         
+        try:
+            exec(file_content, globals(), ldict)
+            self.model_domains = ldict["model_domains"]
+        except:
+            pass
         
-
         cmd = "ssh " + user_at_host + " 'for c in " + path + "/postprocess/*/*/config.py; do echo \$c \`cat \$c | grep \"dependencies\"\`; done\'"
         file_content = self.master.functions.execute_shell_cmd(cmd, print=False)
         
-
         lines = file_content.splitlines()
         
         file_content = "dependencies = {}\n"
@@ -225,8 +225,11 @@ class PostprocessWindow():
             except:
                 pass
             
-
-        exec(file_content, globals())
+        try:
+            exec(file_content, globals(), ldict)
+            self.dependencies = ldict["dependencies"]
+        except:
+            pass
 
                 
                 
