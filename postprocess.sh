@@ -34,8 +34,8 @@ rsync -r -i -u ${local}/postprocess/auxiliary/ ${dest}/postprocess/auxiliary/.
 echo ssh -t "${user_at_dest}" \"mkdir -p ${dest_folder}/postprocess/${model_task}\"
 ssh -t "${user_at_dest}" "mkdir -p ${dest_folder}/postprocess/${model_task}"
 
-echo rsync -r -i -u ${local}/postprocess/${model_task}/ ${dest}/postprocess/${model_task}/.
-rsync -r -i -u ${local}/postprocess/${model_task}/ ${dest}/postprocess/${model_task}/.
+echo rsync -r -i -u ${local}/postprocess/* ${dest}/postprocess/
+rsync -r -i -u ${local}/postprocess/* ${dest}/postprocess/
 
 echo rsync -r -i -u ${local}/postprocess/load_modules_${target}.sh ${dest}/postprocess/load_modules.sh
 rsync -r -i -u ${local}/postprocess/load_modules_${target}.sh ${dest}/postprocess/load_modules.sh
