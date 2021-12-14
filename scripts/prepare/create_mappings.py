@@ -177,6 +177,10 @@ print('write maskfile for atmos model, stating which cells are coupled...  ')
 model = models[atmosmodel]
 if model[0:5]=='CCLM_':
     grid_create_maskfile_CCLM.grid_create_maskfile_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
-                                                        models[atmosmodel])  # name of atmospheric model instance
+                                                        models[atmosmodel], "t_grid")  # name of atmospheric model instance, which grid
+    grid_create_maskfile_CCLM.grid_create_maskfile_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
+                                                        models[atmosmodel], "u_grid")  # name of atmospheric model instance, which grid   
+    grid_create_maskfile_CCLM.grid_create_maskfile_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
+                                                        models[atmosmodel], "v_grid")  # name of atmospheric model instance, which grid                                                        
 print('done.')
 

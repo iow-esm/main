@@ -161,7 +161,7 @@ def grid_create_exchangegrid_MOM5(IOW_ESM_ROOT,        # root directory of IOW E
     area1_fraction = [0.0 for i in range(len(grid_imask_1))]
     for i in range(global_k):  # calculate total fraction of atmos cell covered by all exchange grid cells
         area1_fraction[atmos_index[i]] = area1_fraction[atmos_index[i]] + fraction_of_atmos[i]
-    fraction_of_atmos_normalized = fraction_of_atmos # normalize this fraction with the total fraction of the atmospheric cell which is covered
+    fraction_of_atmos_normalized = fraction_of_atmos[:] # normalize this fraction with the total fraction of the atmospheric cell which is covered
     for i in range(global_k):
         fraction_of_atmos_normalized[i] = fraction_of_atmos_normalized[i] / area1_fraction[atmos_index[i]]
 
