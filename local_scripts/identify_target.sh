@@ -5,6 +5,7 @@ available_targets=(
 	"hlrng"
 	"haumea"
 	"phy-2"
+	"phy-10"
 )
 
 if [ $# -lt 1 ]; then

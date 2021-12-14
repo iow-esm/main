@@ -330,6 +330,7 @@ Once you have archived your setup, the `SETUP_INFO` file on your target server w
 1. Add a new keyword and the corresponding remote directory to your `DESTINATIONS` file.
 Let's call the new target keyword in this example `new-target`.
 Then the new line in your `DESTINATIONS` file could look like `new-target user@new-target:/data/user/IOW_ESM`.
+Add `new_target` to the `available_targets` in `local_scripts/identify_target.sh`.
 
 2. Add a build script for each component that should be build on the new target. 
 For the example this must be called `build_new-target.sh`.
