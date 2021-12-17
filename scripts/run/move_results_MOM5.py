@@ -18,6 +18,8 @@ def move_results_MOM5(workdir,        # work directory of this model instance
 
     # STEP 2: MOVE OUTPUT
     os.system('mv '+workdir+'/*.nc.???? '+outputdir+'/out_raw/.')
+    os.system('mv '+workdir+'/MS*.nc '+outputdir+'/.')
+    os.system('mv '+workdir+'/MR*.nc '+outputdir+'/.')
     
     if os.path.isfile(workdir + '/RUN_INFO'):
         os.system('mv '+workdir+'/RUN_INFO '+outputdir+'/.')
