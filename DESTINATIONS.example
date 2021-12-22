@@ -2,3 +2,4 @@ haumea sk1480@haumea1:/data/sk1480/IOW_ESM
 phy-2 karsten@phy-2:/silod7/karsten/IOW_ESM
 hlrnb mvkkarst@blogin:/scratch/usr/mvkkarst/IOW_ESM
 hlrng mvkkarst@glogin:/scratch/usr/mvkkarst/IOW_ESM
+# you can add comments if the line starts with '#'

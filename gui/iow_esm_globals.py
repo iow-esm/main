@@ -35,10 +35,17 @@ def read_iow_esm_configuration(file_name):
     config = {}
     with open(file_name, "r") as f:
         for line in f:
+            
+            # skip comments
+            if line[0] == "#":
+                continue
+            
+            # separate line into keyword and value
             try:
                 (key, val) = line.split()
                 config[key] = val
             except:
+                # ignore empty lines
                 pass
             
     return config
