@@ -53,9 +53,9 @@ else
 		ssh -t "${user_at_setup_origin}" "rsync -r -i -u -t -L ${setup_origin_folder}/ ${dest}/."
 		
 	else
-		# if setup is located on the machine we can use symbolic links
-		echo ssh -t "${user_at_setup_origin}" \"cp -as ${setup_origin_folder}/* ${dest_folder}/.\"
-		ssh -t "${user_at_setup_origin}" "cp -as ${setup_origin_folder}/* ${dest_folder}/."
+		# if setup is located on the machine we can leave symbolic links as is
+		echo ssh -t "${user_at_setup_origin}" \"cp -r ${setup_origin_folder}/* ${dest_folder}/.\"
+		ssh -t "${user_at_setup_origin}" "cp -r ${setup_origin_folder}/* ${dest_folder}/."
 	fi
 	
 	# some preparation scripts require write premissions
