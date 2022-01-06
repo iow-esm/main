@@ -73,6 +73,12 @@ def create_work_directory_MOM5(IOW_ESM_ROOT,        # root directory of IOW ESM
         os.system('cp '+hotstart_folder+'/*.res.nc '+full_directory+'/INPUT/')    # copy MOM5 hotstart files
         os.system('cp '+hotstart_folder+'/coupler.res '+full_directory+'/INPUT/') # copy MOM5 file stating present date
         os.system('cp '+hotstart_folder+'/res*.nc '+full_directory+'/')           # copy OASIS3 hotstart files
+    # otherwise use initial data in INIT folder for a cold start
+    else:
+        if not os.path.isdir(full_directory + '/INIT'):
+            print("ERROR: For a cold start an INIT folder must be provided but could not be found. The model will probably crash.")
+        else:
+            os.system('cp '+full_directory+'/INIT/* '+full_directory+'/INPUT/')
         
     info_file_name = full_directory + "/RUN_INFO"
     with open(info_file_name, 'w') as file:

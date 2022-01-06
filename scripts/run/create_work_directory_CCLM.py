@@ -69,7 +69,13 @@ def create_work_directory_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
     if (start_date != init_date):
         hotstart_folder = IOW_ESM_ROOT + '/hotstart/' + runname + '/' + my_directory + '/' + start_date
         os.system('cp '+hotstart_folder+'/* '+full_directory+'/')        # copy all hotstart files 
-   
+    # otherwise use boundary data to perfrom a cold start
+    else:
+        if not os.path.isfile(full_directory + '/OBC/laf' + init_date + '00.nc'):
+            print("ERROR: For a cold start a file laf<init_date>00.nc must be provided but could not be found. The model will probably crash.")
+        else:
+            os.system('ln -s ' + full_directory + '/OBC/laf' + init_date + '00.nc ' + full_directory + '/')
+        
 
     # STEP 6: Get a corrected land mask from restart file
     # restart files currently only exist for the first day of a month
