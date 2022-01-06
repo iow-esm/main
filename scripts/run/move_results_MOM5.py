@@ -21,7 +21,10 @@ def move_results_MOM5(workdir,        # work directory of this model instance
     os.system('mv '+workdir+'/MS*.nc '+outputdir+'/.')
     os.system('mv '+workdir+'/MR*.nc '+outputdir+'/.')
     
-    if os.path.isfile(workdir + '/RUN_INFO'):
+    if os.path.isfile(workdir + '/RUN_INFO'):     
+        files_to_keep = ["input.nml", "data_table", "diag_table", "field_table"]
+        for file in files_to_keep:
+            os.system('(echo \"*** ' + file + '\"; cat ' + workdir+'/'+file+'; echo) >> '+workdir+'/RUN_INFO')
         os.system('mv '+workdir+'/RUN_INFO '+outputdir+'/.')
 
     # STEP 3: MOVE HOTSTART

@@ -22,6 +22,9 @@ def move_results_CCLM(workdir,        # work directory of this model instance
     os.system('mv '+workdir+'/AR*.nc '+outputdir+'/.')
     
     if os.path.isfile(workdir + '/RUN_INFO'):
+        files_to_keep = ["INPUT_ASS", "INPUT_DIA", "INPUT_DYN", "INPUT_INI", "INPUT_IO", "INPUT_OASIS", "INPUT_ORG", "INPUT_PHY"]
+        for file in files_to_keep:
+            os.system('(echo \"*** ' + file + '\"; cat ' + workdir+'/'+file+'; echo) >> '+workdir+'/RUN_INFO')
         os.system('mv '+workdir+'/RUN_INFO '+outputdir+'/.')
 
     # STEP 3: MOVE HOTSTART
