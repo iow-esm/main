@@ -178,11 +178,12 @@ Be sure that the remote computer knows your targets and can copy files to them.
 #### Available setups
 
 ##### HLRN in Göttingen
-You can find an example setup for a MOM5 for the Baltic sea coupled to a CCLM model for the Eurocordex domain under `/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example`.
+You can find an example setup for a MOM5 for the Baltic sea coupled to a CCLM model for the Eurocordex domain under `/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg`.
 The corresponding line in the `SETUPS` file could then look like
-`example user@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example`,
+`coupled_example user@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg`,
 where `user` should be replaced by your user name on the HLRN in Göttingen.
 It might be also necessary to add the full domain to the hostname, depending on your ssh configuration.
+Other example setups (also for uncoupled runs) can be found in `SETUPS.example` in this directory.
 
 **TODO:** Explain strucutre of the setup folder (= root directoy)
 
@@ -192,7 +193,7 @@ It might be also necessary to add the full domain to the hostname, depending on 
 After creating the file `SETUPS` you can run in the root directory
 
 ``` bash
-./deploy_setup.sh hlrng example
+./deploy_setup.sh hlrng coupled_example
 ``` 
 
 
@@ -212,6 +213,8 @@ However, for all following runs *this is an optional argument and should be omit
 
 After the scripts are transferred and the preparation script has finished (this can take a bit time),
 the model is started on the target.
+
+**Note that for an uncoupled run there is no need for the preparation.**
 
 #### Examine the output of the first run
 
