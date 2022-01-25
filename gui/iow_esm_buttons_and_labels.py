@@ -80,4 +80,33 @@ class Frame(tk.Frame):
             #height = 200
         )
 
-    
+ 
+class DropdownMenu(tk.OptionMenu):
+    def __init__(self, master=None, entries=[], function=None, bg = None, fg = None):
+        self.variable = tk.StringVar(master)
+                
+        tk.OptionMenu.__init__(self,
+                               master,
+                               self.variable,
+                               *entries
+                               )
+        
+        if bg is None:
+            bg = IowColors.grey1
+            
+        self.config(bg = bg)
+        self["menu"].config(bg=bg)
+        
+        if fg is None:
+            fg = "white"
+            
+        self.config(fg = fg)
+        self["menu"].config(fg=fg)
+
+        self.variable.set(entries[0]) # default value
+        
+        def callback(*args):
+            if function is not None:
+                function(self.variable.get())
+         
+        self.variable.trace("w", callback)
