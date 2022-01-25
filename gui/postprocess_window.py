@@ -21,6 +21,7 @@ class PostprocessWindow():
         self.buttons = {}
         self.frames = {}
         self.entries = {}
+        self.menus = {}
         
         self.nframes = 0
         self.row = 0
@@ -49,8 +50,8 @@ class PostprocessWindow():
                 self.build_postprocess_model_frame(post)
         
         #master.windows["postprocessing"].geometry('+%d+%d' 
-                                              #% (master.x_offset, 
-                                              #   1.2*master.window.winfo_height()))
+        #                                      % (master.x_offset, 
+        #                                         1.2*master.window.winfo_height()))
     
     def build_postprocess_model_frame(self, model):
         
@@ -63,11 +64,7 @@ class PostprocessWindow():
         self.labels[model] = FrameTitleLabel(text = model + ":", master=self.frames[model], bg = self.frames[model]["background"])
         
         tasks = [task.replace("\\", "/").split("/")[-2] for task in glob.glob(root_dir + "/postprocess/" + model + "/*/")] # list only directories!
-
-        for task in tasks:
-            self.buttons["run_" + task] = FunctionButton(task, partial(self.run_task, model, task), master=self.frames[model])
-
-
+ 
         self.labels["current_outdir_" + model] = tk.Label(text = "Output directory", master=self.frames[model], bg = self.frames[model]["background"])
         self.labels["current_from_date_" + model] = tk.Label(text = "from (YYYYMMDD)", master=self.frames[model], bg = self.frames[model]["background"])
         self.labels["current_to_date_" + model] = tk.Label(text = "to (YYYYMMDD)", master=self.frames[model], bg = self.frames[model]["background"])
@@ -84,13 +81,8 @@ class PostprocessWindow():
         self.entries["current_from_date_" + model].insert(0, self.init_date)
         self.entries["current_to_date_" + model] = tk.Entry(master=self.frames[model])
         self.entries["current_to_date_" + model].insert(0, self.final_date)
-        
-        max_buttons_in_row = 3
-        if len(tasks) < max_buttons_in_row:
-            columnspan = len(tasks) 
-        else:
-            columnspan = max_buttons_in_row
-            
+
+        columnspan = 3
         row = 0
         
         self.labels[model].grid(row=row, sticky='w')
@@ -99,23 +91,30 @@ class PostprocessWindow():
         ttk.Separator(master=self.frames[model], orient=tk.HORIZONTAL).grid(row=row, sticky='ew', columnspan=columnspan)
         row += 1
         
+        
+        model_task_list = []
+        
         groups = get_dependency_ordered_groups(model, tasks, self.dependencies)
         for i, tasks in enumerate(groups):
             
             if len(groups) > 1:
-                tk.Label(text = "task group #" + str(i) + ":", master=self.frames[model], bg = self.frames[model]["background"], fg="white").grid(row=row, sticky='w')
-                row += 1
+                model_task_list.append("--------")
                 
             for c, task in enumerate(tasks):
-                if (c % max_buttons_in_row) == 0:
-                    row += 1
-                    
-                self.buttons["run_" + task].grid(row=row, column=(c % max_buttons_in_row), sticky='ew')
+                model_task_list.append(task)
                 
-            row += 1
+        row += 1
             
-            ttk.Separator(master=self.frames[model], orient=tk.HORIZONTAL).grid(row=row, sticky='ew', columnspan=columnspan)
-            row += 1
+            
+        def run_model_task(model_task):
+            if "--------" == model_task:
+                return
+            
+            self.run_task(model, model_task)
+            
+        self.menus[model + "_tasks"] = DropdownMenu(master=self.frames[model], entries=model_task_list, function=run_model_task, bg=IowColors.green1, fg="black")
+        self.menus[model + "_tasks"].grid(row=row, columnspan = columnspan, sticky='ew')
+        row += 1
         
         self.labels["current_outdir_" + model].grid(row=row, column=0)
         self.labels["current_from_date_" + model].grid(row=row, column=1)
@@ -134,6 +133,8 @@ class PostprocessWindow():
         self.row += 1
         
         self.nframes += 1
+        
+
     
     def run_task(self, model, task):
         

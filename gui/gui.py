@@ -33,6 +33,7 @@ class IowEsmGui:
         self.frames = {}
         self.messages = {}
         self.windows = {}
+        self.menus = {}
         
         self.restart = False
         
@@ -394,40 +395,20 @@ class IowEsmGui:
         # create objects of the frame
         self.labels["destinations"] = FrameTitleLabel(master=self.frames["destinations"], text="Destinations:")
         
-        for dst in self.destinations.keys():
-            self.buttons["set_" + dst] = SetButton(dst, partial(self.functions.set_destination, dst), master=self.frames["destinations"])
+        self.menus["destinations"] = DropdownMenu(master=self.frames["destinations"], entries=[""] + list(self.destinations.keys()), function=self.functions.set_destination)
         
         self.buttons["edit_destinations"] = NewWindowButton("Edit", self.functions.edit_destinations, master=self.frames["destinations"])
         
-        self.labels["current_dst"] = tk.Label(text="Current destination:", master=self.frames["destinations"], bg = self.frames["destinations"]["background"], fg = 'white')
-        self.entries["current_dst"] = tk.Entry(master=self.frames["destinations"])
-        
         # pack everything on a grid
-        max_buttons_in_row = 3
-        if len(self.destinations) < max_buttons_in_row:
-            columnspan = len(self.destinations) 
-        else:
-            columnspan = max_buttons_in_row
-            
-        columnspan += 1
-        
         row =  0
+        columnspan = 2
+        
         self.labels["destinations"].grid(row=row, columnspan=columnspan, sticky='w')
         row += 1
         
-        for c, dst in enumerate(self.destinations.keys()):
-            if (c % max_buttons_in_row) == 0:
-                row += 1
-            
-            self.buttons["set_" + dst].grid(row=row, column=(c % max_buttons_in_row), sticky='we')
-           
         self.buttons["edit_destinations"].grid(row=row, column=columnspan-1)
         
-        row += 1
-        self.labels["current_dst"].grid(row=row, columnspan=columnspan)
-        
-        row += 1
-        self.entries["current_dst"].grid(row=row, columnspan=columnspan)
+        self.menus["destinations"].grid(row=row, column=0, sticky='ew')
                 
         row += 1
         blank = tk.Label(text="", master=self.frames["destinations"], bg = self.frames["destinations"]["background"])
@@ -463,15 +444,11 @@ class IowEsmGui:
             
             self.labels["build_configs"] = tk.Label(text="Build configurations:", master=self.frames["build"], bg = self.frames["build"]["background"], fg = 'white')
             
-            
             build_modes = ["release", "debug", "fast", "rebuild"]
             
-            for mode in build_modes:
-                self.buttons["build_" + mode] = SetButton(mode, partial(self.functions.set_build_config, mode), master=self.frames["build"])
+            self.menus["build_modes1"] = DropdownMenu(master=self.frames["build"], entries=build_modes[:2], function=self.functions.set_build_config)
+            self.menus["build_modes2"] = DropdownMenu(master=self.frames["build"], entries=build_modes[2:], function=self.functions.set_build_config)
         
-            self.labels["current_build_config"] = tk.Label(text="Current build configuration:", master=self.frames["build"], bg = self.frames["build"]["background"], fg = 'white')
-            self.entries["current_build_config"] = tk.Entry(master=self.frames["build"])
-         
         # put everything on a grid
         
         if first_time:
@@ -499,18 +476,10 @@ class IowEsmGui:
             self.labels["build_configs"].grid(row=row, column=0, sticky='w')
             row += 1
             
-            for c, mode in enumerate(build_modes):
-                self.buttons["build_" + mode].grid(row=row, column=c, sticky='we')
+            self.menus["build_modes1"].grid(row=row, column=0, sticky='ew')
+            self.menus["build_modes2"].grid(row=row, column=1, sticky='ew')
             row += 1
             
-            self.labels["current_build_config"].grid(row=row, columnspan=columnspan)
-            row += 1
-            
-            self.entries["current_build_config"].grid(row=row, columnspan=columnspan)
-            row += 1
-            
-            self.entries["current_build_config"].delete(0, tk.END)
-            self.entries["current_build_config"].insert(0, self.current_build_conf)
         
         blank = tk.Label(text="", master=self.frames["build"], bg = self.frames["build"]["background"])
         blank.grid(row=row, columnspan=columnspan)
@@ -521,7 +490,7 @@ class IowEsmGui:
             self.frames["build"].grid_columnconfigure(i, weight=1)
         self.frames["build"].grid_rowconfigure(0, weight=1)
         self.row += 1  
-        
+
         ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
         self.row += 1
         
@@ -570,9 +539,8 @@ class IowEsmGui:
         
         # title label
         self.labels["setups"] = FrameTitleLabel(master=self.frames["setups"], text="Setups:")
-
-        for setup in self.setups.keys():
-            self.buttons["set_" + setup] = SetButton(setup, partial(self.functions.set_setup, setup), master=self.frames["setups"])
+        
+        self.menus["setups"] = DropdownMenu(master=self.frames["setups"], entries=[""] + list(self.setups.keys()), function=self.functions.set_setup)
             
         self.buttons["edit_setups"] = NewWindowButton("Edit", self.functions.edit_setups, master=self.frames["setups"])
         
@@ -582,8 +550,7 @@ class IowEsmGui:
         self.frames["setups_function_buttons"] = Frame(master=self.frames["setups"])
         
         self.buttons["get_setups_info"] = FunctionButton("Get setups info", self.functions.get_setups_info, self.frames["setups_function_buttons"] )
-        self.buttons["clear_setups"] = FunctionButton("Clear setups", self.functions.clear_setups, self.frames["setups_function_buttons"] )
-        
+                
         if first_time:
             self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups_first_time, self.frames["setups_function_buttons"] )
         else:
@@ -593,24 +560,14 @@ class IowEsmGui:
             self.buttons["setups_advanced"] = NewWindowButton("Advanced", self._build_window_setups_advanced, self.frames["setups"] )
         
         # put everything on a grid
-        max_buttons_in_row = 3
-        if len(self.setups) < max_buttons_in_row:
-            columnspan = len(self.setups) 
-        else:
-            columnspan = max_buttons_in_row
-            
-        columnspan += 1
 
         row = 0
+        columnspan = 2
         
         self.labels["setups"].grid(row=row, columnspan=columnspan, sticky='w')
         row += 1
-        
-        for c, setup in enumerate(self.setups.keys()):
-            if (c % max_buttons_in_row) == 0:
-                row += 1
-                
-            self.buttons["set_" + setup].grid(row=row, column=(c % max_buttons_in_row), sticky='ew')
+            
+        self.menus["setups"].grid(row=row, column=0, sticky='ew')
             
         self.buttons["edit_setups"].grid(row=row, column=columnspan-1)
         row += 1
@@ -618,7 +575,7 @@ class IowEsmGui:
         self.labels["current_setups"].grid(row=row, columnspan=columnspan)
         row += 1
         
-        self.entries["current_setups"].grid(row=row, columnspan=columnspan)
+        self.entries["current_setups"].grid(row=row, columnspan=columnspan, sticky="ew")
         row += 1
         
         blank = tk.Label(text="", master=self.frames["setups"], bg = self.frames["setups"]["background"])
@@ -626,14 +583,12 @@ class IowEsmGui:
         row += 1
         
         self.buttons["get_setups_info"].grid(row=0, column=0, sticky='ew')
-        self.buttons["clear_setups"].grid(row=0, column=1, sticky='ew')
-        self.buttons["deploy_setups"].grid(row=0, column=2, sticky='ew')
+        self.buttons["deploy_setups"].grid(row=0, column=1, sticky='ew')
         
         self.frames["setups_function_buttons"].grid(row=row, columnspan=columnspan, sticky='ew')
         self.frames["setups_function_buttons"].grid_rowconfigure(0, weight=1)
         self.frames["setups_function_buttons"].grid_columnconfigure(0, weight=1)
         self.frames["setups_function_buttons"].grid_columnconfigure(1, weight=1)
-        self.frames["setups_function_buttons"].grid_columnconfigure(2, weight=1)
         row += 1
         
         if not first_time:
@@ -673,13 +628,17 @@ class IowEsmGui:
         self.buttons["run"].grid(row=row, sticky='ew')
         row += 1
         
+        blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
+        blank.grid(row=row)
+        row += 1
+        
         if glob.glob(root_dir + "/postprocess") != []:
             self.buttons["postprocess"].grid(row=row, sticky='ew')
             row += 1
         
-        blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
-        blank.grid(row=row)
-        row += 1
+        #blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
+        #blank.grid(row=row)
+        #row += 1
         
         self.frames["run"].grid(row=self.row, sticky='nsew')
         self.frames["run"].grid_columnconfigure(0, weight=1)

@@ -83,11 +83,13 @@ class IowEsmFunctions:
         
     def set_destination(self, dst):
         self.gui.current_destination = dst
-        
-        self.gui.entries["current_dst"].delete(0, tk.END)
-        self.gui.entries["current_dst"].insert(0, self.gui.current_destination)
-        
+
         self.gui.print("Current destination: ")
+        
+        if dst == "":
+            self.gui.print(" None")
+            return
+        
         self.gui.print(" " + self.gui.current_destination + " (" + self.gui.destinations[self.gui.current_destination] + ")" )
         
     def build_origin(self, ori):
@@ -142,11 +144,13 @@ class IowEsmFunctions:
         if mode == "fast" or mode == "rebuild":
             self.gui.current_build_conf = self.gui.current_build_conf.split()[0] + " " + mode
         
-        self.gui.entries["current_build_config"].delete(0, tk.END)
-        self.gui.entries["current_build_config"].insert(0, self.gui.current_build_conf)
         self.gui.print("Current build configuration: " + self.gui.current_build_conf)
         
     def set_setup(self, setup):
+        if setup == "":
+            self.clear_setups()
+            return
+        
         self.gui.current_setups.append(setup)
         if len(self.gui.current_setups) == 1:
             self.gui.entries["current_setups"].insert(tk.END, self.gui.current_setups[-1])
