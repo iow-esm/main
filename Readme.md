@@ -49,7 +49,7 @@ Open a shell (`MSYS2` on Windows or `bash` on Linux) and execute
 
 ``` bash
 cd /to/your/favorite/directory
-git clone https://git.io-warnemuende.de/karsten/main.git .
+git clone https://git.io-warnemuende.de/iow_esm/main.git .
 ```
 
 The place holder `/to/your/favorite/directory` will become the _root directory_ of this project so choose it resonably.
