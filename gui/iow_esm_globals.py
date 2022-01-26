@@ -42,8 +42,8 @@ def read_iow_esm_configuration(file_name):
             
             # separate line into keyword and value
             try:
-                (key, val) = line.split()
-                config[key] = val
+                split_line = line.split()
+                config[split_line[0]] = split_line[1]
             except:
                 # ignore empty lines
                 pass

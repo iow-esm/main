@@ -1,6 +1,6 @@
-components/OASIS3-MCT https://git.io-warnemuende.de/karsten/components.oasis3-mct.git
-components/flux_calculator https://git.io-warnemuende.de/karsten/components.flux_calculator.git
-components/MOM5 https://git.io-warnemuende.de/karsten/components.mom5.git
-components/CCLM https://git.io-warnemuende.de/karsten/components.cclm.git
-tools/I2LM https://git.io-warnemuende.de/karsten/tools.i2lm.git
-postprocess https://git.io-warnemuende.de/karsten/postprocess.git
+components/OASIS3-MCT       https://git.io-warnemuende.de/iow_esm/components.oasis3-mct.git         master
+components/flux_calculator  https://git.io-warnemuende.de/karsten/components.flux_calculator.git    master
+components/MOM5             https://git.io-warnemuende.de/karsten/components.mom5.git               master
+components/CCLM             https://git.io-warnemuende.de/karsten/components.cclm.git               master
+tools/I2LM                  https://git.io-warnemuende.de/karsten/tools.i2lm.git                    master
+postprocess                 https://git.io-warnemuende.de/karsten/postprocess.git                   master
