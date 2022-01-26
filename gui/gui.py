@@ -13,6 +13,8 @@ import tkinter.ttk as ttk
 
 from iow_esm_buttons_and_labels import *
 
+from iow_esm_info_texts import *
+
 class IowEsmGui:
     def __init__(self):
         self.window = tk.Tk(className="IOW_ESM")
@@ -281,6 +283,8 @@ class IowEsmGui:
         self.frames["clone_origins"].grid_rowconfigure(0, weight=1)
         self.frames["clone_origins"].grid_columnconfigure(0, weight=1)
         self.row += 1
+
+        self.print(IowEsmInfoTexts.clone_origins)
         
     def _build_frame_clone_origin(self):
         
@@ -364,6 +368,8 @@ class IowEsmGui:
         self.row += 1
         
         self._edit_file(root_dir + "/DESTINATIONS.example", root_dir + "/DESTINATIONS")
+        
+        self.print(IowEsmInfoTexts.edit_destinations)
         
     def _build_window_edit_setups(self):
         
@@ -490,6 +496,7 @@ class IowEsmGui:
             self.buttons["build_continue"].grid(row=row, columnspan=columnspan, sticky='ew')
             row += 1
             
+            self.print(IowEsmInfoTexts.first_build)         
         
         blank = tk.Label(text="", master=self.frames["build"], bg = self.frames["build"]["background"])
         blank.grid(row=row, columnspan=columnspan)
