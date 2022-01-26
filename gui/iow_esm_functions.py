@@ -113,16 +113,19 @@ class IowEsmFunctions:
         return True
         
     def build_origins_first_time(self):
+        
+        # try to build the origins
         if not self.build_origins():
             return False
         
+        # if build has happened a file has been created, if not log error
         last_build_file = root_dir + "/LAST_BUILD_" + self.gui.current_destination + "_" + self.gui.current_build_conf.split(" ")[0]
         
         if glob.glob(last_build_file) == []:
             self.eh.report_error(*IowEsmErrors.build_origins_first_time)
-            #self.gui.refresh()
             return False
 
+        # in the file all origins should appear by name
         with open(last_build_file, 'r') as file:
             file_content = file.read()
         file.close()
@@ -130,12 +133,10 @@ class IowEsmFunctions:
         for ori in self.gui.origins:
             if ori.split("/")[-1] not in file_content:
                 self.eh.report_error(*IowEsmErrors.build_origins_first_time)
-                #self.gui.refresh()
                 return False
 
+        # if everything went fine we can remove old errors
         self.eh.remove_from_log(*IowEsmErrors.build_origins_first_time)
-            
-        self.gui.refresh()
         
     def set_build_config(self, mode):
         if mode == "release" or mode == "debug":
@@ -226,10 +227,20 @@ class IowEsmFunctions:
             
             self.execute_shell_cmd(cmd)
             self.clear_setups()
+        
+        return True
             
     def deploy_setups_first_time(self):
-        self.deploy_setups()
-        self.gui.refresh()
+        if not self.deploy_setups():
+            return False
+        
+        last_setups_file = root_dir + "/LAST_DEPLOYED_SETUPS_" + self.gui.current_destination
+        
+        if glob.glob(last_setups_file) == []:
+            self.eh.report_error(*IowEsmErrors.deploy_setups_first_time)
+            return False
+
+        self.eh.remove_from_log(*IowEsmErrors.deploy_setups_first_time)
             
     def run(self):
         if self.gui.current_destination == "":

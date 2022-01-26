@@ -15,6 +15,7 @@ class IowEsmErrorLevels():
 class IowEsmErrors():
     clone_origins = (IowEsmErrorLevels.fatal, "Not all origins could be cloned!")
     build_origins_first_time = (IowEsmErrorLevels.fatal, "Not all origins could be built!")
+    deploy_setups_first_time = (IowEsmErrorLevels.fatal, "Not all setups could be deployed!")
     destination_not_set = (IowEsmErrorLevels.warning, "Destination not set.")
 
 class IowEsmErrorHandler():

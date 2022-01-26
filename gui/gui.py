@@ -93,7 +93,7 @@ class IowEsmGui:
 
             return
         
-        if not self._check_last_deployed_setups():
+        if not self._check_last_deployed_setups() or self.error_handler.check_for_error(*IowEsmErrors.deploy_setups_first_time):
             self._build_frame_destinations()
             self._build_frame_setups(True)
             
@@ -432,9 +432,12 @@ class IowEsmGui:
         
         # label
         self.labels["build"] = FrameTitleLabel(master=self.frames["build"], text="Build:")      
+        
         if first_time:
             self.buttons["build_all"] = FunctionButton("Build all", self.functions.build_origins_first_time, master=self.frames["build"])
-
+            
+            self.labels["build_continue"] = tk.Label(master=self.frames["build"], text="Continue, when build was successful", bg = self.frames["build"]["background"], fg = 'white')
+            self.buttons["build_continue"] = FunctionButton("Continue", self.refresh, master=self.frames["build"])
         else:
             self.buttons["build_all"] = FunctionButton("Build all", self.functions.build_origins, master=self.frames["build"])
         
@@ -478,6 +481,13 @@ class IowEsmGui:
             
             self.menus["build_modes1"].grid(row=row, column=0, sticky='ew')
             self.menus["build_modes2"].grid(row=row, column=1, sticky='ew')
+            row += 1
+        
+        else:
+            self.labels["build_continue"].grid(row=row, columnspan=columnspan, sticky='w')
+            row += 1
+        
+            self.buttons["build_continue"].grid(row=row, columnspan=columnspan, sticky='ew')
             row += 1
             
         
@@ -550,13 +560,14 @@ class IowEsmGui:
         self.frames["setups_function_buttons"] = Frame(master=self.frames["setups"])
         
         self.buttons["get_setups_info"] = FunctionButton("Get setups info", self.functions.get_setups_info, self.frames["setups_function_buttons"] )
-                
+        
         if first_time:
             self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups_first_time, self.frames["setups_function_buttons"] )
+            self.labels["setups_continue"] = tk.Label(master=self.frames["setups"], text="Continue, when deploying was successful", bg = self.frames["setups"]["background"], fg = 'white')
+            self.buttons["setups_continue"] = FunctionButton("Continue", self.refresh, master=self.frames["setups"])
+            
         else:
             self.buttons["deploy_setups"] = FunctionButton("Deploy setups", self.functions.deploy_setups, self.frames["setups_function_buttons"])
-         
-        if not first_time:
             self.buttons["setups_advanced"] = NewWindowButton("Advanced", self._build_window_setups_advanced, self.frames["setups"] )
         
         # put everything on a grid
@@ -598,6 +609,12 @@ class IowEsmGui:
             blank = tk.Label(text="", master=self.frames["setups"], bg = self.frames["setups"]["background"])
             blank.grid(row=row, columnspan=columnspan)
             row += 1
+        else:
+            self.labels["setups_continue"].grid(row=row, columnspan=columnspan, sticky='w')
+            row += 1
+        
+            self.buttons["setups_continue"].grid(row=row, columnspan=columnspan, sticky='ew')
+            row += 1
         
         self.frames["setups"].grid(row=self.row, sticky='nsew')
         for i in range(0, columnspan):
@@ -635,10 +652,6 @@ class IowEsmGui:
         if glob.glob(root_dir + "/postprocess") != []:
             self.buttons["postprocess"].grid(row=row, sticky='ew')
             row += 1
-        
-        #blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
-        #blank.grid(row=row)
-        #row += 1
         
         self.frames["run"].grid(row=self.row, sticky='nsew')
         self.frames["run"].grid_columnconfigure(0, weight=1)
