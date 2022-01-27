@@ -13,8 +13,8 @@ class FunctionButton(tk.Button):
         tk.Button.__init__(self,
             master=master,
             text=text,
-            bg=IowColors.green1,
-            fg="black",#IowColors.grey1,
+            bg=IowColors.blue1,
+            fg="white",
             command=command   
         )
         
@@ -34,7 +34,7 @@ class NewWindowButton(tk.Button):
             master=master,
             text=text,
             command=command,
-            bg = IowColors.grey4,
+            bg = IowColors.green2,
             fg = "black"
         )
                 
@@ -66,7 +66,7 @@ class FrameTitleLabel(tk.Label):
             master=master,
             text=text, 
             bg = bg, 
-            fg = 'white'
+            fg = 'black'
         )
         self.config(font=("Meta Plus", 20))
         
@@ -76,8 +76,6 @@ class Frame(tk.Frame):
         tk.Frame.__init__(self,
             master=master,
             bg = bg,
-            #width = 400,
-            #height = 200
         )
 
  
@@ -92,7 +90,7 @@ class DropdownMenu(tk.OptionMenu):
                                )
         
         if bg is None:
-            bg = IowColors.grey1
+            bg = IowColors.grey2
             
         self.config(bg = bg)
         self["menu"].config(bg=bg)

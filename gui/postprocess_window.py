@@ -49,9 +49,8 @@ class PostprocessWindow():
             if post in oris:
                 self.build_postprocess_model_frame(post)
         
-        #master.windows["postprocessing"].geometry('+%d+%d' 
-        #                                      % (master.x_offset, 
-        #                                         1.2*master.window.winfo_height()))
+        self.window.geometry('+%d+%d' % (master.x_offset + 1.01*master.window.winfo_width(), 
+                                         1.05*master.windows["monitor"].winfo_height()))
     
     def build_postprocess_model_frame(self, model):
         
@@ -112,7 +111,7 @@ class PostprocessWindow():
             
             self.run_task(model, model_task)
             
-        self.menus[model + "_tasks"] = DropdownMenu(master=self.frames[model], entries=model_task_list, function=run_model_task, bg=IowColors.green1, fg="black")
+        self.menus[model + "_tasks"] = DropdownMenu(master=self.frames[model], entries=model_task_list, function=run_model_task, bg=IowColors.blue1, fg="white")
         self.menus[model + "_tasks"].grid(row=row, columnspan = columnspan, sticky='ew')
         row += 1
         

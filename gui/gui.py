@@ -396,7 +396,7 @@ class IowEsmGui:
         self.row += 1
         
         # create destinations frame
-        self.frames["destinations"] = Frame(master=self.window, bg=IowColors.blue4)
+        self.frames["destinations"] = Frame(master=self.window, bg = IowColors.blue4)
         
         # create objects of the frame
         self.labels["destinations"] = FrameTitleLabel(master=self.frames["destinations"], text="Destinations:")
@@ -434,7 +434,7 @@ class IowEsmGui:
     def _build_frame_build(self, first_time):
         
         # create build frame
-        self.frames["build"] = Frame(master=self.window, bg=IowColors.blue3)
+        self.frames["build"] = Frame(master=self.window,  bg = IowColors.blue4)
         
         # label
         self.labels["build"] = FrameTitleLabel(master=self.frames["build"], text="Build:")      
@@ -451,7 +451,7 @@ class IowEsmGui:
                 ori_short = ori.split("/")[-1]
                 self.buttons["build_" + ori_short] = FunctionButton(ori_short, partial(self.functions.build_origin, ori), master=self.frames["build"])
             
-            self.labels["build_configs"] = tk.Label(text="Build configurations:", master=self.frames["build"], bg = self.frames["build"]["background"], fg = 'white')
+            self.labels["build_configs"] = tk.Label(text="Build configurations:", master=self.frames["build"], bg = self.frames["build"]["background"], fg = 'black')
             
             build_modes = ["release", "debug", "fast", "rebuild"]
             
@@ -552,7 +552,7 @@ class IowEsmGui:
     def _build_frame_setups(self, first_time):
         
         # create build frame
-        self.frames["setups"] = Frame(master=self.window, bg=IowColors.blue2)
+        self.frames["setups"] = Frame(master=self.window, bg = IowColors.blue4)
         
         # title label
         self.labels["setups"] = FrameTitleLabel(master=self.frames["setups"], text="Setups:")
@@ -561,7 +561,7 @@ class IowEsmGui:
             
         self.buttons["edit_setups"] = NewWindowButton("Edit", self.functions.edit_setups, master=self.frames["setups"])
         
-        self.labels["current_setups"] = tk.Label(text="Current setups:", master=self.frames["setups"], bg = self.frames["setups"]["background"], fg = 'white')
+        self.labels["current_setups"] = tk.Label(text="Current setups:", master=self.frames["setups"], bg = self.frames["setups"]["background"], fg = 'black')
         self.entries["current_setups"] = tk.Entry(master=self.frames["setups"])     
         
         self.frames["setups_function_buttons"] = Frame(master=self.frames["setups"])
@@ -634,7 +634,7 @@ class IowEsmGui:
             
     def _build_frame_run(self):
         
-        self.frames["run"] = Frame(master=self.window, bg = IowColors.blue1)
+        self.frames["run"] = Frame(master=self.window, bg = IowColors.blue4)
         
         self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model:")
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
