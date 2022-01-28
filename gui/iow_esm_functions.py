@@ -39,19 +39,6 @@ class IowEsmFunctions:
             self.gui.print("...done")
             
         return str(p.stdout.read().decode("utf-8"))
-        
-    def apply_necessary_permisssions(self):
-        cmd = "find . -name \\\"*.*sh\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd, print=False)
-        
-        cmd = "find ./components/MOM5/exp/ -name \\\"*\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd, print=False)
-        
-        cmd = "find ./components/MOM5/bin/ -name \\\"*\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd, print=False)
-        
-        cmd = "find . -name \\\"configure\\\" -exec chmod u+x {} \\;"
-        self.execute_shell_cmd(cmd, print=False)
                 
     def clone_origins(self):
         cmd = "./clone_origins.sh"
@@ -63,8 +50,6 @@ class IowEsmFunctions:
                 return
         
         self.eh.remove_from_log(*IowEsmErrors.clone_origins)
-            
-        self.apply_necessary_permisssions()
         
         self.gui.refresh()
         
@@ -78,8 +63,6 @@ class IowEsmFunctions:
             return
         
         self.eh.remove_from_log(*IowEsmErrors.clone_origins)
-            
-        self.apply_necessary_permisssions()
         
     def set_destination(self, dst):
         self.gui.current_destination = dst
