@@ -156,15 +156,7 @@ class PostprocessWindow():
             return False
         
         cmd = "./postprocess.sh " + self.master.current_destination + " " + model + "/" + task + " "
-        if self.current_outdirs[model][0] == "/":
-            cmd  += self.current_outdirs[model]
-        else:
-            try:
-                user_at_host, path = self.master.destinations[self.master.current_destination].split(":")
-                cmd  += path + "/output/" + self.current_outdirs[model]
-            except:
-                self.master.print("Put absolute paths for output directories!")    
-                return False 
+        cmd  += self.current_outdirs[model]
             
         if  self.current_from_dates[model] != "" and self.current_to_dates[model] != "":
             cmd += " " + self.current_from_dates[model] + " " + self.current_to_dates[model]

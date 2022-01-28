@@ -25,20 +25,7 @@ source ${local}/local_scripts/identify_target.sh $target
 
 local="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-echo ssh -t "${user_at_dest}" \"mkdir -p ${dest_folder}/postprocess/auxiliary\"
-ssh -t "${user_at_dest}" "mkdir -p ${dest_folder}/postprocess/auxiliary"
+./local_scripts/sync_postprocess.sh ${target} ${user_at_dest} ${dest_folder}
 
-echo rsync -r -i -u ${local}/postprocess/auxiliary/ ${dest}/postprocess/auxiliary/.
-rsync -r -i -u ${local}/postprocess/auxiliary/ ${dest}/postprocess/auxiliary/.
-
-echo ssh -t "${user_at_dest}" \"mkdir -p ${dest_folder}/postprocess/${model_task}\"
-ssh -t "${user_at_dest}" "mkdir -p ${dest_folder}/postprocess/${model_task}"
-
-echo rsync -r -i -u ${local}/postprocess/* ${dest}/postprocess/
-rsync -r -i -u ${local}/postprocess/* ${dest}/postprocess/
-
-echo rsync -r -i -u ${local}/postprocess/load_modules_${target}.sh ${dest}/postprocess/load_modules.sh
-rsync -r -i -u ${local}/postprocess/load_modules_${target}.sh ${dest}/postprocess/load_modules.sh
-
-echo ssh "${user_at_dest}" \"echo Process started in background on \`hostname\`";" cd ${dest_folder}/postprocess/${model_task}/";" source ../../load_modules_${target}.sh";" nohup ./postprocess.sh ${path_to_output} ${from_date} ${to_date} \> nohup.out 2\>\&1 \& \"
-ssh "${user_at_dest}" "echo Process started in background on \`hostname\`; cd ${dest_folder}/postprocess/${model_task}/; source ../../load_modules_${target}.sh; nohup ./postprocess.sh ${path_to_output} ${from_date} ${to_date} > nohup.out 2>&1 &"
+echo ssh "${user_at_dest}" \"echo Process started in background on \`hostname\`";" cd ${dest_folder}/postprocess/${model_task}/";" source ../../load_modules.sh";" nohup ./postprocess.sh ${dest_folder}/output/${path_to_output} ${from_date} ${to_date} \> nohup.out 2\>\&1 \& \"
+ssh "${user_at_dest}" "echo Process started in background on \`hostname\`; cd ${dest_folder}/postprocess/${model_task}/; source ../../load_modules.sh; nohup ./postprocess.sh ${dest_folder}/output/${path_to_output} ${from_date} ${to_date} > nohup.out 2>&1 &"
