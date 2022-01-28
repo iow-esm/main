@@ -180,9 +180,9 @@ Be sure that the remote computer knows your targets and can copy files to them.
 #### Available setups
 
 ##### HLRN in Göttingen
-You can find an example setup for a MOM5 for the Baltic sea coupled to a CCLM model for the Eurocordex domain under `/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg`.
+You can find an example setup for a MOM5 for the Baltic sea coupled to a CCLM model for the Eurocordex domain under `/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00`.
 The corresponding line in the `SETUPS` file could then look like
-`coupled_example user@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg`,
+`coupled_example user@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00`,
 where `user` should be replaced by your user name on the HLRN in Göttingen.
 It might be also necessary to add the full domain to the hostname, depending on your ssh configuration.
 Other example setups (also for uncoupled runs) can be found in `SETUPS.example` in this directory.

@@ -1,4 +1,4 @@
-coupled_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg
-CCLM_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/CCLM_Eurocordex/example_0.22deg
-MOM5_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic/example_8nm
+coupled_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00
+CCLM_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/CCLM_Eurocordex/example_0.22deg/1.00.00
+MOM5_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic/example_8nm/1.00.00
 update ./local_setup
