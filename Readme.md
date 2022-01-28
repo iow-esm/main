@@ -20,6 +20,8 @@ Your local machine has to provide:
 
 #### Windows
 
+**!!!ATTENTION!!! It might not correctly work on Windows yet**
+
 If you work on Windows, you can use e.g. the [`MSYS2`](https://www.msys2.org/) software distribution and building platform. 
 For installation, follow the instructions given on the project web site.
 After successful installation you can open an `MSYS2` shell via hitting the Windows key on your keyboard, typing "msys" and opening the installed app.
@@ -196,20 +198,23 @@ After creating the file `SETUPS` you can run in the root directory
 ./deploy_setup.sh hlrng coupled_example
 ``` 
 
+Before running the model you should have a look at the deployed folders on your target.
+Especially you should go to the `input` folder and open the file `global_settings.py`.
+Please enter your name and email here.
+Moreover you should have a look at the file `jobscript_*`. 
+Here you may adjust the account which you will use for running the model.
+ 
 
 ### Run the coupled model for the first time
 
 If everything is set up on your remote computer of choice, you can run the model for the first time by executing this in the root directory:
 
 ``` bash
-./run.sh hlrng prepare-before-run
+./run.sh hlrng
 ``` 
 
 The first argument of the run script is always the target keyword as specified in your `DESTINATIONS` file.
 By executing the run script all files from `scripts` directory will be transferred to the target.
-The second argument `prepare-before-run` is obligatory for the very first run.
-This will create necessary mapping files in the destination directories.
-However, for all following runs *this is an optional argument and should be omitted*, unless you really want to re-create the mapping files.
 
 After the scripts are transferred and the preparation script has finished (this can take a bit time),
 the model is started on the target.
@@ -296,6 +301,11 @@ In general the run script can be called like
 ```
 
 where `prepare-before-run` is optional and can be omitted, which is usually the case if it is not the very first run on a target.
+
+The second argument `prepare-before-run` is obligatory for the very first run if the necessary mapping files are not part of the setup yet.
+Putting this argument will create necessary mapping files in the destination directories.
+However, for all following runs *this is an optional argument and should be omitted*, unless you really want to re-create the mapping files.
+
 The setup updates are transferred in the order they appear, where the last one can, in principle, overwrite the ones before.
 *Note that you should not use the keyword `prepare-before-run` for a setup, otherwise the script will be confused.*
 
