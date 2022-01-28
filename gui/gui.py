@@ -54,8 +54,6 @@ class IowEsmGui:
         self.print(self.error_handler.get_log())
         
         if not self._check_origins() or self.error_handler.check_for_error(*IowEsmErrors.clone_origins):
-
-            self.functions.execute_shell_cmd(cmd, print=False)
             
             self._build_window_clone_origins()
         
