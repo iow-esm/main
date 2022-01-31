@@ -119,6 +119,9 @@ class IowEsmGui:
         self.monitor = False
         self.windows["monitor"].destroy()
         
+        self.buttons["cancel"] = CancelButton("Cancel", self.functions.cancel_shell_cmd, master=self.window)
+        self.buttons["cancel"].grid(row=self.row, sticky='ew')
+        
     def refresh(self):
         self.window.destroy()
         self.restart = True
@@ -240,6 +243,9 @@ class IowEsmGui:
         
         self.texts["monitor"].grid(row=row)
         row += 1
+        
+        self.buttons["cancel"] = CancelButton("Cancel", self.functions.cancel_shell_cmd, master=self.windows["monitor"])
+        self.buttons["cancel"].grid(row=row, sticky='ew')
         
         self.monitor = True        
         
@@ -649,13 +655,13 @@ class IowEsmGui:
         self.buttons["run"].grid(row=row, sticky='ew')
         row += 1
         
-        blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
-        blank.grid(row=row)
-        row += 1
-        
         if glob.glob(root_dir + "/postprocess") != []:
             self.buttons["postprocess"].grid(row=row, sticky='ew')
             row += 1
+            
+        blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
+        blank.grid(row=row)
+        row += 1
         
         self.frames["run"].grid(row=self.row, sticky='nsew')
         self.frames["run"].grid_columnconfigure(0, weight=1)
@@ -671,6 +677,8 @@ class IowEsmGui:
         self._build_frame_setups(False)
         
         self._build_frame_run()
+        
+
 
         
         

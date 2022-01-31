@@ -173,7 +173,7 @@ class PostprocessWindow():
         
         user_at_host, path = self.master.destinations[self.master.current_destination].split(":")
         cmd = "ssh " + user_at_host + " \\\"if [ -f " + path +  "/input/global_settings.py ]; then cat " + path + "/input/global_settings.py; fi; \\\""
-        file_content = self.master.functions.execute_shell_cmd(cmd, print=False)
+        file_content = self.master.functions.execute_shell_cmd(cmd, printing = False, blocking = True)
                 
         ldict = {"run_name" : "", "init_date" : "", "final_date" : "", "model_domains" : {}, "dependencies" : {}}
         
@@ -188,7 +188,7 @@ class PostprocessWindow():
         file_content = ""
         if self.run_name != "":
             cmd = "ssh " + user_at_host + " ' echo model_domains = {}; for d in \`ls " + path + "/output/" + self.run_name + "\`; do model=\${d%_*}; dom=\${d#*_}; echo model_domains[\\\\\\\"\$model\\\\\\\"] = \\\\\\\"\$dom\\\\\\\"; done'"
-            file_content = self.master.functions.execute_shell_cmd(cmd, print=False)
+            file_content = self.master.functions.execute_shell_cmd(cmd, printing = False, blocking = True)
         
         try:
             exec(file_content, globals(), ldict)
@@ -197,7 +197,7 @@ class PostprocessWindow():
             pass
         
         cmd = "ssh " + user_at_host + " 'for c in " + path + "/postprocess/*/*/config.py; do echo \$c \`cat \$c | grep \"dependencies\"\`; done\'"
-        file_content = self.master.functions.execute_shell_cmd(cmd, print=False)
+        file_content = self.master.functions.execute_shell_cmd(cmd, printing = False, blocking = True)
         
         lines = file_content.splitlines()
         
