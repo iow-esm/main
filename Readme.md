@@ -1,12 +1,12 @@
 # IOW Earth system model
 
-This is the main repository for this project.
+This is the main repository for the IOW earth system model (ESM) project.
 Further information will follow.
-
-**!!!ATTENTION!!! This not yet a working project and cannot be used at the moment**
 
 
 ## Prerequisites
+
+Before doing anything with the IOW ESM some requirements have to be fulfilled.
 
 
 ### Local
@@ -42,19 +42,42 @@ If you work on Linux you will most probably have a `bash` and you can install `g
 
 You need accounts on the target servers, where you want to run the model.
 
-**TODO:** How to setup correctly `.bashrc`and `.bash_profile`?
-
 
 ### Get the main project
 
-Open a shell (`MSYS2` on Windows or `bash` on Linux) and execute
+
+#### As a user
+
+If you just want to use the latest released version of the IOW ESM you have to execute the following in a shell (`MSYS2` on Windows or `bash` on Linux)
+
+``` bash
+cd /to/your/favorite/directory
+git clone --branch X.XX.XX https://git.io-warnemuende.de/iow_esm/main.git .
+```
+
+where the `X.XX.XX` stands for the version you prefer.
+Which versions are available can be found out by looking at the available Git branches that have names structured as "X.XX.XX".
+
+The place holder `/to/your/favorite/directory` will become the _root directory_ of this project so choose it reasonably.
+
+
+#### As a developer
+
+If you intent to develop the IOW ESM and modify it you have to execute
 
 ``` bash
 cd /to/your/favorite/directory
 git clone https://git.io-warnemuende.de/iow_esm/main.git .
 ```
 
-The place holder `/to/your/favorite/directory` will become the _root directory_ of this project so choose it resonably.
+This will checkout the master (development) branch.
+
+The place holder `/to/your/favorite/directory` will become the _root directory_ of this project so choose it reasonably.
+
+Note, if you started as user but decide later to develop you can always check out the master branch manually.
+
+
+#### Key agent recommended
 
 Note that it is strongly recommended to use a [key agent](https://www.ssh.com/academy/ssh/agent) for connecting to the target servers.
 Otherwise you will have to type in your account password very often.
@@ -66,6 +89,7 @@ ssh-add ~/.ssh/<private-key>
 ```
 
 where the `<private-key>` should be the private key generated for the desired target.
+
 
 ### Working with the GUI
 
@@ -99,6 +123,10 @@ By executing in the root directory (where this `Readme.md` is located)
 you clone all individual components which have their own repositories to your local machine.
 If there will be some you don't need you can later remove them. 
 However, be sure that you can still build and run the model properly.
+
+Note that depending on your choice from above, i.e. you cloned the main project as a user or as a developer, 
+you will clone the latest release branches or the master (development) branches, respectively.
+However, if you started as user but decide later to develop you can always check out the individual master branches manually.
 
 
 ### Configure your destinations (targets)
