@@ -119,29 +119,21 @@ class IowEsmGui:
         self.monitor = False
         self.windows["monitor"].destroy()
         
-        self.buttons["cancel"] = CancelButton("Cancel", self.functions.cancel_shell_cmd, master=self.window)
-        self.buttons["cancel"].grid(row=self.row, sticky='ew')
-        
     def refresh(self):
         self.window.destroy()
         self.restart = True
         
     def print(self, text):
-        if not self.monitor:
-            print(text)
-            #self.windows["monitor"] = tk.Toplevel(self.window)
-            #self.windows["monitor"].protocol("WM_DELETE_WINDOW", self._destroy_monitor_callback)
-            #self.texts["monitor"] = tk.Text(master = self.windows["monitor"], bg = IowColors.blue1, fg='white')
-            #self.texts["monitor"].grid(row=0)
-            #self.monitor = True
-            return
         
-        self.windows["monitor"].attributes('-topmost', 1)
-        self.windows["monitor"].attributes('-topmost', 0)
-        
-        self.texts["monitor"].insert(tk.END, str(text) + "\n")
-        self.texts["monitor"].see(tk.END)
-        self.window.update_idletasks()
+        print(text)
+
+        if self.monitor:
+            self.windows["monitor"].attributes('-topmost', 1)
+            self.windows["monitor"].attributes('-topmost', 0)
+            
+            self.texts["monitor"].insert(tk.END, str(text) + "\n")
+            self.texts["monitor"].see(tk.END)
+            self.window.update_idletasks()
         
     def _check_origins(self):
         self.origins = []
@@ -243,9 +235,6 @@ class IowEsmGui:
         
         self.texts["monitor"].grid(row=row)
         row += 1
-        
-        self.buttons["cancel"] = CancelButton("Cancel", self.functions.cancel_shell_cmd, master=self.windows["monitor"])
-        self.buttons["cancel"].grid(row=row, sticky='ew')
         
         self.monitor = True        
         
@@ -677,6 +666,9 @@ class IowEsmGui:
         self._build_frame_setups(False)
         
         self._build_frame_run()
+        
+        self.buttons["cancel"] = CancelButton("Cancel", self.functions.cancel_shell_cmd, master=self.window)
+        self.buttons["cancel"].grid(row=self.row, sticky='ew')
         
 
 
