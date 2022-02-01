@@ -124,13 +124,9 @@ class IowEsmGui:
         self.restart = True
         
     def print(self, text):
+        
         if not self.monitor:
             print(text)
-            #self.windows["monitor"] = tk.Toplevel(self.window)
-            #self.windows["monitor"].protocol("WM_DELETE_WINDOW", self._destroy_monitor_callback)
-            #self.texts["monitor"] = tk.Text(master = self.windows["monitor"], bg = IowColors.blue1, fg='white')
-            #self.texts["monitor"].grid(row=0)
-            #self.monitor = True
             return
         
         self.windows["monitor"].attributes('-topmost', 1)
@@ -649,13 +645,13 @@ class IowEsmGui:
         self.buttons["run"].grid(row=row, sticky='ew')
         row += 1
         
-        blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
-        blank.grid(row=row)
-        row += 1
-        
         if glob.glob(root_dir + "/postprocess") != []:
             self.buttons["postprocess"].grid(row=row, sticky='ew')
             row += 1
+            
+        blank = tk.Label(text="", bg = self.frames["run"]["background"], master=self.frames["run"])
+        blank.grid(row=row)
+        row += 1
         
         self.frames["run"].grid(row=self.row, sticky='nsew')
         self.frames["run"].grid_columnconfigure(0, weight=1)
@@ -671,6 +667,11 @@ class IowEsmGui:
         self._build_frame_setups(False)
         
         self._build_frame_run()
+        
+        self.buttons["cancel"] = CancelButton("Cancel", self.functions.cancel_shell_cmd, master=self.window)
+        self.buttons["cancel"].grid(row=self.row, sticky='ew')
+        
+
 
         
         

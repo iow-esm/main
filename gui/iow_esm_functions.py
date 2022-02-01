@@ -10,6 +10,11 @@ from iow_esm_error_handler import IowEsmErrors
 
 import platform
 
+from threading import Thread, Event
+
+import os
+import signal
+
 class IowEsmFunctions:
     def __init__(self, gui):
         self.gui = gui
@@ -19,26 +24,61 @@ class IowEsmFunctions:
             self.bash = "`which bash`"
         if platform.system() == "Windows":
             self.bash = "\"C:\\msys64\\usr\\bin\\env.exe\" MSYSTEM=MINGW64 /bin/bash"
+            
+        self.shell_cmd_thread = Thread()
+        self.cancel_cmd = Event()
+        self.output = ""
         
-    def execute_shell_cmd(self, cmd, print=True):
-        if print:
-            self.gui.print("Executing: \"" + cmd + "\"...")
+    def start_execute_shell_cmd(self, cmd, printing, stop_event):
         
         cmd = self.bash + " -l -c \"cd " + root_dir.replace("\\","/") + "; " + cmd + "\""
 
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, preexec_fn=os.setsid)
         
         while(p.poll() is None):
-            if print:
+            if printing:
                 line = p.stdout.readline()
                 self.gui.print(" " + str(line.decode("utf-8")[:-1]))
             else:
                 pass
             
-        if print:
+            if stop_event.is_set():
+                os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+                self.gui.print("...canceled")
+                stop_event.clear()
+                return
+            
+        if printing:
             self.gui.print("...done")
             
-        return str(p.stdout.read().decode("utf-8"))
+        self.output = str(p.stdout.read().decode("utf-8"))
+        return 
+        
+    def execute_shell_cmd(self, cmd, printing = True, blocking = True):
+        
+        if printing:
+            self.gui.print("Executing: \"" + cmd + "\"...")
+        
+        if blocking:
+            self.start_execute_shell_cmd(cmd, printing, self.cancel_cmd)
+            return self.output
+        
+        if self.shell_cmd_thread.is_alive():
+            self.gui.print("Warning: Another command is already running. Please wait.")
+            return ""
+        
+        self.shell_cmd_thread = Thread(target = self.start_execute_shell_cmd, args = (cmd, printing, self.cancel_cmd))
+        self.shell_cmd_thread.start()  
+
+        return self.output
+    
+    def cancel_shell_cmd(self):
+        
+        if not  self.shell_cmd_thread.is_alive():
+            self.gui.print("Warning: No command is running.")
+            return 
+        
+        self.cancel_cmd.set()
                 
     def clone_origins(self):
         cmd = "./clone_origins.sh"
@@ -83,7 +123,7 @@ class IowEsmFunctions:
         ori = ori.replace("\\","/")
         cmd = "cd " + ori + "; ./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
 
-        self.execute_shell_cmd(cmd)
+        self.execute_shell_cmd(cmd, blocking = False)
         
     def build_origins(self):
         if self.gui.current_destination == "":
@@ -91,15 +131,19 @@ class IowEsmFunctions:
             return False
         
         cmd = "./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
-        self.execute_shell_cmd(cmd)
+        self.execute_shell_cmd(cmd, blocking = False)
         
         return True
         
     def build_origins_first_time(self):
         
         # try to build the origins
-        if not self.build_origins():
+        if self.gui.current_destination == "":
+            self.eh.report_error(*IowEsmErrors.destination_not_set)
             return False
+        
+        cmd = "./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
+        self.execute_shell_cmd(cmd)
         
         # if build has happened a file has been created, if not log error
         last_build_file = root_dir + "/LAST_BUILD_" + self.gui.current_destination + "_" + self.gui.current_build_conf.split(" ")[0]
@@ -209,7 +253,8 @@ class IowEsmFunctions:
             cmd = "./deploy_setups.sh " + self.gui.current_destination + " " + setup
             
             self.execute_shell_cmd(cmd)
-            self.clear_setups()
+            
+        self.clear_setups()
         
         return True
             
@@ -238,7 +283,7 @@ class IowEsmFunctions:
         for setup in self.gui.current_setups:
             cmd = cmd + " " + setup
             
-        self.execute_shell_cmd(cmd)
+        self.execute_shell_cmd(cmd, blocking = False)
         
     def store_file_from_tk_text(self, file_name, tk_text):
         content = tk_text.get("1.0", tk.END)

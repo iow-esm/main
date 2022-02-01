@@ -18,6 +18,16 @@ class FunctionButton(tk.Button):
             command=command   
         )
         
+class CancelButton(tk.Button):
+    def __init__(self, text, command, master=None):
+        tk.Button.__init__(self,
+            master=master,
+            text=text,
+            bg="darkred",
+            fg="white",#IowColors.grey1,
+            command=command   
+        )
+        
 class SetButton(tk.Button):
     def __init__(self, text, command, master=None):
         tk.Button.__init__(self,
