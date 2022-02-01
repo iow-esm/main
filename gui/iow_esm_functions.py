@@ -79,14 +79,10 @@ class IowEsmFunctions:
             return 
         
         self.cancel_cmd.set()
-        #self.shell_cmd_thread.join()
                 
     def clone_origins(self):
         cmd = "./clone_origins.sh"
-        #self.start_execute_shell_cmd_thread(cmd, True, self.cancel_cmd)
-        self.execute_shell_cmd(cmd) # hangs! why not working correctly?
-        
-        #self.shell_cmd_thread.join()
+        self.execute_shell_cmd(cmd)
         
         for ori in read_iow_esm_configuration(root_dir + '/ORIGINS').keys():
             if glob.glob(root_dir + "/" + ori + "/.git") == []:
@@ -100,10 +96,7 @@ class IowEsmFunctions:
     def clone_origin(self, origin):
 
         cmd = "./clone_origins.sh " + origin
-        #self.start_execute_shell_cmd_thread(cmd, True, self.cancel_cmd)
-        self.execute_shell_cmd(cmd) # hangs! why not working correctly?
-        
-        #self.shell_cmd_thread.join()
+        self.execute_shell_cmd(cmd)
         
         if glob.glob(root_dir + "/" + origin + "/.git") == []:
             self.eh.report_error(*IowEsmErrors.clone_origins)
@@ -138,7 +131,7 @@ class IowEsmFunctions:
             return False
         
         cmd = "./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
-        self.execute_shell_cmd(cmd, blocking = False) # might be blocking too
+        self.execute_shell_cmd(cmd, blocking = False)
         
         return True
         
@@ -150,7 +143,7 @@ class IowEsmFunctions:
             return False
         
         cmd = "./build.sh " + self.gui.current_destination + " " + self.gui.current_build_conf
-        self.execute_shell_cmd(cmd) # might be blocking too
+        self.execute_shell_cmd(cmd)
         
         # if build has happened a file has been created, if not log error
         last_build_file = root_dir + "/LAST_BUILD_" + self.gui.current_destination + "_" + self.gui.current_build_conf.split(" ")[0]

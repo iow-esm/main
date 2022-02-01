@@ -125,15 +125,16 @@ class IowEsmGui:
         
     def print(self, text):
         
-        print(text)
-
-        if self.monitor:
-            self.windows["monitor"].attributes('-topmost', 1)
-            self.windows["monitor"].attributes('-topmost', 0)
-            
-            self.texts["monitor"].insert(tk.END, str(text) + "\n")
-            self.texts["monitor"].see(tk.END)
-            self.window.update_idletasks()
+        if not self.monitor:
+            print(text)
+            return
+        
+        self.windows["monitor"].attributes('-topmost', 1)
+        self.windows["monitor"].attributes('-topmost', 0)
+        
+        self.texts["monitor"].insert(tk.END, str(text) + "\n")
+        self.texts["monitor"].see(tk.END)
+        self.window.update_idletasks()
         
     def _check_origins(self):
         self.origins = []
