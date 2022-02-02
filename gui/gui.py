@@ -20,6 +20,9 @@ class IowEsmGui:
         self.window = tk.Tk(className="IOW_ESM")
         self.window.configure(background=IowColors.blue1)
         
+        self.icon = tk.PhotoImage(file = root_dir + "/gui/icon.png")
+        self.window.iconphoto(True, self.icon)
+        
         self.screen_width = self.window.winfo_screenwidth() # width of the screen
         self.screen_height = self.window.winfo_screenheight() # height of the screen
         

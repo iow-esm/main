@@ -23,8 +23,8 @@ class CancelButton(tk.Button):
         tk.Button.__init__(self,
             master=master,
             text=text,
-            bg="darkred",
-            fg="white",#IowColors.grey1,
+            bg='#ff9300',#"darkred",
+            fg="black",#IowColors.grey1,
             command=command   
         )
         
