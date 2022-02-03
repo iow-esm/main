@@ -15,6 +15,8 @@ from iow_esm_buttons_and_labels import *
 
 from iow_esm_info_texts import *
 
+import webbrowser
+
 class IowEsmGui:
     def __init__(self):
         self.window = tk.Tk(className="IOW_ESM")
@@ -210,8 +212,9 @@ class IowEsmGui:
         self.frames["greeting"] = Frame(master=self.window, bg=IowColors.blue4)
         
         self.iow_logo = tk.PhotoImage(file=root_dir + '/gui/iow_logo_small.png')
-        self.labels["greeting"] = tk.Label(master=self.frames["greeting"], image=self.iow_logo, bg = IowColors.blue4)
-        self.labels["greeting"].grid(sticky='w')
+        
+        self.buttons["greeting"] = tk.Button(master = self.frames["greeting"], image = self.iow_logo, bg = IowColors.blue4, command = partial(webbrowser.open_new, r"https://git.io-warnemuende.de/iow_esm/main"))
+        self.buttons["greeting"].grid(sticky='w')
         
         self.frames["greeting"].grid(row=self.row, sticky='nsew')
         self.frames["greeting"].grid_columnconfigure(0, weight=1)
