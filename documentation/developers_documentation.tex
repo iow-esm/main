@@ -12,7 +12,7 @@
 
 % use other packages
 \usepackage{color}
-\usepackage[hidelinks]{hyperref}
+\usepackage[urlcolor=blue]{hyperref}
 \usepackage{graphicx}
 \usepackage{array}
 \usepackage{natbib}
@@ -21,8 +21,9 @@
 %\usepackage{tabularx}
 
 % title and author
-\title{User's guide for the IOW Earth System Model}
-\author{Hagen Radtke\thanks{hagen.radtke@io-warnemuende.de} \\ Leibniz Institute for Baltic Sea Research Warnem\"unde (IOW)}
+\title{Developer's documentation for the IOW Earth System Model}
+\author{Sven Karsten\thanks{sven.karsten@io-warnemuende.de}, Hagen Radtke\thanks{hagen.radtke@io-warnemuende.de} \\ Leibniz Institute for Baltic Sea Research Warnem\"unde (IOW)}
+%\author{Hagen Radtke\thanks{hagen.radtke@io-warnemuende.de} \\ Leibniz Institute for Baltic Sea Research Warnem\"unde (IOW)}
 
 \clubpenalty10000
 \widowpenalty10000
@@ -40,9 +41,13 @@
 \vspace*{5em}
 {\let\newpage\relax\maketitle}
 
+\newcommand{\Sec}[1]{Sec.~\ref{#1}}
+\newcommand{\Readme}{\href{https://git.io-warnemuende.de/iow_esm/main}{\texttt{Readme.md}}\ }
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section*{About this document}
-This document describes how to use the IOW Earth System Model. The Appendix sections contain more detailed information intended for developers. 
+This document describes the details of the IOW Earth System Model. The Appendix sections contain more detailed information intended for developers. 
+A guide for the initial steps to use the models is provided in the corresponding \Readme file.
 
 \vfill 
 
@@ -54,10 +59,26 @@ This document describes how to use the IOW Earth System Model. The Appendix sect
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 
+\section{Introduction and the coupling concept}
+\begin{itemize}
+\item different components on different grids
+\item exchange grid
+\item fluxes calculated on exchange grid
+\item distribution on different surface types
+\end{itemize}
+
+\begin{center}
+\includegraphics[scale=0.5]{"./grids.pdf"} \\
+\includegraphics[scale=1.0]{"./grids1D.pdf"} \\
+\vspace{2em}
+\includegraphics[scale=1.0]{"./grids1D_plus_exchange.pdf"}
+\end{center}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SECTION: Coupling concept                            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Coupling concept}
+\section{Current implementation of the coupling concept}
 
 \subsection{Components}
 The following components can be coupled in the IOW ESM:
@@ -75,20 +96,38 @@ The components are coupled via the OASIS3-MCT coupler, but not directly:
 \end{enumerate}
 This procedure automatically ensures conservation of all exchanged quantities.
 
+\begin{center}
+\includegraphics[scale=0.3]{./sequence-diagram.pdf}
+\end{center}
+
 Some fluxes, however, do not fit into this concept. Precipitation and radiative fluxes will still be determined by the atmospheric model (on the coarse atmospheric grid) and the resulting fluxes will be sent to the flux calculator executable. Precipitation is then simply passed to the bottom models. Radiative fluxes need some redistribution between different surface areas under the same atmospheric grid cell (e.g. ocean and land) that show different albedo. This concept is described in detail in Section~\ref{sec:fluxes_radiation}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION: Getting and setting up the IOW ESM for first usage  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Getting and setting up the IOW ESM for first usage}
+
+How to get the sources of the IOW ESM and setting it up for a first run is described in the \Readme file.
+
+Once the steps described therein have been followed, the user finds a directory structure that is presented in \Sec{sec:directory-structure}. 
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SECTION: Directory structure of the IOW ESM          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
 \section{Directory structure of the IOW ESM}
+\label{sec:directory-structure}
 Under a base directory which the user can select, there is the following directory structure:
 \begin{verbatim}
 components
    OASIS3-MCT
-   COSMO-CLM
+   CCLM
    MOM5
    flux_calculator
+tools
+   I2LM
 input
    CCLM_MAINGRID
    MOM5_MAINGRID
@@ -96,7 +135,15 @@ input
 scripts
    prepare
    run
-   post
+postprocess
+   MOM5
+      task1
+      task2
+      ...
+   CCLM
+      task1
+      task2
+      ...
 work
    CCLM_MAINGRID
    MOM5_MAINGRID
@@ -118,6 +165,9 @@ hotstart
       CCLM_MAINGRID
          19510101
          19520101
+         ...
+      MOM5_MAINGRID
+         ...
       ...
    RUN02
    ...
@@ -126,9 +176,9 @@ hotstart
 \subsection{The components directory}
 This directory contains the components of the IOW-ESM, which are
 \begin{itemize}
-\item \textbf{COSMO-CLM}, a regional atmospheric model,
-\item \textbf{MOM5}, a hydrodynamic ocean model,
-\item the \textbf{OASIS3-MCT} library for coupling the components via MPI,
+\item \textbf{COSMO-CLM}, a regional atmospheric model, see \href{https://wiki.coast.hereon.de/clmcom/}{here}
+\item \textbf{MOM5}, a hydrodynamic ocean model, see \href{https://mom-ocean.github.io/}{here}
+\item the \textbf{OASIS3-MCT} library for coupling the components via MPI, see \href{https://oasis.cerfacs.fr/en/}{here}
 \item the \textbf{flux calculator}, a separate executable to calculate fluxes between atmosphere and ocean/land on an exchange grid.
 \end{itemize}
 
@@ -138,7 +188,14 @@ Each component's directory contains subdirectories for
 \item the compile scripts,
 \item the compiled libraries and/or executables.
 \end{itemize}
-In some cases, the directory contains a GIT repository of source code, such that the changes to the official GIT release of that model component can be easily seen.
+
+\subsection{The tools directory}
+This directory contains components of the IOW-ESM that are not directly coupled to other components but provide useful input for the models.
+Currently the following tools are available
+\begin{itemize}
+\item \textbf{int2lm}, a part of the CCLM package to generate forcings from coarse data, see \href{https://wiki.coast.hereon.de/clmcom/}{here}
+\end{itemize}
+ 
 
 \subsection{The input directory}
 The user of the model system has to create a directory called \texttt{input}.
@@ -150,11 +207,14 @@ In addition, there are three files directly in the \texttt{input} directory:
 \begin{itemize}
 \item \texttt{global\_settings.py} contains settings for the entire model system, such as name and duration of the present run, coupling timestep, or whether the work directory in which the coupled model runs should be global or node-local.
 \item \texttt{flux\_calculator.nml} is a configuration file for the \texttt{flux\_calculator} executable which defines how fluxes between atmosphere and land/sea shall be calculated, i.e. which bulk formulae are used.
-\item \texttt{namcouple} is the OASIS3-MCT coupling configuration file and describes how data are exchanged between the model subcomponents. It needs to match the configuration in \texttt{flux\_calculator.nml}.
+\item \texttt{namcouple} is the OASIS3-MCT coupling configuration file and describes how data are exchanged between the model subcomponents. It needs to match the configuration in \texttt{flux\_calculator.nml}. It can be thus generated automatically by setting the option \texttt{generate\_namcouple = True} in \texttt{global\_settings.py}. Importantly, for an uncoupled run you have to provide a \texttt{namcouple} file with \texttt{\$NFIELDS} equal to zero. 
 \end{itemize}
 
 \subsection{The scripts directory}
-This directory contains scripts (bash or python3 scripts) which perform tasks in preparing model runs, running the model system, or postprocessing of data.
+This directory contains scripts (bash or python3 scripts) which perform tasks in preparing model runs, running the model system, or 
+
+\subsection{The postprocess directory}
+This directory contains scripts (bash and python) for postprocessing of data which is located in the output directory.
 
 \subsection{The work directory (automatically created during model start)}
 This is the directory in which the models are actually executed.
@@ -169,13 +229,17 @@ These are sorted by sub-model and by starting time.
 This contains hotstart files to restart the model from a specific date.
 The directory is sorted like the \texttt{output} folder.
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SECTION: Compiling IOW ESM components                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \section{Compiling IOW ESM components}
 It is important to compile the OASIS3-MCT libraries first before compiling the other subcomponents.
+The correct order of building is ensured by using the \texttt{build.sh} script in the base directory.
+How this script is called correctly is written in detail in the \Readme file.
 
+However, it is still possible to build each component individually.
 In order to compile one of the components, go to the corresponding folder:
 \begin{itemize}
 \item \texttt{components/OASIS3-MCT}
@@ -185,12 +249,13 @@ In order to compile one of the components, go to the corresponding folder:
 \end{itemize}
 This folder contains the source code and makefiles required to build this component.
 Execute the file \texttt{build.sh}, which will then create your executable.
+How this script is called correctly is written in detail in the \Readme file.
 You will need to modify the file \texttt{build.sh} according to the machine you are compiling it on, and according to the compiler and MPI libraries which you want to use.
+For some machines that are typically used at the IOW the working build scripts are already provided in the repository.
+Which machines are supported and which steps you have to follow to register a new machine is written in detail in the \Readme file.
 
-For compiling in debug mode (with traceback), there is sometimes an alternative script \texttt{build\_debug.sh} which will create a separate executable with debug options enabled. You can define which of the executables to use by specifying \texttt{debug\_mode = True} or \texttt{False} in the file \texttt{global\_settings.py}. You should obviously not do productions runs with the debug-mode executables since this will waste computational resources.
+For compiling in debug mode (with traceback), the build scripts can be called with an additional argument which will create a separate executable with debug options enabled. You can define which of the executables to use by specifying \texttt{debug\_mode = True} or \texttt{False} in the file \texttt{global\_settings.py}. You should obviously not do productions runs with the debug-mode executables since this will waste computational resources.
 
-In some of the component folders, there is a separate script \texttt{build\_tools.sh}. 
-Run this to build executables for auxiliary tasks, such as regridding or finding optimal parallelization layouts.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SECTION: Preparing IOW ESM runs                      %
@@ -204,8 +269,11 @@ The IOW ESM supports to run a single atmospheric model and several ocean or land
 For each of these, a sub-folder in the \texttt{input} directory has to be prepared.
 It shall be named \texttt{\color{red}MODELNAME\color{black}\_\color{red}GRIDNAME} where \texttt{\color{red}MODELNAME} is the name of the model (as it is called in the \texttt{components} folder) and \texttt{\color{red}GRIDNAME} is the name of the model grid.
 
-To start, it makes most sense to download existing example \texttt{input} folders from this webpage: 
-\color{red}\url{https://www.io-warnemuende.de/???}\color{black}
+% TODO: upload (small) example setups to some website
+%To start, it makes most sense to download existing example \texttt{input} folders from this webpage: 
+%\color{red}\url{https://www.io-warnemuende.de/???}\color{black}
+
+If you work on the machines typically used at the IOW, the \Readme file explains in detail how and where to get working example setups.
 
 \subsubsection{General remarks}
 The input folders can contain files and arbitrarily named sub-directories which will simply be copied (or dynamically linked) to create a work directory for the model.
@@ -225,34 +293,75 @@ will be copied (or linked) to \\
 
 \subsubsection{Expected contents of the COSMO-CLM input directory}
 The following settings are required in \texttt{INPUT\_PHY}:\\
-\texttt{llake = FALSE}\\
-\texttt{lseaice = FALSE}
+\texttt{llake = .FALSE.}\\
+\texttt{lseaice = .FALSE.}
+
+For a coupled run the following settings are required in the \texttt{OASISCTL} block of \texttt{INPUT\_OASIS}:\\
+\texttt{ytype\_lsm = 'terra',}\\
+\texttt{ytype\_oce = 'flxcl',}\\
+\texttt{CPL\_FLG  = 1,}\\
+\texttt{dt\_cp = *auto*}
+ 
+whereas for an uncoupled run it is mandatory to have\\
+\texttt{ytype\_oce = 'nooce'}
+
+The following settings are required in \texttt{INPUT\_DYN}:\\
+\texttt{l2tls = .TRUE.}
 
 \subsubsection{Expected contents of a MOM5 input directory}
+For a coupled run the following settings in the \texttt{coupler\_nml} block of \texttt{input.nml} are required
+\texttt{dt\_cpld  = *AUTO*} \\
+\texttt{dt\_atmos = *AUTO*} \\
+\texttt{do\_atmos = .false.} \\
+\texttt{do\_land = .false.} \\
+\texttt{do\_ice = .true.} \\
+\texttt{do\_ocean = .true.} \\
+\texttt{type\_atmos = 'flux\_calculator'}
 
-\subsection{Defining the parallelization layout}
-Parallelization is defined for each individual model, as described in the later subsections.
-The parallelization of the entire model system will then be derived from these individual settings.
+whereas for an uncoupled run it is mandatory to have
+\texttt{type\_atmos = 'none'}
 
-To get a parallelization that fits your machine and model system, please take the following steps:
+\subsection{Preparing the global settings}
+
+\subsection{Preparing a jobscript template}
+
+In order to start a run of the IOW ESM on a supercomputer, a jobscript template must be provided.
+If you have deployed your setup as described in the \Readme file, you will have such a template in the \texttt{input} directory.
+This has to be adapted to your personal needs as follows.
+
 \begin{sloppypar}
 \begin{enumerate}
-\item Specify the parallelization layout of individual models as described in the component-specific subsections.
-\item Go to the folder \texttt{scripts/run} where you will find job script templates \texttt{jobscript\_\color{red}???\color{black}}{}for different supercomputers and their job submission systems. Find an appropriate one for your supercomputer (or create it), adjust the runtime.
-\item Go to the file \texttt{input/global\_settings.py} and specify the filename of your template there (\texttt{jobscript\_template = '\color{red}???\color{black}'})
+%\item Specify the parallelization layout of individual models as described in the component-specific subsections.
+\item Be sure that you leave the following lines unchanged \\
+\texttt{\#SBATCH --nodes=\_NODES\_}\\
+\texttt{\#SBATCH --ntasks=\_CORES\_}\\
+\texttt{\#SBATCH --tasks-per-node \_CORESPERNODE\_}\\
+These will be filled later by the run scripts according to the parallelization layout.
+\item Adjust the job name, the account, the compute partition and the runtime.
+\item Go to the file \texttt{input/global\_settings.py} and specify the filename of your template via the variable \texttt{jobscript\_template}
 \item Also in \texttt{input/global\_settings.py}, fill in the number of cores per node to use.
-\item Go to the folder \texttt{scripts/prepare} and run \texttt{python3 create\_jobscript.py}, which will take the supercomputer-specific job script defined in \texttt{input/global\_settings.py} and produce a file \texttt{scripts/run/jobscript} by filling in in the required number of cores and nodes for the full coupled model.
-\item Later you may want to check whether the parallelization is efficient, i.e. whether none of the components has too much idle time waiting for the others. This is described in Section~\ref{sec:optimizing}.
+%\item Go to the folder \texttt{scripts/prepare} and run \texttt{python3 create\_jobscript.py}, which will take the supercomputer-specific job script defined in \texttt{input/global\_settings.py} and produce a file \texttt{scripts/run/jobscript} by filling in in the required number of cores and nodes for the full coupled model.
+\item Later you may want to check whether the parallelization is efficient, i.e. whether none of the components has too much idle time waiting for the others. 
+This is described in \Sec{sec:optimizing}
+\item The actual jobscript is then automatically generated (via the script \texttt{scripts/prepare/create\_jobscript.py}) when you start a run.
 \end{enumerate}
 \end{sloppypar}
 
+\subsection{Defining the parallelization layout}
+Parallelization is defined for each individual model, as described in the following subsections.
+The parallelization of the entire model system will then be derived from these individual settings automatically when you start a run.
+
 \subsubsection{Defining CCLM parallelization}
-CCLM uses a rectangular parallelization in X and Y direction, where X and Y are the zonal and meridional direction on the rotated lat-lon grid. The number of rectangles in each direction can be specified in the file \texttt{input/CCLM\_\color{red}???\color{black}/INPUT\_ORG} 
+CCLM uses a rectangular parallelization in X and Y direction, where X and Y are the zonal and meridional direction on the rotated lat-lon grid. 
+The number of rectangles in each direction can be specified in the file \texttt{input/CCLM\_\color{red}???\color{black}/INPUT\_ORG}.
+This information will be automatically used by the script \texttt{/scripts/prepare/get\_parallelization\_layout.py}.
+
 
 \subsubsection{Defining MOM5 parallelization}
 MOM5 uses a rectangular decomposition defined in \texttt{input.nml}. 
 A file named \texttt{mask\_table} can be used to define which of the rectangles contain land points only.
 MOM5 comes with a tool to find out parallelization layouts which optimize the relative fraction of these land domains.
+This information will be automatically used by the script \texttt{/scripts/prepare/get\_parallelization\_layout.py}.
 
 We recommend to use the same layout for both ocean model and ice model.
 
@@ -262,15 +371,27 @@ To create the exchange grid
 
 \subsection{Creating the coupling namelists}
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SECTION: Running IOW ESM                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \section{Running IOW\_ESM}
 \subsection{Starting an IOW\_ESM run}
+
+How to start a run of the IOW ESM is described in detail in the \Readme file.
+
+
 \subsection{Optimizing the runtime of the coupled model system}
 \label{sec:optimizing}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION: Postprocessing the data                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Postprocessing the data}
+
+\appendix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SECTION: Details on individual fluxes                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -591,7 +712,8 @@ Here is how it is calculated:
 \end{tabular}
 
 \newpage
-\addsec{Appendix A: Previous way of coupling}
+\section{Previous way of coupling}
+
 \subsection{Sandra's approach}
 \subsubsection{OASIS3-MCT routines in COSMO-CLM}
 This is where the OASIS3-MCT coupling routines were called in COSMO-CLM in the previous version by Sandra-Esther Brunnabend (largely inherited from the version by Ha Ho-Hagemann at HZG):
