@@ -151,8 +151,9 @@ where
 * `haumea` is the cluster of the of the Rostock University
 * `phy-2` is one of the IOW's physics department computing servers (**ATTENTION: currently the model is not running here**)
 
-At the moment there are running build scripts only for these targets. 
-If you want to add more, it will be explained later how this can be done.
+At the moment there are running build scripts only for these targets, which can be found the file `AVAILABLE_TARGETS` as well.
+Do not edit or commit this file unless you really know what you are doing.
+If you want to add more targets, it will be explained in [Register new destinations](#register-new-destinations).
 
 The second element in a line of `DESTINATIONS.example` corresponds to the *root directory on the target*, the path, where the whole model will be deployed, built and run.
 If the path on the target does not exist, it will be created.
@@ -371,7 +372,7 @@ Once you have archived your setup, the `SETUP_INFO` file on your target server w
 1. Add a new keyword and the corresponding remote directory to your `DESTINATIONS` file.
 Let's call the new target keyword in this example `new-target`.
 Then the new line in your `DESTINATIONS` file could look like `new-target user@new-target:/data/user/IOW_ESM`.
-Add `new_target` to the `available_targets` in `local_scripts/identify_target.sh`.
+Add `new_target` to the `AVAILABLE_TARGETS` file in the root directory.
 
 2. Add a build script for each component that should be build on the new target. 
 For the example this must be called `build_new-target.sh`.

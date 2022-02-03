@@ -49,9 +49,10 @@ class IowEsmInfoTexts:
     * `haumea` is the cluster of the of the Rostock University
     * `phy-2` is one of the IOW's physics department computing servers (**ATTENTION: currently the model is not running here**)
     
-    At the moment there are running build scripts only for these targets. 
-    If you want to add more, it will be explained later how this can be done.
-    
+    At the moment there are running build scripts only for these targets, which can be found the file `AVAILABLE_TARGETS` as well.
+    Do not edit or commit this file unless you really know what you are doing.
+    If you want to add more, it will be explained in [Register new destinations](#register-new-destinations).
+
     The second element in a line of `DESTINATIONS.example` corresponds to the *root directory on the target*, the path, where the whole model will be deployed, built and run.
     If the path on the target does not exist, it will be created.
     Be sure that you have write permissions.
