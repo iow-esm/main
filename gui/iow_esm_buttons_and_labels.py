@@ -78,7 +78,7 @@ class FrameTitleLabel(tk.Label):
             bg = bg, 
             fg = 'black'
         )
-        self.config(font=("Meta Plus", 20))
+        self.config(font=("TkDefaultFont", 20))
         
         
 class Frame(tk.Frame):
