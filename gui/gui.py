@@ -246,7 +246,7 @@ class IowEsmGui:
         
         self.frames["clone_origins"] = Frame(master=self.window, bg=IowColors.blue3)
         
-        self.labels["clone_origins_title"] = FrameTitleLabel(master=self.frames["clone_origins"], text="Hello! You use the IOW_ESM for the first time.")
+        self.labels["clone_origins_title"] = FrameTitleLabel(master=self.frames["clone_origins"], text="Hello!")
 
         self.labels["clone_origins"] = tk.Label(master=self.frames["clone_origins"], text="You have to clone the origins of the components first:", bg = self.frames["clone_origins"]["background"], fg = 'white')
 
@@ -260,10 +260,6 @@ class IowEsmGui:
         
         row = 0
         self.labels["clone_origins_title"].grid(row=row, sticky='w')
-        row += 1
-        
-        blank = tk.Label(text="", master=self.frames["clone_origins"], bg = self.frames["clone_origins"]["background"])
-        blank.grid(row=row)
         row += 1
         
         self.labels["clone_origins"].grid(row=row, sticky='w')
@@ -350,10 +346,6 @@ class IowEsmGui:
         
         self.frames["edit_destinations"] = Frame(master=self.window, bg = IowColors.blue3)
         
-        self.labels["edit_destinations_title"] = FrameTitleLabel(master=self.frames["edit_destinations"], text="Hello! You use the IOW_ESM for the first time.")
-        self.labels["edit_destinations_title"].grid(row=self.row, sticky = 'w')
-        self.row += 1
-        
         self.labels["edit_destinations"] = tk.Label(master=self.frames["edit_destinations"],
             text="You have to edit your DESTINATIONS file:", bg = self.frames["edit_destinations"]["background"], fg = 'white'
         )
@@ -369,22 +361,20 @@ class IowEsmGui:
         
     def _build_window_edit_setups(self):
         
-        self.frames["edit_setups"] = Frame(master=self.window)
-        
-        self.labels["edit_setups_title"] = FrameTitleLabel(master=self.frames["edit_setups"], text="You are using the IOW_ESM for the first time.")
-        self.labels["edit_setups_title"].grid(row=self.row)
-        self.row += 1
+        self.frames["edit_setups"] = Frame(master=self.window, bg = IowColors.blue3)
         
         self.labels["edit_setups"] = tk.Label(master=self.frames["edit_setups"],
-            text="You have to edit your SETUPS file:",  bg = IowColors.blue1, fg = 'white'
+            text="You have to edit your SETUPS file:",  bg = self.frames["edit_setups"]["background"], fg = 'white'
         )
-        self.labels["edit_setups"].grid(row=self.row)
+        self.labels["edit_setups"].grid(row=self.row, sticky = 'w')
         self.row += 1
         
-        self.frames["edit_setups"].grid(row=self.row)
+        self.frames["edit_setups"].grid(row=self.row, sticky='nsew')
         self.row += 1
         
         self._edit_file(root_dir + "/SETUPS.example", root_dir + "/SETUPS")
+        
+        self.print(IowEsmInfoTexts.edit_setups) 
         
     def _build_frame_destinations(self):
         
@@ -484,6 +474,10 @@ class IowEsmGui:
             self.menus["build_modes1"].grid(row=row, column=0, sticky='ew')
             self.menus["build_modes2"].grid(row=row, column=1, sticky='ew')
             row += 1
+            
+            blank = tk.Label(text="", master=self.frames["build"], bg = self.frames["build"]["background"])
+            blank.grid(row=row, columnspan=columnspan)
+            row += 1
         
         else:
             self.labels["build_continue"].grid(row=row, columnspan=columnspan, sticky='w')
@@ -493,10 +487,6 @@ class IowEsmGui:
             row += 1
             
             self.print(IowEsmInfoTexts.first_build)         
-        
-        blank = tk.Label(text="", master=self.frames["build"], bg = self.frames["build"]["background"])
-        blank.grid(row=row, columnspan=columnspan)
-        row += 1
         
         self.frames["build"].grid(row=self.row, sticky='nsew')
         for i in range(0, columnspan):
@@ -618,6 +608,8 @@ class IowEsmGui:
         
             self.buttons["setups_continue"].grid(row=row, columnspan=columnspan, sticky='ew')
             row += 1
+            
+            self.print(IowEsmInfoTexts.first_deploy_setups) 
         
         self.frames["setups"].grid(row=self.row, sticky='nsew')
         for i in range(0, columnspan):
