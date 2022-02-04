@@ -1,6 +1,11 @@
 # IOW Earth system model
 
 This is the main repository for the IOW earth system model (ESM) project.
+
+This Readme is intended to be a guide mainly for using the IOW ESM.
+Although some hints for development are also given here, the concrete implemetation details are given in the file `documentation/developers_documentation.pdf`.
+**!!!ATTENTION!!! The developer's documentation is under construction!**
+
 Further information will follow.
 
 
@@ -102,7 +107,7 @@ If you would like to work with graphical user interface you have to start corres
 
 The shell where this is executed should be the same as where the key agent is running.
 
-The GUI will guide you step by step throught the first steps that are described in the following for the command line application.
+**The GUI will guide you step by step throught the first steps that are described in the following for the command line application.**
 
 
 ## First steps
@@ -123,6 +128,8 @@ By executing in the root directory (where this `Readme.md` is located)
 you clone all individual components which have their own repositories to your local machine.
 If there will be some you don't need you can later remove them. 
 However, be sure that you can still build and run the model properly.
+For instance, if you want to run the models uncoupled from the other you still have to build the OASIS coupler first, 
+see `documentation/developers_documentation.pdf` for details.
 
 Note that depending on your choice from above, i.e. you cloned the main project as a user or as a developer, 
 you will clone the latest release branches or the master (development) branches, respectively.
@@ -178,7 +185,7 @@ If you want to build the model e.g. on the HLRN cluster located in Berlin, you c
 This will build the model on `hlrng` in release mode.
 Note that we will stick to this specific target throughout this Readme.
 Nevertheless, if you want to work with another target for your first tests, just replace `hlrng` with another valid keyword.
-Note that the first argument is non-optional, whereas there are two others which can be omitted, 
+Note further that the first argument is non-optional, whereas there are two others which can be omitted, 
 see [Build single components in a different modes and configurations](#build-single-components-in-a-different-modes-and-configurations).
 
 
@@ -232,6 +239,7 @@ Especially you should go to the `input` folder and open the file `global_setting
 Please enter your name and email here.
 Moreover you should have a look at the file `jobscript_*`. 
 Here you may adjust the account which you will use for running the model.
+More details on the preparation of the `input` folder is given in the file `documentation/developers_documentation.pdf`.  
  
 
 ### Run the coupled model for the first time
@@ -245,10 +253,12 @@ If everything is set up on your remote computer of choice, you can run the model
 The first argument of the run script is always the target keyword as specified in your `DESTINATIONS` file.
 By executing the run script all files from `scripts` directory will be transferred to the target.
 
-After the scripts are transferred and the preparation script has finished (this can take a bit time),
-the model is started on the target.
+After the scripts are transferred the model is started on the target.
 
-**Note that for an uncoupled run there is no need for the preparation.**
+If you use one of the setups from the `SETUPS.example` file, there is no need for further preparation of the coupled model.
+However for the general case there is the possibility to run preparation scripts that set up the exchange grid 
+and remapping files for the coupler, see `documentation/developers_documentation.pdf`. 
+Note that for an uncoupled run there is no need for the preparation.
 
 #### Examine the output of the first run
 

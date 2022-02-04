@@ -12,8 +12,20 @@
 
 % use other packages
 \usepackage{color}
-\usepackage[urlcolor=blue]{hyperref}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=blue
+}
+
 \usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
 \usepackage{array}
 \usepackage{natbib}
 \bibliographystyle{apalike}
@@ -35,18 +47,20 @@
 \setlength{\parindent}{0.0em}
 
 \begin{tabular}{>{\raggedright\arraybackslash}p{0.45\textwidth} >{\raggedleft\arraybackslash}p{0.45\textwidth}}
-& \href{https://www.io-warnemuende.de}{\includegraphics[height=5em]{logo_iow_englisch_rgb.jpg}} 
+& \href{https://www.io-warnemuende.de}{\includegraphics[height=5em]{./figures/logo_iow_englisch_rgb.jpg}} 
 \end{tabular}
 
 \vspace*{5em}
 {\let\newpage\relax\maketitle}
 
 \newcommand{\Sec}[1]{Sec.~\ref{#1}}
+\newcommand{\Fig}[1]{Fig.~\ref{#1}}
 \newcommand{\Readme}{\href{https://git.io-warnemuende.de/iow_esm/main}{\texttt{Readme.md}}\ }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section*{About this document}
 This document describes the details of the IOW Earth System Model. The Appendix sections contain more detailed information intended for developers. 
+%
 A guide for the initial steps to use the models is provided in the corresponding \Readme file.
 
 \vfill 
@@ -59,21 +73,137 @@ A guide for the initial steps to use the models is provided in the corresponding
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION: Introduction and the coupling concept       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction and the coupling concept}
-\begin{itemize}
-\item different components on different grids
-\item exchange grid
-\item fluxes calculated on exchange grid
-\item distribution on different surface types
-\end{itemize}
 
-\begin{center}
-\includegraphics[scale=0.5]{"./grids.pdf"} \\
-\includegraphics[scale=1.0]{"./grids1D.pdf"} \\
-\vspace{2em}
-\includegraphics[scale=1.0]{"./grids1D_plus_exchange.pdf"}
-\end{center}
+One basic problem when dealing with regional climate models system is that the individual components (atmosphere, ocean, land etc.) are described by different models (realized as computer programs) that act on different grids, see \Fig{fig:grids2D} and \Fig{fig:grids1D}.
+%
+Still, the components have to be coupled in order communicate their state to each other and exchange fluxes as given by nature itself.
 
+\begin{figure}[H]
+	\centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+		\includegraphics[width=\linewidth]{"./figures/grids.pdf"} 
+		\caption{
+		\label{fig:grids2D}
+		Overlaying grids of atmospheric and ocean model for the Baltic Sea.
+		}
+		\end{subfigure}
+    \hfill
+    \vspace{1em}
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+		\includegraphics[width=\linewidth]{"./figures/grids1D.pdf"}
+		\caption{
+		\label{fig:grids1D}
+		Abstraction of figure \ref{fig:grids2D} in one spatial horizontal dimension. Bottom model can support different surface types as water (blue) and ice (white).
+		}
+	\end{subfigure}
+	\caption{The different grids of the different models.}
+\end{figure}
+
+To exemplify this problem let us consider the calculation of a flux of something from the atmosphere to the bottom.
+%
+Usually, if the flux depends on the state of the ocean, some state variables have to be communicated first to the atmosphere.
+%
+Since the atmospheric grids are normally larger, the information has to be averaged (weighted by areas) over several bottom cells, 
+over different surface types, see \Fig{fig:conservative_mapping1}.
+
+With this averaged state information and its own internal state, the atmospheric model can now calculate the flux as a field on the atmospheric grid.
+%
+It is noteworthy that the flux cannot be calculated for the different surface types differently, since the atmospheric model does not know about that (at least not without changing the code significantly).
+%
+Finally, the flux field then has to be redistributed on the bottom cells (again in a area-weighted manner such that flux variable is overall conserved), 
+see \Fig{fig:conservative_mapping2}.
+%
+Since the flux is only calculated from averaged information and not surface-type-dependent, this approach locally not consistent and can become inaccurate. 
+%
+This is especially true if many bottom grid cells are covered by one atmospheric grid cell.
+
+\begin{figure}[H]
+	\centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+		\includegraphics[width=\linewidth]{"./figures/conservative_mapping1.pdf"} 
+		\caption{
+		\label{fig:conservative_mapping1}
+		Average of ocean's state variables communicated to the atmosphere.
+		}
+		\end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+		\includegraphics[width=\linewidth]{"./figures/conservative_mapping2.pdf"}
+		\caption{
+		\label{fig:conservative_mapping2}
+		Calculation of fluxes in the atmospheric model and remapping on to the ocean's grid.
+		}
+	\end{subfigure}
+	\caption{The standard way of coupling.}
+\end{figure}
+
+The alternative approach chosen within the IOW ESM is the introduction of a third component, i.e. the flux calculator that acts on the exchange grid.
+%
+This grid is the set of intersections between the atmospheric and the bottom grid and thus has, by construction, 
+a higher resolution than all involved model components, see \Fig{fig:grids1D_plus_exchange}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.48\linewidth]{"./figures/grids1D_plus_exchange.pdf"} 
+	\caption{
+	\label{fig:grids1D_plus_exchange}
+	Introduction of the exchange grid on which the flux calculator is acting.
+	}
+\end{figure}
+
+The example from above, i.e. a flux shall be communicated from the atmosphere to the ocean, is then treated as follows.
+
+First, the physical components of the coupled model send their necessary state variables to the flux calculator. 
+%
+The variables are thereby mapped onto the exchange grid, see \Fig{fig:exchange_grid_mapping1}.
+%
+Importantly, since the exchange-grid cells are always smaller or equal to the „physical“ grid cells, this mapping does not feature any averaging and,
+%
+thus, no information is lost.
+%
+Moreover, different surface types can be treated individually since the flux calculator might know about these feature of the bottom model.
+
+Second, with all the state information, the flux calculator is now able to calculate the flux of interest.
+%
+Any formula can be used that maps the given state variables onto the desired flux field. 
+%
+The calculation only requires local information and can be surface-type-dependent.
+%
+The resulting flux has to be finally mapped onto the bottom grid, see \Fig{fig:exchange_grid_mapping2}.
+% 
+Note that, although not shown in the figures, the very same fluxes are communicated to the atmospheric model as well.
+%
+This ensures a conservative and consistent exchange of mass, energy and momentum between the different model components. 
+
+\begin{figure}[H]
+	\centering
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+		\includegraphics[width=\linewidth]{"./figures/exchange_grid_mapping1.pdf"} 
+		\caption{
+		\label{fig:exchange_grid_mapping1}
+		Communication of state variables to the flux calculator. Importantly no averaging is performed while mapping.
+		}
+		\end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \centering
+		\includegraphics[width=\linewidth]{"./figures/exchange_grid_mapping2.pdf"}
+		\caption{
+		\label{fig:exchange_grid_mapping2}
+		Fluxes are calculated and subsequently communicated to the bottom model.
+		}
+	\end{subfigure}
+	\caption{Coupling the models via the exchange grid and the flux calculator.}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SECTION: Coupling concept                            %
@@ -97,10 +227,18 @@ The components are coupled via the OASIS3-MCT coupler, but not directly:
 This procedure automatically ensures conservation of all exchanged quantities.
 
 \begin{center}
-\includegraphics[scale=0.3]{./sequence-diagram.pdf}
+\includegraphics[scale=0.3]{./figures/sequence-diagram.pdf}
 \end{center}
 
 Some fluxes, however, do not fit into this concept. Precipitation and radiative fluxes will still be determined by the atmospheric model (on the coarse atmospheric grid) and the resulting fluxes will be sent to the flux calculator executable. Precipitation is then simply passed to the bottom models. Radiative fluxes need some redistribution between different surface areas under the same atmospheric grid cell (e.g. ocean and land) that show different albedo. This concept is described in detail in Section~\ref{sec:fluxes_radiation}.
+
+Still, there is no direct communication the two physical components and this enables ultimately interchangeability of the models.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SECTION: Structure of the IOW ESM project  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Structure of the IOW ESM project}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -189,6 +327,8 @@ Each component's directory contains subdirectories for
 \item the compiled libraries and/or executables.
 \end{itemize}
 
+Note that all components depend on the OASIS3-MCT library but not mutually on each other.
+
 \subsection{The tools directory}
 This directory contains components of the IOW-ESM that are not directly coupled to other components but provide useful input for the models.
 Currently the following tools are available
@@ -235,7 +375,12 @@ The directory is sorted like the \texttt{output} folder.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \section{Compiling IOW ESM components}
+
 It is important to compile the OASIS3-MCT libraries first before compiling the other subcomponents.
+This is even true if you want to build only the CCLM or the MOM5, respectively, for an uncoupled run.
+Whether a model runs coupled or uncoupled is only decided via the configuration files in the `input` directory, see \Sec{sec:preparing_input_folders}.
+The binaries are the same for both types of applications.
+
 The correct order of building is ensured by using the \texttt{build.sh} script in the base directory.
 How this script is called correctly is written in detail in the \Readme file.
 
