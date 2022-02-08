@@ -213,12 +213,12 @@ This ensures a conservative and consistent exchange of mass, energy and momentum
 \subsection{Components}
 The following components can be coupled in the IOW ESM:
 \begin{itemize}
-\item \textbf{COSMO-CLM} atmospheric model
-\item \textbf{MOM5.1} ocean model (including (a) ERGOM ecosystem model and (b) dynamic ice model coupled internally via FMS coupler)
+\item \textbf{COSMO-CLM} atmospheric model, see \href{https://wiki.coast.hereon.de/clmcom/}{here}
+\item \textbf{MOM5.1} ocean model (including (a) ERGOM ecosystem model and (b) dynamic ice model coupled internally via FMS coupler), see \href{https://mom-ocean.github.io/}{here}
 \end{itemize}
 
 \subsection{Coupling philosophy}
-The components are coupled via the OASIS3-MCT coupler, but not directly:
+The components are coupled via the OASIS3-MCT coupler (see \href{https://oasis.cerfacs.fr/en/}{here}), but not directly:
 \begin{enumerate}
 \item The components (Atmosphere, Land, Ocean) communicate their variables (temperature, pressure, velocity etc.) to a \textbf{flux calculator} executable.
 \item The \textbf{flux calculator} runs on an exchange grid and calculates  fluxes (radiation, heat, mass, momentum).
@@ -235,11 +235,16 @@ Some fluxes, however, do not fit into this concept. Precipitation and radiative 
 Still, there is no direct communication the two physical components and this enables ultimately interchangeability of the models.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% SECTION: Structure of the IOW ESM project  %
+% SECTION: Design and structure of the IOW ESM project  %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
-\section{Structure of the IOW ESM project}
+\section{Design and structure of the IOW ESM project}
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{"./figures/project_structure.pdf"} 
+	\caption{Structure of the project's source code management.}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SECTION: Getting and setting up the IOW ESM for first usage  %
@@ -314,9 +319,9 @@ hotstart
 \subsection{The components directory}
 This directory contains the components of the IOW-ESM, which are
 \begin{itemize}
-\item \textbf{COSMO-CLM}, a regional atmospheric model, see \href{https://wiki.coast.hereon.de/clmcom/}{here}
-\item \textbf{MOM5}, a hydrodynamic ocean model, see \href{https://mom-ocean.github.io/}{here}
-\item the \textbf{OASIS3-MCT} library for coupling the components via MPI, see \href{https://oasis.cerfacs.fr/en/}{here}
+\item \textbf{COSMO-CLM}, a regional atmospheric model
+\item \textbf{MOM5}, a hydrodynamic ocean model
+\item the \textbf{OASIS3-MCT} library for coupling the components via MPI
 \item the \textbf{flux calculator}, a separate executable to calculate fluxes between atmosphere and ocean/land on an exchange grid.
 \end{itemize}
 
@@ -468,6 +473,102 @@ whereas for an uncoupled run it is mandatory to have
 
 \subsection{Preparing the global settings}
 
+\subsubsection{Modeller's information}
+\begin{verbatim}
+####################################################
+# Global settings for the IOW-ESM model run        #
+####################################################
+
+###################################
+# STEP 1: Info about the modeller #
+###################################
+modeller        = "Sven Karsten"                                               # name of the modeller who is responsible
+email           = "sven.karsten@io-warnemuende.de"                             # contact of the responsible modeller
+institution     = "Leibniz Institute for Baltic Sea Research Warnemunde (IOW)" # name of the institute
+\end{verbatim}
+
+
+\subsubsection{Run information}
+
+\begin{verbatim}
+###############################
+# STEP 2: Info about the run  #
+###############################
+run_name        = "RUN14"        # name of the current run
+run_description = "run for fixing land-sea mask issue"     # description: what is this run good for?
+init_date       = "19800101"           # date when model is/was cold-started
+final_date      = "20100101"           # when will the model run finally end? (YYYYMMDD) 
+                                       # choose final_date<init_date to make model run as long as forcing is available
+debug_mode      = False                # whether or not to use executables compiled with debugging options (slow)
+
+#################################################
+# STEP 3: Time stepping info                    #
+#################################################
+coupling_time_step = 600               # time step when fluxes are calculated and exchanged (s)
+run_duration = "1 month"                # duration of one model run (day/days, month/months, year/years)
+runs_per_job = 1                       # how many runs will be done in one job script
+max_attempts = 1                       # if a run fails, you can have new attempts with modified settings
+
+#################################################
+# STEP 4: Working directory options             #
+#################################################
+workdir_base = "work"                  # base directory where individual model work dirs are located. 
+                                       # if it does not start with "/", it is interpreted relative to IOW_ESM_ROOT
+local_workdir_base = "${LOCAL_TMPDIR}"                # If you want the workdirs to be created locally on the nodes, give an absolute path here.
+                                       # This can also be an environment variable, e.g. "${LOCAL_TMPDIR}".
+copy_to_global_workdir = True          # If local_workdir_base is given, use this flag to specify whether the 
+                                       # entire content of the local workdir will be copied to workdir_base.
+                                       # Output and restarts will be collected anyway.
+link_files_to_workdir = True           # TRUE: input files will be linked to the working directory.
+                                       # FALSE: input files will be copied to the working directory.
+
+################################################
+# STEP 5: Two-way coupling options             #
+################################################
+flux_calculator_mode = "single_core_per_bottom_model"   # "single_core_per_bottom_model": For each bottom model, one instance of flux_calulator will be
+#flux_calculator_mode = "none"                           # started in an MPI task on its own core.
+                                                        # "on_bottom_model_cores": (not available yet) The flux_calculator executable runs on the 
+                                                        # same cores as the bottom models while they wait (some sort of hyperthreading).
+                                                        # "none": no flux_calculator executable is started
+
+################################################
+# STEP 6: Parallel execution options           #
+################################################
+mpi_run_command = 'mpirun -configfile mpmd_file'        # the shell command used to start the MPI execution described in a configuration file "mpmd_file"
+                                                        # it may contain the following wildcards that will be replaced later:
+                                                        #   _NODES_ total number of nodes
+                                                        #   _CORES_ total number of cores to place threads on
+                                                        #   _THREADS_ total number of mpi threads
+                                                        #   _CORESPERNODE_ number of cores per node to use
+                                                        #   Examples: Intel MPI: 'mpirun -configfile mpmd_file'
+                                                        #             OpenMPI  : 'mpirun --app mpmd_file'
+mpi_n_flag = '-n'                                       # the mpirun flag for specifying the number of tasks.
+                                                        #   Examples: Intel MPI: '-n'
+                                                        #             OpenMPI  : '-np'
+bash_get_rank = 'my_id=${PMI_RANK}'                     # a bash expression that saves the MPI rank of this thread in the variable "my_id"
+                                                        #   Examples: Intel MPI    : 'my_id=${PMI_RANK}'
+                                                        #             OpenMPI+Slurm: 'my_id=${OMPI_COMM_WORLD_RANK}'
+python_get_rank = 'my_id = int(os.environ["PMI_RANK"])' # a python expression that saves the MPI rank of this thread in the variable "my_id"
+                                                        #   Examples: Intel MPI    : 'my_id = int(os.environ["PMI_RANK"])'
+                                                        #             OpenMPI+Slurm: 'my_id = int(os.environ["OMPI_COMM_WORLD_RANK"])'
+cores_per_node = 40                                     # maximum number of cores per node that shall be used
+jobscript_template = 'input/jobscript_hlrng'            # path to a template file which will become the job script to run the model
+                                                        # may contain the same wildcards as mpi_run_command, plus _IOW_ESM_ROOT_
+check_layout_only = True                                # if set to True, will not run the models but only print which model runs on which node
+
+resubmit_command = "source ~/.bash_profile; sbatch jobscript" # will be executed in 'scripts/run'
+
+################################################
+# STEP 7 (optional): generate namcouple file automatically  #
+################################################
+generate_namcouple = True
+
+################################################
+# STEP 8 (optional): Start postprocessing after run has finished #
+################################################
+process_raw_output = True
+\end{verbatim}
+
 \subsection{Preparing a jobscript template}
 
 In order to start a run of the IOW ESM on a supercomputer, a jobscript template must be provided.
@@ -516,6 +617,35 @@ To create the exchange grid
 
 \subsection{Creating the coupling namelists}
 
+\subsubsection{Time stepping options}
+
+\begin{verbatim}
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! time stepping options - will be changed automatically !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  timestep      = *auto*,   ! coupling time step in seconds
+  num_timesteps = *auto*,
+  
+  verbosity_level = 1,		! 2 - debug, 1 - standard, 0 - error
+  
+  name_atmos_model = 'CCLM_Eurocordex'
+\end{verbatim}
+
+\subsubsection{Input from bottom models}
+
+\begin{verbatim}
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! Input from bottom models              !
+  ! by (model,surface_type,runningnumber) !
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !name_bottom_var_t(1,1:6,1) = 'FARE','none','none','none','none','none',        ! which variables (model,surface_type,runningnumber) come from the bottom model grid
+  name_bottom_var_t(1,1:6,1) = 'FARE','FARE','FARE','FARE','FARE','FARE',        ! which variables (model,surface_type,runningnumber) come from the bottom model grid
+  name_bottom_var_t(1,1:6,2) = 'TSUR','TSUR','TSUR','TSUR','TSUR','TSUR',  
+  name_bottom_var_t(1,1:6,3) = 'FICE','FICE','FICE','FICE','FICE','FICE',
+  val_bottom_var_t (1,1:6,3) = 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,                     ! constant values can be given, in this case no read from coupler
+  name_bottom_var_t(1,1:6,4) = 'ALBE','ALBE','ALBE','ALBE','ALBE','ALBE',
+\end{verbatim}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SECTION: Running IOW ESM                             %
@@ -535,6 +665,102 @@ How to start a run of the IOW ESM is described in detail in the \Readme file.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \section{Postprocessing the data}
+
+
+\subsection{Preparing the global settings}
+
+\begin{verbatim}
+##########################################################################
+# STEP 1: Configure what will be plotted on a map (2D time averages)     #
+##########################################################################
+
+# Define seasons for which time averages will be calculated.
+# Note, the values in the dictionary must be valid input for the cdo operator "-selmon".
+seasons = {
+    "MAM" : "3,4,5",
+    "JJA" : "6,7,8",
+    "SON" : "9,10,11",
+    "DJF" : "12,1,2",
+    "year": "1,2,3,4,5,6,7,8,9,10,11,12"
+}
+
+# Percentiles are not supproted currently, leave empty!
+percentiles = []
+
+##########################################################################
+# STEP 2: Configure time series (1D spatial averages)                    #
+##########################################################################
+
+# Define locations of stations for which you want to have time series.
+# Note, longitudes and latitudes can be in decimal format or in degrees, minutes and seconds separated by a colon.
+# Leave empty if no stations are desired.
+stations = { 
+        "BY5" : {"lat" : "55.25", "lon" : "15.98"},
+        "F9" : {"lat" : "64.71", "lon" : "22.07"},
+        "SR5" : {"lat" : "61.08", "lon" : "19.58"},
+        "BY31" : {"lat" : "58.58", "lon" : "18.23"}        
+}
+
+# Define regions over which a spatial average will be performed.
+# Note, longitudes and latitudes can be in decimal format or in degrees, minutes and seconds separated by a colon.
+# Leave empty if no regions are desired.
+regions = { 
+    "BALTIC_SEA" : {"lat-min" : "52.0", "lat-max" : "67.0", "lon-min" : "8.0", "lon-max" : "32.0"},
+    "BOTHNIAN_GULF" : {"lat-min" : "60.6", "lat-max" : "66.0", "lon-min" : "16.0", "lon-max" : "26.0"},
+    "BALTIC_PROPER" : {"lat-min" : "53.0", "lat-max" : "60.6", "lon-min" : "14.0", "lon-max" : "23.0"},
+    "BELTS" : {"lat-min" : "53.0", "lat-max" : "60.6", "lon-min" : "8.0", "lon-max" : "14.0"},
+    "RIGA_FINLAND" : {"lat-min" : "56.5", "lat-max" : "60.6", "lon-min" : "23.0", "lon-max" : "31.5"},
+	}
+
+# Define cdo operators which will be applied to the time series.
+time_series_operators = ["-monmean", "-seasmean", "-ymonmean", "-yseasmean"]
+
+
+##########################################################################
+# STEP 3: Auxiliary steps (optional)                                     #
+##########################################################################
+
+# To customize the plotting you can import the PlotConfig class, see below for usage examples.
+# If you leave that out, the plots will have gneric color maps and values ranges.
+import sys
+sys.path.append('../auxiliary')
+from plot_config import PlotConfig
+
+    
+##########################################################################
+# STEP 4: Define the variables for which the postprocessing is performed #
+##########################################################################
+
+# The keys of the dictionary must be the names of the variables, as they are given in the NetCDF data files.
+# Pass as values:
+# "seasons" :                           a dictionary as given above
+# "percentiles" :                       a list as given above
+# "stations" :                          a dictionary as given above
+# "regions" :                           a dictionary as given above
+# "time-series-operators" :             a list as given above
+# "plot-config" :                       a PlotConfig instance as given below (optional)
+
+# "reference-file-pattern" :            a string containing the path pattern to reference files (optional), see commented examples below
+# "reference-variable-name" :           a string containing the name of the variable in the refrence files, this variable will be renamed to the key of the dictionary entry 
+#                                       (if "reference-file-pattern" is set this must be set as well)
+# "reference-additional-operators" :    a string containing additional cdo operators applied to the reference files, e.g. commented examples below
+#                                       (if "reference-file-pattern" is set this must be set as well)
+# "plot-config-anomaly" :               a PlotConfig instance for plotting the difference between data and reference as given below (optional)
+
+variables = {
+    "SST" : {      "seasons" : seasons,
+                   "percentiles" : percentiles, 
+                   "stations" : stations,
+                   "regions" : regions,
+                   "time-series-operators" : time_series_operators,
+                   "plot-config" : PlotConfig("SST", lon_name = "xt", lat_name = "yt", width = 1500000, height = 1800000, min_value = 0.0, max_value = 15.0, delta_value = 1.0, contour = True, color_map = 'YlOrRd'),
+                   #"reference-file-pattern" : "/scratch/usr/mvkkarst/obs/Copernicus/*-Baltic-ESACCI-L4_GHRSST-SSTdepth-OSTIA-GLOB_CDR2.0-v02.0-fv01.0.nc",
+                   #"reference-variable-name" : "analysed_sst",
+                   #"reference-additional-operators" : "-chname,lon,xt -chname,lat,yt -setattribute,analysed_sst@units=Celsius -subc,273.15",
+                   #"plot-config-anomaly" : PlotConfig("SST", lon_name = "xt", lat_name = "yt", width = 1500000, height = 1800000, min_value = -6.5, max_value = 6.5, delta_value = 1.0, contour = True, color_map = 'seismic'),
+             },
+}
+\end{verbatim}
 
 \appendix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
