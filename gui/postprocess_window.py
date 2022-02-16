@@ -16,6 +16,7 @@ class PostprocessWindow():
         self.master = master
         
         self.window = tk.Toplevel(self.master.window)
+        self.window.title('Postprocess')
         
         self.labels = {}
         self.buttons = {}

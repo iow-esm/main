@@ -223,6 +223,7 @@ class IowEsmGui:
         
     def _build_window_monitor(self):
         self.windows["monitor"] = tk.Toplevel(self.window)
+        self.windows["monitor"].title('Monitor')
         self.windows["monitor"].configure(background=IowColors.blue3)
         self.windows["monitor"].protocol("WM_DELETE_WINDOW", self._destroy_monitor_callback)
         
