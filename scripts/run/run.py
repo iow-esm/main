@@ -111,10 +111,25 @@ for run in range(runs_per_job):
         if int(start_date) >= int(final_date):
             print('IOW_ESM job finished integration to final date '+final_date)
             sys.exit()
+    
+    # check if attempt handler has been set in global_settings, create a local reference
+    try: 
+        local_attempt_handler = attempt_handler
+    # if not take the default
+    except:
+        local_attempt_handler = None
+        
+    # create default attempt handler instance: 1 attempt, no preparation and no evaluation
+    if local_attempt_handler is None:
+        import attempt_handling
+        local_attempt_handler = attempt_handling.AttemptHandler()
   
     # DO SEVERAL ATTEMPTS IN CASE INTEGRATION FAILS
-    for attempt in range(max_attempts):
-        print('Starting IOW_ESM run from '+str(start_date)+' to '+str(end_date)+' - attempt '+str(attempt+1), flush=True)
+    for attempt in local_attempt_handler.attempts:
+        
+        local_attempt_handler.prepare_attempt(attempt)
+        
+        print('Starting IOW_ESM run from '+str(start_date)+' to '+str(end_date)+' - attempt '+str(attempt), flush=True)
 
         # PREPARE THE WORK DIRECORIES IF THEY ARE GLOBAL
         if workdir_base[0]=='/': 
@@ -167,11 +182,11 @@ for run in range(runs_per_job):
             else:
                 shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
                 shellscript.writelines('export IOW_ESM_END_DATE='+str(end_date)+'\n')
-                shellscript.writelines('export IOW_ESM_ATTEMPT='+str(attempt+1)+'\n')
+                shellscript.writelines('export IOW_ESM_ATTEMPT='+str(attempt)+'\n')
                 shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+local_workdir_base+'\n')
                 shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+work_directory_root+'\n')
                 shellscript.writelines('python3 mpi_task_before.py\n')
-                shellscript.writelines('until [ -f '+local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt+1)+'.txt ]\n')
+                shellscript.writelines('until [ -f '+local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ]\n')
                 shellscript.writelines('do\n')
                 shellscript.writelines('     sleep 1\n')
                 shellscript.writelines('done\n')
@@ -261,15 +276,16 @@ for run in range(runs_per_job):
         run_failed = files_exist(work_directory_root+'/fail*.txt')
 
         # if it finally failed, stop the entire job
-        if run_failed & (attempt+1 == max_attempts):
+        if run_failed or ((local_attempt_handler.evaluate_attempt(attempt) == False) and (attempt == local_attempt_handler.attempts[-1])):
             print('IOW_ESM job finally failed integration from '+str(start_date)+' to '+str(end_date))
             sys.exit()
 
         # if we succeeded, continue outside the attempt loop
-        if not run_failed:
-            print('  attempt '+str(attempt+1)+' succeeded.', flush=True)
+        if not run_failed and (local_attempt_handler.evaluate_attempt(attempt) == True):
+            print('  attempt '+str(attempt)+' succeeded.', flush=True)
             break
-        print('  attempt '+str(attempt+1)+' failed.', flush=True)
+            
+        print('  attempt '+str(attempt)+' failed.', flush=True)
 
     # MOVE OUTPUT AND RESTARTS TO THE CORRESPONDING FOLDERS
     if ((local_workdir_base!='') & (copy_to_global_workdir==False)): # move files directly from local workdirs
