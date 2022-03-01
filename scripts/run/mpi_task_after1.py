@@ -88,18 +88,17 @@ if firstinnode[my_id]:
     ##########################################################################
     # STEP 6: If required, copy the work directory to the global file system #
     ##########################################################################
-    if copy_to_global_workdir:
-        # we have to copy step by step since all processes copy in parallel
-        if (not os.path.isdir(global_workdir_base+'/'+my_model)):
-            os.system('mkdir '+global_workdir_base+'/'+my_model)
-        files = [d for d in os.listdir(local_workdir_base+'/'+my_model+'/') if os.path.isfile(os.path.join(local_workdir_base+'/'+my_model+'/',d))]
+    # we have to copy step by step since all processes copy in parallel
+    if (not os.path.isdir(global_workdir_base+'/'+my_model)):
+        os.system('mkdir '+global_workdir_base+'/'+my_model)
+    files = [d for d in os.listdir(local_workdir_base+'/'+my_model+'/') if os.path.isfile(os.path.join(local_workdir_base+'/'+my_model+'/',d))]
+    for file in files:
+        os.system('cp --preserve=links '+local_workdir_base+'/'+my_model+'/'+file+' '+global_workdir_base+'/'+my_model+'/.')
+    folders = [d for d in os.listdir(local_workdir_base+'/'+my_model+'/') if os.path.isdir(os.path.join(local_workdir_base+'/'+my_model+'/',d))]
+    for folder in folders:
+        if (not os.path.isdir(global_workdir_base+'/'+my_model+'/'+folder)):
+            os.system('mkdir '+global_workdir_base+'/'+my_model+'/'+folder)
+        files = [d for d in os.listdir(local_workdir_base+'/'+my_model+'/'+folder+'/') if os.path.isfile(os.path.join(local_workdir_base+'/'+my_model+'/'+folder+'/',d))]
         for file in files:
-            os.system('cp --preserve=links '+local_workdir_base+'/'+my_model+'/'+file+' '+global_workdir_base+'/'+my_model+'/.')
-        folders = [d for d in os.listdir(local_workdir_base+'/'+my_model+'/') if os.path.isdir(os.path.join(local_workdir_base+'/'+my_model+'/',d))]
-        for folder in folders:
-            if (not os.path.isdir(global_workdir_base+'/'+my_model+'/'+folder)):
-                os.system('mkdir '+global_workdir_base+'/'+my_model+'/'+folder)
-            files = [d for d in os.listdir(local_workdir_base+'/'+my_model+'/'+folder+'/') if os.path.isfile(os.path.join(local_workdir_base+'/'+my_model+'/'+folder+'/',d))]
-            for file in files:
-                os.system('cp --preserve=links '+local_workdir_base+'/'+my_model+'/'+folder+'/'+file+' '+global_workdir_base+'/'+my_model+'/'+folder+'/.')
-        os.system('sync')
+            os.system('cp --preserve=links '+local_workdir_base+'/'+my_model+'/'+folder+'/'+file+' '+global_workdir_base+'/'+my_model+'/'+folder+'/.')
+    os.system('sync')
