@@ -118,7 +118,7 @@ class IowEsmGui:
         self.window.update_idletasks()
         
         # place monitor after everything is built up
-        self.windows["monitor"].geometry('+%d+%d' % (self.window.winfo_width() + self.x_offset * (1.1), self.y_offset))
+        self.windows["monitor"].geometry('+%d+%d' % (self.window.winfo_width() * (1.01) + self.x_offset , self.y_offset))
         
     def _destroy_monitor_callback(self):
         self.monitor = False

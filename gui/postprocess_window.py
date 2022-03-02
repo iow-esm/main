@@ -27,6 +27,8 @@ class PostprocessWindow():
         self.nframes = 0
         self.row = 0
         
+        self.current_destination = self.master.current_destination
+        
         self.current_outdirs = {}
         self.current_from_dates = {}
         self.current_to_dates = {}
@@ -39,6 +41,8 @@ class PostprocessWindow():
         
         self.get_global_settings()
         
+        self.build_destinations_frame()
+        
         # get all directories in the postprocess directory
         posts = [post.replace("\\", "/").split("/")[-1] for post in glob.glob(root_dir + "/postprocess/*")]
         
@@ -50,8 +54,53 @@ class PostprocessWindow():
             if post in oris:
                 self.build_postprocess_model_frame(post)
         
-        self.window.geometry('+%d+%d' % (master.x_offset + 1.01*master.window.winfo_width(), 
-                                         1.05*master.windows["monitor"].winfo_height()))
+        if self.master.monitor:
+            self.window.geometry('+%d+%d' % (master.x_offset + 1.01*master.window.winfo_width(), 
+                                             master.y_offset + 1.05*master.windows["monitor"].winfo_height()))
+            #self.window.geometry('+%d+%d' % (self.master.x_offset + 1.01*self.master.window.winfo_width() + 1.01*self.master.windows["monitor"].winfo_width(), 
+            #                             self.master.y_offset))
+        else:
+            self.window.geometry('+%d+%d' % (self.master.x_offset + 1.01*self.master.window.winfo_width(), 
+                             self.master.y_offset))
+        
+
+    def set_destination(self, dst):
+        self.current_destination = dst
+
+        self.master.print("Current postprocess destination: ")
+        
+        if dst == "":
+            self.master.print(" None")
+            return
+        
+        self.master.print(" " + self.current_destination + " (" + self.master.destinations[self.current_destination] + ")" )
+        
+    def build_destinations_frame(self):
+        
+        self.frames["destinations"] = Frame(master=self.window, bg = getattr(IowColors, "blue" + str(4 - (self.nframes % 4))))
+        
+        row = 0
+        self.labels["destinations"] = FrameTitleLabel(master = self.frames["destinations"], text="Destinations:")
+        self.labels["destinations"].grid(row=row, sticky='w')
+        row += 1
+        
+        self.menus["destinations"] = DropdownMenu(master = self.frames["destinations"], entries=[""] + list(self.master.destinations.keys()), function=self.set_destination, default_entry = self.current_destination)
+        self.menus["destinations"].grid(row=row, sticky='ew')
+        row += 1
+        
+        blank = tk.Label(text="", master=self.frames["destinations"], bg = self.frames["destinations"]["background"])
+        blank.grid(row=row)
+        row += 1
+        
+        self.frames["destinations"].grid(row=self.row, sticky='nsew')
+        self.frames["destinations"].grid_columnconfigure(0, weight=1)
+        self.frames["destinations"].grid_rowconfigure(0, weight=1)
+        self.row += 1
+        
+        ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
+        self.row += 1
+        
+        self.nframes += 1
     
     def build_postprocess_model_frame(self, model):
         
@@ -132,13 +181,16 @@ class PostprocessWindow():
         self.frames[model].grid_rowconfigure(0, weight=1)
         self.row += 1
         
+        ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
+        self.row += 1
+        
         self.nframes += 1
         
 
     
     def run_task(self, model, task):
         
-        if self.master.current_destination == "":
+        if self.current_destination == "":
             self.master.print("Destination not set.")
             return False
         
@@ -156,7 +208,7 @@ class PostprocessWindow():
             self.master.print("Time range is not set correctly. Define either both limits or none (all is processed)")    
             return False
         
-        cmd = "./postprocess.sh " + self.master.current_destination + " " + model + "/" + task + " "
+        cmd = "./postprocess.sh " + self.current_destination + " " + model + "/" + task + " "
         cmd  += self.current_outdirs[model]
             
         if  self.current_from_dates[model] != "" and self.current_to_dates[model] != "":
@@ -167,12 +219,12 @@ class PostprocessWindow():
         return True
     
     def get_global_settings(self):
-        if self.master.current_destination == "":
+        if self.current_destination == "":
             return False
     
         file_content = ""
         
-        user_at_host, path = self.master.destinations[self.master.current_destination].split(":")
+        user_at_host, path = self.master.destinations[self.current_destination].split(":")
         cmd = "ssh " + user_at_host + " \\\"if [ -f " + path +  "/input/global_settings.py ]; then cat " + path + "/input/global_settings.py; fi; \\\""
         file_content = self.master.functions.execute_shell_cmd(cmd, printing = False)
                 

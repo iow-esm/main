@@ -90,7 +90,7 @@ class Frame(tk.Frame):
 
  
 class DropdownMenu(tk.OptionMenu):
-    def __init__(self, master=None, entries=[], function=None, bg = None, fg = None):
+    def __init__(self, master=None, entries=[], function=None, bg = None, fg = None, default_entry = None):
         self.variable = tk.StringVar(master)
                 
         tk.OptionMenu.__init__(self,
@@ -111,8 +111,11 @@ class DropdownMenu(tk.OptionMenu):
         self.config(fg = fg)
         self["menu"].config(fg=fg)
 
-        self.variable.set(entries[0]) # default value
-        
+        if default_entry is None:
+            self.variable.set(entries[0]) # default value
+        else:
+            self.variable.set(default_entry)
+            
         def callback(*args):
             if function is not None:
                 function(self.variable.get())
