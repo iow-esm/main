@@ -372,15 +372,50 @@ except:
     process_raw_output = False
     
 if process_raw_output:
-    print('Start postprocessing of raw output.')
+    print('Start postprocessing of raw output.', flush=True)
     for model in models:
         start_postprocessing.start_postprocessing(IOW_ESM_ROOT, run_name, model, initial_start_date, end_date)
 else:
-    print("Raw output remains unprocessed.")
+    print("Raw output remains unprocessed.", flush=True)
 
-
-
-    
+#########################################################################################
+# STEP 5: JOB SUCCESSFULLY FINISHED - START OTHER POSTPROCESSSING TASKS (IF WANTED)     #
+#########################################################################################   
+# try if postprocess_tasks has been defined in global_settings.py
+try:
+    postprocess_tasks
+# if not, set it to empty dictionary
+except:
+    postprocess_tasks = {}
+ 
+# go over models (keys of the dictionary) 
+for model in postprocess_tasks.keys():
+    # check if value is a list (tasks are performed with defualt parameters)
+    if type(postprocess_tasks[model]) is list:
+        for task in postprocess_tasks[model]:
+            print('Start postprocessing task ' + task + ' of model ' + model + ' with parameters: ', run_name, initial_start_date, end_date, flush=True)
+            start_postprocessing.start_postprocessing(IOW_ESM_ROOT, run_name, model, initial_start_date, end_date, task = task)
+     
+    # if there is a dictionary given, parameters can be customized
+    elif type(postprocess_tasks[model]) is dict:
+        for task in postprocess_tasks[model].keys():
+        
+            # see which parameters are given explicitely, if not use defaults
+            try:
+                task_run_name = postprocess_tasks[model][task]["run_name"]
+            except:
+                task_run_name = run_name
+            try:
+                task_init_date = postprocess_tasks[model][task]["init_date"]
+            except:
+                task_init_date = initial_start_date
+            try:
+                task_end_date = postprocess_tasks[model][task]["end_date"]
+            except:
+                task_end_date = end_date 
+                
+            print('Start postprocessing task ' + task + ' of model ' + model + ' with parameters: ', task_run_name, task_init_date, task_end_date, flush=True)
+            start_postprocessing.start_postprocessing(IOW_ESM_ROOT, task_run_name, model, task_init_date, task_end_date, task = task)
 
 
 
