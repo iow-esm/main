@@ -13,6 +13,8 @@ import glob
 from netCDF4 import Dataset
 import numpy as np
 
+import re
+
 class ModelHandler:
     def __init__(self, global_settings, my_directory):
         self.gs = global_settings           # global settings object

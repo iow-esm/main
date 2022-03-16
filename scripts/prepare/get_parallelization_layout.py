@@ -6,13 +6,30 @@ import os
 import re
 import sys
 
+
+
 def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
 
     # Read global options file
     exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(), globals())# read in global options
+    
+    sys.path.append(IOW_ESM_ROOT + "/scripts/run")
+    # TODO: exec command to be removed at some point and completely replaced by
+    from parse_global_settings import GlobalSettings
+    global_settings = GlobalSettings(IOW_ESM_ROOT)    
 
     # Get a list of all subdirectories in "input" folder -> these are the models
     models = [d for d in os.listdir(IOW_ESM_ROOT+'/input/') if os.path.isdir(os.path.join(IOW_ESM_ROOT+'/input/',d))]
+    
+    import importlib
+    model_handlers = {}
+    for model in models:
+        try:   
+            model_handling_module = importlib.import_module("model_handling_" + model[0:4])
+            model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
+        except:
+            print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
+            pass # TODO pass has to be replaced by exit when models have a handler     
 
     model_threads = [0 for model in models]     # list how many threads this model uses
     model_executable = ['' for model in models] # list the name of this model's executable
@@ -68,47 +85,11 @@ def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
                 mythreads = mythreads_x * mythreads_y
             if mythreads==0:
                 print('Could not determine number of threads for model ',model)
-        if model[0:5]=='MOM5_':
-            myexecutable = 'fms_MOM_SIS.x'
-            # MOM5 model - parallelization is given in input.nml in section &ocean_model_nml
-            # "layout = 14,10"  e.g. means 14x10 rectangles exist, but a few of them may be masked out
-            # "mask_table = 'INPUT/mask_table'" (optional) means we will find this file there
-            # it contains the number of masked (=inactive) rectangles in the first line
-            inputfile = IOW_ESM_ROOT+'/input/'+model+'/input.nml'
-            mythreads_x = 0
-            mythreads_y = 0
-            mythreads_masked = 0
-            if not os.path.isfile(inputfile):
-                print('Could not determine parallelization layout because the following file was missing: '+inputfile)
-            else:
-                status = 'before' # make sure we seek in the correct area only
-                f = open(inputfile)
-                for line in f:
-                    if (line.strip()=='&ocean_model_nml') & (status == 'before'):
-                        status = 'active' # start searching
-                    if (line.strip()=='/') & (status == 'active'):
-                        status = 'after'  # stop searching
-                    if (status == 'active'):                        
-                        match = re.search("layout\s*=\s*(\d+)\s*,\s*(\d+)", line) # search for two comma-separated numbers after 'layout=', but allow spaces
-                        if match:
-                            mythreads_x = int(match.group(1))
-                            mythreads_y = int(match.group(2))
-                        match = re.search("mask_table\s*=\s*'([^']*)'", line) # search for anything between single quotes behind 'mask_table=', 
-                                                                              # but allow spaces
-                        if match:
-                            maskfile = IOW_ESM_ROOT+'/input/'+model+'/'+match.group(1)
-                            if not os.path.isfile(maskfile):
-                                print('Could not determine parallelization layout because the following MOM5 mask file was missing: '+maskfile)
-                                mythreads_masked = -1
-                            else:
-                                fm = open(maskfile)
-                                mythreads_masked = int(fm.readline().strip())
-                                fm.close()
-                f.close()
-                if mythreads_masked < 1: # did not find mask file
-                    mythreads = 0
-                else:
-                    mythreads = mythreads_x * mythreads_y - mythreads_masked
+                
+        if model[0:5]=='MOM5_': #TODO remove if condition when all models have handlers
+            myexecutable = model_handlers[model].get_model_executable()
+            mythreads = model_handlers[model].get_num_threads()
+            
         if model=='flux_calculator':
             mythreads = len(models)-2
             myexecutable = 'flux_calculator'
