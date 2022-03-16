@@ -156,11 +156,8 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
             os.symlink(global_workdir_base+'/grids.nc',work_dir+'/grids.nc')
             os.symlink(global_workdir_base+'/masks.nc',work_dir+'/masks.nc')
             
-            try:
+            if model[0:5]=='MOM5_': #TODO remove if condition when all models have handlers
                 model_handlers[model].create_work_directory(work_directory_root, start_date, end_date)
-            except:
-                print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
-                pass # TODO pass has to be replaced by exit when models have a handler
 
             # STEP 7: Do model-dependent tasks such as copying the executable or putting dates into namelists
             if model[0:5]=='CCLM_':

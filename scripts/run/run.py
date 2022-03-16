@@ -343,11 +343,8 @@ for run in range(runs_per_job):
     # move files from global workdir
     for i,model in enumerate(models): 
     
-        if model[0:5]=='MOM5_':
+        if model[0:5]=='MOM5_': #TODO remove if condition when all models have handlers
             model_handlers[model].move_results(work_directory_root, start_date, end_date)
-        #except:
-        #    print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
-        #    pass # TODO pass has to be replaced by exit when models have a handler    
             
         if model[0:5]=='CCLM_':
             move_results_CCLM.move_results_CCLM(work_directory_root+'/'+model,                             #workdir
