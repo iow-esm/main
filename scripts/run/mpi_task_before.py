@@ -42,12 +42,6 @@ layout = get_parallelization_layout(IOW_ESM_ROOT)
 exec(python_get_rank, globals()) # the expression python_get_rank is defined in global_settings.py
 my_model = layout['this_model'][int(my_id)]
 
-import importlib
-model_handlers = {}
-if my_model[0:5] == "MOM5_":
-    model_handling_module = importlib.import_module("model_handling_" + my_model[0:4])
-    model_handlers[my_model] = model_handling_module.ModelHandler(global_settings, my_model)
-
 ######################################################################################
 # STEP 4: Find out start date and end date, these are given as environment variables #
 ######################################################################################
@@ -62,6 +56,15 @@ global_workdir_base = os.environ["IOW_ESM_GLOBAL_WORKDIR_BASE"]
 ###############################################################
 firstinnode = layout['this_firstinnode'] # only create the directory if I am the first thread of this model on my node
 if firstinnode[my_id]:
+    import importlib
+    model_handlers = {}
+    try:   
+        model_handling_module = importlib.import_module("model_handling_" + my_model[0:4])
+        model_handlers[my_model] = model_handling_module.ModelHandler(global_settings, my_model)
+    except:
+        print("No handler has been found for model " + my_model + ". Add a module model_handling_" + my_model[0:4] + ".py")
+        pass # TODO pass has to be replaced by exit when models have a handler   
+        
     create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
                                                     local_workdir_base,    # /path/to/work/directory for all models
                                                     link_files_to_workdir, # True if links are sufficient or False if files shall be copied

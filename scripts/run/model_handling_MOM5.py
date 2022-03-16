@@ -8,6 +8,8 @@ import shutil
 import change_in_namelist
 import get_run_information
 
+import glob
+
 class ModelHandler:
     def __init__(self, global_settings, my_directory):
         self.gs = global_settings           # global settings object
@@ -92,11 +94,16 @@ class ModelHandler:
         return
         
     def check_for_succes(self, work_directory_root, start_date, end_date):
-    
+        # if MOM5 has succeeded there is a RESTART folder
         hotstartfile = work_directory_root+'/'+self.my_directory+'/RESTART/*'
-        if files_exist(hotstartfile):
-            return True
-        return False
+        
+        # if restart folder is empty we failed
+        if glob.glob(hotstartfile) == []:
+            print('run failed because no file exists:'+hotstartfile)
+            return False
+        
+        # we succeeded
+        return True
     
     def move_results(self, work_directory_root, start_date, end_date):
     

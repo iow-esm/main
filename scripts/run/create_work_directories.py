@@ -155,17 +155,19 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
             os.symlink(global_workdir_base+'/areas.nc',work_dir+'/areas.nc')
             os.symlink(global_workdir_base+'/grids.nc',work_dir+'/grids.nc')
             os.symlink(global_workdir_base+'/masks.nc',work_dir+'/masks.nc')
+            
+            try:
+                model_handlers[model].create_work_directory(work_directory_root, start_date, end_date)
+            except:
+                print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
+                pass # TODO pass has to be replaced by exit when models have a handler
 
             # STEP 7: Do model-dependent tasks such as copying the executable or putting dates into namelists
             if model[0:5]=='CCLM_':
                 exec(open('create_work_directory_CCLM.py').read(),globals()) # read in function create_work_directory_CCLM      
                 create_work_directory_CCLM(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
                                            coupling_time_step,run_name,debug_mode)
-            if model[0:5]=='MOM5_':
-                model_handlers[model].create_work_directory(work_directory_root, start_date, end_date)
-                #exec(open('create_work_directory_MOM5.py').read(),globals()) # read in function create_work_directory_MOM5                      
-                #create_work_directory_MOM5(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
-                #                           coupling_time_step,run_name,debug_mode)
+                
             if model=='flux_calculator':
                 exec(open('create_work_directory_flux_calculator.py').read(),globals()) # read in function create_work_directory_MOM5                      
                 create_work_directory_flux_calculator(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),

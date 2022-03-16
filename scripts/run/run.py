@@ -43,7 +43,18 @@ global_settings = GlobalSettings(IOW_ESM_ROOT)
 
 # get a list of all subdirectories in "input" folder -> these are the models
 models = [d for d in os.listdir(IOW_ESM_ROOT+'/input/') if os.path.isdir(os.path.join(IOW_ESM_ROOT+'/input/',d))]
-        
+
+# import model handling modules
+import importlib
+model_handlers = {}
+for model in models:
+    try:   
+        model_handling_module = importlib.import_module("model_handling_" + model[0:4])
+        model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
+    except:
+        print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
+        pass # TODO pass has to be replaced by exit when models have a handler 
+      
 # find out what is the latest date of each model's hotstart
 last_complete_hotstart_date = -1000
 for model in models:
@@ -165,18 +176,9 @@ for run in range(runs_per_job):
         namcouple = False
 
     if namcouple:
-        create_namcouple.create_namcouple(IOW_ESM_ROOT, work_directory_root, start_date, end_date, init_date, coupling_time_step, run_name, debug_mode)
+        create_namcouple.create_namcouple(IOW_ESM_ROOT, work_directory_root, start_date, end_date, init_date, coupling_time_step, run_name, debug_mode)       
 
     if local_workdir_base=='':  # workdir is global, so create the directories here
-        
-        # import model handling modules
-        import importlib
-        model_handlers = {}
-        for model in models:
-            if model[0:5] == "MOM5_":   # TODO if condition to be removed when all models have a handler
-                model_handling_module = importlib.import_module("model_handling_" + model[0:4])
-                model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
-                
         create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
                                                         work_directory_root,   # /path/to/work/directory for all models
                                                         link_files_to_workdir, # True if links are sufficient or False if files shall be copied
@@ -248,13 +250,15 @@ for run in range(runs_per_job):
 
     if (local_workdir_base==''):
         for i,model in enumerate(models):
-            if model[0:5]=='MOM5_':
-                hotstartfile = work_directory_root+'/'+model+'/RESTART/*'
-                if not files_exist(hotstartfile):
-                    print('run failed because no file exists:'+hotstartfile)
+            try:
+                if not model_handlers[model].check_for_succes(work_directory_root, start_date, end_date):
                     failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
                     failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
                     failfile.close()
+            except:
+                print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
+                pass # TODO pass has to be replaced by exit when models have a handler
+
             if model[0:5]=='CCLM_':
                 hotstartfile = work_directory_root+'/'+model+'/lrfd'+str(end_date)+'00o'
                 if not files_exist(hotstartfile):  # this does not exist -> run failed
@@ -338,15 +342,18 @@ for run in range(runs_per_job):
     # MOVE OUTPUT AND RESTARTS TO THE CORRESPONDING FOLDERS
     # move files from global workdir
     for i,model in enumerate(models): 
+    
+        if model[0:5]=='MOM5_':
+            model_handlers[model].move_results(work_directory_root, start_date, end_date)
+        #except:
+        #    print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
+        #    pass # TODO pass has to be replaced by exit when models have a handler    
+            
         if model[0:5]=='CCLM_':
             move_results_CCLM.move_results_CCLM(work_directory_root+'/'+model,                             #workdir
                                                 IOW_ESM_ROOT+'/output/'+run_name+'/'+model+'/'+str(start_date), #outputdir
                                                 IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+model+'/'+str(end_date), #hotstartdir
                                                 str(end_date))
-        if model[0:5]=='MOM5_':
-            move_results_MOM5.move_results_MOM5(work_directory_root+'/'+model,                             #workdir
-                                                IOW_ESM_ROOT+'/output/'+run_name+'/'+model+'/'+str(start_date), #outputdir
-                                                IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+model+'/'+str(end_date)) #hotstartdir
                                                 
         if model[0:5]=='I2LM_':
             move_results_I2LM.move_results_I2LM(work_directory_root+'/'+model,                             #workdir
