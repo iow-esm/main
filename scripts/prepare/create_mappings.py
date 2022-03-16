@@ -33,14 +33,30 @@ if (fail):
 # get a list of all subdirectories in "input" folder -> these are the models
 models = [d for d in os.listdir(IOW_ESM_ROOT+'/input/') if os.path.isdir(os.path.join(IOW_ESM_ROOT+'/input/',d))]
 
+# import model handling modules
+sys.path.append(IOW_ESM_ROOT + "/scripts/run")
+
+from parse_global_settings import GlobalSettings
+global_settings = GlobalSettings(IOW_ESM_ROOT)
+
+import importlib
+model_handlers = {}
+for model in models:
+    try:   
+        model_handling_module = importlib.import_module("model_handling_" + model[0:4])
+        model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
+    except:
+        print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
+        pass # TODO pass has to be replaced by exit when models have a handler 
+
 # find out which model it is and run the corresponding function
 for model in models:
     if model[0:5]=='CCLM_':
         print('creating SCRIP grids (t,u,v) for CCLM model '+model)
         grid_convert_CCLM_to_SCRIP.grid_convert_CCLM_to_SCRIP(IOW_ESM_ROOT,model)
-    if model[0:5]=='MOM5_':
-        print('creating SCRIP grids (t,c) for MOM5 model '+model)
-        grid_convert_MOM5_to_SCRIP.grid_convert_MOM5_to_SCRIP(IOW_ESM_ROOT,model)
+    if model[0:5]=='MOM5_': # TODO remove if condition when all models have handlers
+        print('creating SCRIP grids (t,c) for model '+model)
+        model_handlers[model].grid_convert_to_SCRIP()
 
 ###########################################################################################################
 # STEP 2: Walk through all ocean and land models to create exchange grid and mappings to/from atmos model #

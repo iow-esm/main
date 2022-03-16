@@ -10,6 +10,9 @@ import get_run_information
 
 import glob
 
+from netCDF4 import Dataset
+import numpy as np
+
 class ModelHandler:
     def __init__(self, global_settings, my_directory):
         self.gs = global_settings           # global settings object
