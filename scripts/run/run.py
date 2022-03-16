@@ -251,7 +251,7 @@ for run in range(runs_per_job):
     if (local_workdir_base==''):
         for i,model in enumerate(models):
             try:
-                if not model_handlers[model].check_for_succes(work_directory_root, start_date, end_date):
+                if not model_handlers[model].check_for_success(work_directory_root, start_date, end_date):
                     failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
                     failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
                     failfile.close()
