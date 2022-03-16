@@ -13,6 +13,7 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
                             create_links_only,       # True if links are sufficient or False if files shall be copied
                             start_date,              # 'YYYYMMDD'
                             end_date,                # 'YYYYMMDD'
+                            model_handlers,
                             debug_mode = False,      # False if executables compiled for production mode shall be used, 
                                                      # True if executables compiled for debug mode shall be used
                             which_model='',          # Create work directory for a single model only. Empty string '' means all models
@@ -161,9 +162,10 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
                 create_work_directory_CCLM(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
                                            coupling_time_step,run_name,debug_mode)
             if model[0:5]=='MOM5_':
-                exec(open('create_work_directory_MOM5.py').read(),globals()) # read in function create_work_directory_MOM5                      
-                create_work_directory_MOM5(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
-                                           coupling_time_step,run_name,debug_mode)
+                model_handlers[model].create_work_directory(work_directory_root, start_date, end_date)
+                #exec(open('create_work_directory_MOM5.py').read(),globals()) # read in function create_work_directory_MOM5                      
+                #create_work_directory_MOM5(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
+                #                           coupling_time_step,run_name,debug_mode)
             if model=='flux_calculator':
                 exec(open('create_work_directory_flux_calculator.py').read(),globals()) # read in function create_work_directory_MOM5                      
                 create_work_directory_flux_calculator(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),

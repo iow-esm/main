@@ -37,10 +37,13 @@ if (fail):
 
 # read in global settings
 exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
+# TODO: exec command to be removed at some point and completely replaced by
+from parse_global_settings import GlobalSettings
+global_settings = GlobalSettings(IOW_ESM_ROOT)
 
 # get a list of all subdirectories in "input" folder -> these are the models
 models = [d for d in os.listdir(IOW_ESM_ROOT+'/input/') if os.path.isdir(os.path.join(IOW_ESM_ROOT+'/input/',d))]
-
+        
 # find out what is the latest date of each model's hotstart
 last_complete_hotstart_date = -1000
 for model in models:
@@ -165,11 +168,21 @@ for run in range(runs_per_job):
         create_namcouple.create_namcouple(IOW_ESM_ROOT, work_directory_root, start_date, end_date, init_date, coupling_time_step, run_name, debug_mode)
 
     if local_workdir_base=='':  # workdir is global, so create the directories here
+        
+        # import model handling modules
+        import importlib
+        model_handlers = {}
+        for model in models:
+            if model[0:5] == "MOM5_":   # TODO if condition to be removed when all models have a handler
+                model_handling_module = importlib.import_module("model_handling_" + model[0:4])
+                model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
+                
         create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
                                                         work_directory_root,   # /path/to/work/directory for all models
                                                         link_files_to_workdir, # True if links are sufficient or False if files shall be copied
                                                         str(start_date),       # 'YYYYMMDD'
                                                         str(end_date),         # 'YYYYMMDD'
+                                                        model_handlers,                                                        
                                                         debug_mode,            # False if executables compiled for production mode shall be used, 
                                                                                # True if executables compiled for debug mode shall be used
                                                         '')                    # create workdir for all models

@@ -26,6 +26,10 @@ time.sleep(5.0)
 ###################################
 exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
 
+# read in global settings
+from parse_global_settings import GlobalSettings
+global_settings = GlobalSettings(IOW_ESM_ROOT)
+
 ###############################################
 # STEP 2: Find out the parallelization layout #
 ###############################################
@@ -37,6 +41,12 @@ layout = get_parallelization_layout(IOW_ESM_ROOT)
 ###########################################################################
 exec(python_get_rank, globals()) # the expression python_get_rank is defined in global_settings.py
 my_model = layout['this_model'][int(my_id)]
+
+import importlib
+model_handlers = {}
+if my_model[0:5] == "MOM5_":
+    model_handling_module = importlib.import_module("model_handling_" + my_model[0:4])
+    model_handlers[my_model] = model_handling_module.ModelHandler(global_settings, my_model)
 
 ######################################################################################
 # STEP 4: Find out start date and end date, these are given as environment variables #
@@ -57,6 +67,7 @@ if firstinnode[my_id]:
                                                     link_files_to_workdir, # True if links are sufficient or False if files shall be copied
                                                     str(start_date),       # 'YYYYMMDD'
                                                     str(end_date),         # 'YYYYMMDD'
+                                                    model_handlers,
                                                     debug_mode,            # False if executables compiled for production mode shall be used, 
                                                                            # True if executables compiled for debug mode shall be used
                                                     my_model,              # create workdir for my model only
