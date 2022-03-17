@@ -46,6 +46,7 @@ def get_model_handlers(global_settings):
     if global_settings.flux_calculator_mode=='single_core_per_bottom_model' and coupled:
         model = 'flux_calculator'
         models = models + [model] 
+        model_handling_module = importlib.import_module("model_handling_" + model[0:4])
         model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
 
     return model_handlers
