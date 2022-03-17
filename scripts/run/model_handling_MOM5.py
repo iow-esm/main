@@ -15,19 +15,24 @@ import numpy as np
 
 import re
 
-class ModelHandler:
+import model_handling
+
+class ModelHandler(model_handling.ModelHandlerBase):
     def __init__(self, global_settings, my_directory):
-        self.gs = global_settings           # global settings object
-        self.my_directory = my_directory    # name of model's input folder
+        # initialize base class 
+        model_handling.ModelHandlerBase.__init__(self, 
+                                                 model_handling.ModelTypes.bottom,  # specify this model as a bottom model
+                                                 global_settings,                   # pass global settings 
+                                                 my_directory)                      # memorize specific directory name = "model_domain"
         
     def create_work_directory(self, work_directory_root, start_date, end_date):
     
         # STEP 0: get local parameters from global settings
-        IOW_ESM_ROOT        = self.gs.root_dir              # root directory of IOW ESM
-        init_date           = self.gs.init_date             # 'YYYYMMDD'
-        coupling_time_step  = self.gs.coupling_time_step    # in seconds
-        run_name            = self.gs.run_name              # string
-        debug_mode          = self.gs.debug_mode            # FALSE if executables compiled for production mode shall be used, 
+        IOW_ESM_ROOT        = self.global_settings.root_dir              # root directory of IOW ESM
+        init_date           = self.global_settings.init_date             # 'YYYYMMDD'
+        coupling_time_step  = self.global_settings.coupling_time_step    # in seconds
+        run_name            = self.global_settings.run_name              # string
+        debug_mode          = self.global_settings.debug_mode            # FALSE if executables compiled for production mode shall be used, 
                                                             # TRUE if executables compiled for debug mode shall be used
                                                             
         my_directory        = self.my_directory             # name of model's input folder
@@ -115,9 +120,9 @@ class ModelHandler:
         # work directory of this model instance
         workdir = work_directory_root + '/' + self.my_directory
         # directory for output        
-        outputdir = self.gs.root_dir + '/output/' + self.gs.run_name+'/'+self.my_directory+'/'+str(start_date)
+        outputdir = self.global_settings.root_dir + '/output/' + self.global_settings.run_name+'/'+self.my_directory+'/'+str(start_date)
         # directory for hotstarts
-        hotstartdir = self.gs.root_dir + '/hotstart/' + self.gs.run_name+'/'+self.my_directory+'/'+str(end_date)   
+        hotstartdir = self.global_settings.root_dir + '/hotstart/' + self.global_settings.run_name+'/'+self.my_directory+'/'+str(end_date)   
 
         # STEP 1: CREATE DIRECTORIES IF REQUIRED
         if (not os.path.isdir(outputdir)): 
@@ -143,7 +148,7 @@ class ModelHandler:
         os.system('mv '+workdir+'/restart* '+hotstartdir+'/.')  # OASIS hotstart file
     
     def grid_convert_to_SCRIP(self):
-        IOW_ESM_ROOT = self.gs.root_dir        # root directory of IOW ESM
+        IOW_ESM_ROOT = self.global_settings.root_dir        # root directory of IOW ESM
         my_directory = self.my_directory       # name of this model instance
     
         # STEP 1: CREATE EMPTY "mappings" SUBDIRECTORY
@@ -293,7 +298,7 @@ class ModelHandler:
         # "mask_table = 'INPUT/mask_table'" (optional) means we will find this file there
         # it contains the number of masked (=inactive) rectangles in the first line
         
-        IOW_ESM_ROOT        = self.gs.root_dir              # root directory of IOW ESM
+        IOW_ESM_ROOT        = self.global_settings.root_dir              # root directory of IOW ESM
         model               = self.my_directory             # name of model's input folder
         
         inputfile = IOW_ESM_ROOT+'/input/'+model+'/input.nml'

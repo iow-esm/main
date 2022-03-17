@@ -6,27 +6,23 @@ import os
 import shutil
 
 import change_in_namelist
-import get_run_information
 
 import glob
 
-from netCDF4 import Dataset
-import numpy as np
+import model_handling
 
-import re
-
-class ModelHandler:
+class ModelHandler(model_handling.ModelHandlerBase):
     def __init__(self, global_settings, my_directory):
-        self.gs = global_settings           # global settings object
-        self.my_directory = my_directory    # name of model's input folder
+        # initialize base class
+        model_handling.ModelHandlerBase.__init__(self, model_handling.ModelTypes.flux_calculator, global_settings, my_directory)
         
     def create_work_directory(self, work_directory_root, start_date, end_date):
     
         # STEP 0: get local parameters from global settings
-        IOW_ESM_ROOT        = self.gs.root_dir              # root directory of IOW ESM
-        init_date           = self.gs.init_date             # 'YYYYMMDD'
-        coupling_time_step  = self.gs.coupling_time_step    # in seconds
-        debug_mode          = self.gs.debug_mode            # FALSE if executables compiled for production mode shall be used, 
+        IOW_ESM_ROOT        = self.global_settings.root_dir              # root directory of IOW ESM
+        init_date           = self.global_settings.init_date             # 'YYYYMMDD'
+        coupling_time_step  = self.global_settings.coupling_time_step    # in seconds
+        debug_mode          = self.global_settings.debug_mode            # FALSE if executables compiled for production mode shall be used, 
                                                             # TRUE if executables compiled for debug mode shall be used
                                                             
         my_directory        = self.my_directory             # name of model's input folder
@@ -78,18 +74,6 @@ class ModelHandler:
         os.system('cp '+IOW_ESM_ROOT+'/input/CCLM*/mappings/regrid_*.nc '+full_directory+'/mappings')
 
         return
-        
-    def check_for_success(self, work_directory_root, start_date, end_date):
-        # we succeeded
-        return True
-    
-    def move_results(self, work_directory_root, start_date, end_date):
-        # until mow we do not copy output from the fluxcalculator
-        pass    
-        
-    def grid_convert_to_SCRIP(self):
-        # nothing to do for the flux_calculator
-        pass
         
     def get_model_executable(self):
         return 'flux_calculator'
