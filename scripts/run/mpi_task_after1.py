@@ -57,13 +57,6 @@ if firstinnode[my_id]:
     ############################################
     # STEP 5: Check if the model run succeeded #
     ############################################
-    # Define a function to see whether a file matching a certain pattern exists
-    def files_exist(filepath):
-        for filepath_object in glob.glob(filepath):
-            if os.path.isfile(filepath_object):
-                return True
-        return False
-
     if firstthread[my_id]: 
         import importlib
         try:
