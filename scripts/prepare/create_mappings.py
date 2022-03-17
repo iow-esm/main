@@ -44,13 +44,12 @@ for model in models:
         model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
     except:
         print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
-        pass # TODO pass has to be replaced by exit when models have a handler 
+        sys.exit()
 
 # find out which model it is and run the corresponding function
 for model in models:
-    if model[0:5]=='MOM5_' or model[0:5]=='CCLM_': # TODO remove if condition when all models have handlers
-        print('creating SCRIP grids for model '+model)
-        model_handlers[model].grid_convert_to_SCRIP()
+    print('creating SCRIP grids for model '+model)
+    model_handlers[model].grid_convert_to_SCRIP()
 
 ###########################################################################################################
 # STEP 2: Walk through all ocean and land models to create exchange grid and mappings to/from atmos model #

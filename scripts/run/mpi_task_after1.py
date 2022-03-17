@@ -70,23 +70,13 @@ if firstinnode[my_id]:
             model_handling_module = importlib.import_module("model_handling_" + my_model[0:4])
         except:
             print("No handler has been found for model " + my_model + ". Add a module model_handling_" + my_model[0:4] + ".py")
-            pass # TODO pass has to be replaced by exit when models have a handler
-        
-        if my_model[0:5]=='MOM5_' or my_model=='flux_calculator' or my_model[0:5]=='CCLM_': #TODO remove if condition when all models have handlers
-            model_handler = model_handling_module.ModelHandler(global_settings, my_model)
-            if not model_handler.check_for_success(local_workdir_base, start_date, end_date):
-                failfile = open(global_workdir_base+'/failed_'+my_model+'.txt', 'w')
-                failfile.writelines('Model '+my_model+' failed and did not reach the end date '+str(end_date)+'\n')
-                failfile.close()
+            sys.exit()
 
-    if my_model[0:5]=='I2LM_':
-        if firstthread[my_id]:    # only the first thread must write a hotstart file
-            lastfile = local_workdir_base+'/'+my_model+'/'+str(start_date)+'/lbfd'+str(end_date)+'00.nc'
-            if not files_exist(lastfile):  # this does not exist -> run failed
-                print('run failed because no file exists:'+lastfile)
-                failfile = open(global_workdir_base+'/failed_'+my_model+'.txt', 'w')
-                failfile.writelines('Model '+my_model+' failed and did not reach the end date '+end_date+'\n')
-                failfile.close()
+        model_handler = model_handling_module.ModelHandler(global_settings, my_model)
+        if not model_handler.check_for_success(local_workdir_base, start_date, end_date):
+            failfile = open(global_workdir_base+'/failed_'+my_model+'.txt', 'w')
+            failfile.writelines('Model '+my_model+' failed and did not reach the end date '+str(end_date)+'\n')
+            failfile.close()
 
     ##########################################################################
     # STEP 6: If required, copy the work directory to the global file system #

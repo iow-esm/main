@@ -57,7 +57,7 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
             model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
         except:
             print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
-            pass # TODO pass has to be replaced by exit when models have a handler 
+            sys.exit()
 
     # Loop over the models
     for model in models:
@@ -168,12 +168,8 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
             os.symlink(global_workdir_base+'/areas.nc',work_dir+'/areas.nc')
             os.symlink(global_workdir_base+'/grids.nc',work_dir+'/grids.nc')
             os.symlink(global_workdir_base+'/masks.nc',work_dir+'/masks.nc')
-            
-            if model[0:5]=='MOM5_' or model=='flux_calculator' or model[0:5]=='CCLM_': #TODO remove if condition when all models have handlers
-                model_handlers[model].create_work_directory(work_directory_root, start_date, end_date)
+
+            model_handlers[model].create_work_directory(work_directory_root, start_date, end_date)
                                            
-            if model[0:5]=='I2LM_':
-                exec(open('create_work_directory_I2LM.py').read(),globals()) # read in function create_work_directory_I2LM                     
-                create_work_directory_I2LM(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
-                                           coupling_time_step,run_name,debug_mode)
+
     return

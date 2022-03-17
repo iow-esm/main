@@ -11,8 +11,6 @@ import time
 import date_calculations
 import create_work_directories
 
-import move_results_I2LM
-
 import create_namcouple 
 import start_postprocessing
 
@@ -235,7 +233,7 @@ for run in range(runs_per_job):
             model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
         except:
             print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
-            pass # TODO pass has to be replaced by exit when models have a handler 
+            sys.exit() 
             
     # DO THE LOCAL POSTPROCESSING STEP 1: POSSIBLY COPY LOCAL WORKDIRS TO THE GLOBAL ONE AND CHECK WHETHER THE JOB FAILED
     # CHECK IF THE RUN FAILED
@@ -247,20 +245,11 @@ for run in range(runs_per_job):
 
     if (local_workdir_base==''):
         for i,model in enumerate(models):
+            if not model_handlers[model].check_for_success(work_directory_root, start_date, end_date):
+                failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
+                failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
+                failfile.close()
 
-            if model[0:5]=='MOM5_' or model=='flux_calculator' or model[0:5]=='CCLM_': #TODO remove if condition when all models have handlers
-                if not model_handlers[model].check_for_success(work_directory_root, start_date, end_date):
-                    failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
-                    failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
-                    failfile.close()
-                    
-            if model[0:5]=='I2LM_':
-                lastfile = work_directory_root+'/'+model+'/'+str(start_date)+'/lbfd'+str(end_date)+'00.nc'
-                if not files_exist(lastfile):  # this does not exist -> run failed
-                    print('run failed because no file exists:'+lastfile)
-                    failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
-                    failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
-                    failfile.close()
 
     else:
         # DO THE LOCAL POSTPROCESSING STEP 1: POSSIBLY COPY LOCAL WORKDIRS TO THE GLOBAL ONE AND CHECK WHETHER THE JOB FAILED
@@ -330,18 +319,8 @@ for run in range(runs_per_job):
     # MOVE OUTPUT AND RESTARTS TO THE CORRESPONDING FOLDERS
     # move files from global workdir
     for i,model in enumerate(models): 
-    
-        if model[0:5]=='MOM5_' or model=='flux_calculator' or model[0:5]=='CCLM_': #TODO remove if condition when all models have handlers
-            model_handlers[model].move_results(work_directory_root, start_date, end_date)
-                                                
-        if model[0:5]=='I2LM_':
-            move_results_I2LM.move_results_I2LM(work_directory_root+'/'+model,                             #workdir
-                                                IOW_ESM_ROOT+'/output/'+run_name+'/'+model, #outputdir
-                                                IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+model+'/'+str(end_date), #hotstartdir
-                                                str(start_date))
-                                                    
+        model_handlers[model].move_results(work_directory_root, start_date, end_date)
 
-        
     # PROCEED TO NEXT RUN
     start_date = end_date
     # but wait until hotstart files are copied
