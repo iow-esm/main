@@ -12,7 +12,6 @@ import date_calculations
 import create_work_directories
 
 import move_results_CCLM
-import move_results_MOM5
 import move_results_I2LM
 
 import create_namcouple 

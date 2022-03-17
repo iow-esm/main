@@ -5,7 +5,6 @@ import os
 import shutil
 import sys
 
-import grid_convert_MOM5_to_SCRIP
 import grid_convert_CCLM_to_SCRIP
 
 import grid_create_exchangegrid_MOM5

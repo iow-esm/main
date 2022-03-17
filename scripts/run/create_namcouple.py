@@ -6,6 +6,8 @@
 import os
 import shutil
 
+import model_handling_flux
+
 def create_namcouple(IOW_ESM_ROOT,        # root directory of IOW ESM
                        work_directory_root, # /path/to/work/directory for all models
                        start_date,          # 'YYYYMMDD'
@@ -20,15 +22,18 @@ def create_namcouple(IOW_ESM_ROOT,        # root directory of IOW ESM
     
     # read in global settings
     exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
+    # TODO: exec command to be removed at some point and completely replaced by
+    from parse_global_settings import GlobalSettings
+    global_settings = GlobalSettings(IOW_ESM_ROOT)
     
     work_dir = work_directory_root+'/flux_calculator'
     
     print('  create temporary ' + work_dir)
     os.makedirs(work_dir)
     
-    exec(open('create_work_directory_flux_calculator.py').read(),globals()) # read in function create_work_directory_MOM5                      
-    create_work_directory_flux_calculator(IOW_ESM_ROOT,work_directory_root,'flux_calculator',str(start_date),str(end_date),str(init_date),
-                                   coupling_time_step,runname,debug_mode)
+    model_handler = model_handling_flux.ModelHandler(global_settings, 'flux_calculator')                   
+    model_handler.create_work_directory(work_directory_root,str(start_date),str(end_date))
+    
     # Start flux_calculator excutable with switch --generate_namcouple before starting the model
     shellscript_name = './create_namcouple.sh'
     shellscript = open(shellscript_name, 'w')
