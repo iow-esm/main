@@ -14,6 +14,8 @@ import create_work_directories
 import create_namcouple 
 import start_postprocessing
 
+from model_handling import get_model_handlers
+
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
 fail = False
@@ -38,11 +40,17 @@ from parse_global_settings import GlobalSettings
 global_settings = GlobalSettings(IOW_ESM_ROOT)
 
 # get a list of all subdirectories in "input" folder -> these are the models
-models = [d for d in os.listdir(IOW_ESM_ROOT+'/input/') if os.path.isdir(os.path.join(IOW_ESM_ROOT+'/input/',d))]
+model_handlers = get_model_handlers(global_settings)
+models = model_handlers.keys()
       
 # find out what is the latest date of each model's hotstart
 last_complete_hotstart_date = -1000
 for model in models:
+
+    # no hotstart folders for flux_calculator
+    if model == 'flux_calculator':
+        continue
+        
     my_hotstart_dir = IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+model
     # if hotstart dir does not exist yet, create it
     if (not os.path.isdir(my_hotstart_dir)):
@@ -64,6 +72,11 @@ for model in models:
 
 # delete all those output and hotstart files after the last common (=successful) hotstart
 for model in models:
+
+    # no hotstart folders for flux_calculator
+    if model == 'flux_calculator':
+        continue
+        
     my_hotstart_dir = IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+model
     my_hotstart_dates = [d for d in os.listdir(my_hotstart_dir) if os.path.isdir(os.path.join(my_hotstart_dir,d))]
     my_hotstart_dates = [int(i) for i in my_hotstart_dates]
@@ -178,7 +191,6 @@ for run in range(runs_per_job):
     parallelization_layout = get_parallelization_layout(IOW_ESM_ROOT)        
 
     # CREATE BATCH SCRIPTS FOR EACH MODEL TO GO TO THEIR INDIVIDUAL WORK DIRECTORIES AND RUN FROM THERE
-    models = parallelization_layout['models']
     model_threads = parallelization_layout['model_threads']
     model_executable = parallelization_layout['model_executable']
     for i,model in enumerate(models):
@@ -223,34 +235,15 @@ for run in range(runs_per_job):
     print('  starting model task with command: '+full_mpi_run_command, flush=True)
     os.system(full_mpi_run_command)
     print('  ... model task finished.', flush=True)
-
-    # import model handling modules
-    import importlib
-    model_handlers = {}
-    for model in models:
-        try:   
-            model_handling_module = importlib.import_module("model_handling_" + model[0:4])
-            model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
-        except:
-            print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
-            sys.exit() 
             
     # DO THE LOCAL POSTPROCESSING STEP 1: POSSIBLY COPY LOCAL WORKDIRS TO THE GLOBAL ONE AND CHECK WHETHER THE JOB FAILED
     # CHECK IF THE RUN FAILED
-    def files_exist(filepath):
-        for filepath_object in glob.glob(filepath):
-            if os.path.isfile(filepath_object):
-                return True
-        return False
-
     if (local_workdir_base==''):
-        for i,model in enumerate(models):
+        for model in models:
             if not model_handlers[model].check_for_success(work_directory_root, start_date, end_date):
                 failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
                 failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
                 failfile.close()
-
-
     else:
         # DO THE LOCAL POSTPROCESSING STEP 1: POSSIBLY COPY LOCAL WORKDIRS TO THE GLOBAL ONE AND CHECK WHETHER THE JOB FAILED
         file_name = 'run_after1.sh'
@@ -278,7 +271,7 @@ for run in range(runs_per_job):
         print('  ... after1 task finished.', flush=True)
 
     # see if files exist that indicate that the run failed
-    run_failed = files_exist(work_directory_root+'/fail*.txt')
+    run_failed = bool(glob.glob(work_directory_root+'/fail*.txt'))
     
     # if we have no attempt handling and the model failed we can only stop the entire job
     if run_failed and (attempt_handler is None):
@@ -318,7 +311,7 @@ for run in range(runs_per_job):
 
     # MOVE OUTPUT AND RESTARTS TO THE CORRESPONDING FOLDERS
     # move files from global workdir
-    for i,model in enumerate(models): 
+    for model in models: 
         model_handlers[model].move_results(work_directory_root, start_date, end_date)
 
     # PROCEED TO NEXT RUN
