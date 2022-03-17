@@ -5,8 +5,6 @@ import os
 import shutil
 import sys
 
-import grid_convert_CCLM_to_SCRIP
-
 import grid_create_exchangegrid_MOM5
 import grid_create_uv_t_regridding
 
@@ -50,11 +48,8 @@ for model in models:
 
 # find out which model it is and run the corresponding function
 for model in models:
-    if model[0:5]=='CCLM_':
-        print('creating SCRIP grids (t,u,v) for CCLM model '+model)
-        grid_convert_CCLM_to_SCRIP.grid_convert_CCLM_to_SCRIP(IOW_ESM_ROOT,model)
-    if model[0:5]=='MOM5_': # TODO remove if condition when all models have handlers
-        print('creating SCRIP grids (t,c) for model '+model)
+    if model[0:5]=='MOM5_' or model[0:5]=='CCLM_': # TODO remove if condition when all models have handlers
+        print('creating SCRIP grids for model '+model)
         model_handlers[model].grid_convert_to_SCRIP()
 
 ###########################################################################################################

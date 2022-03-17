@@ -64,29 +64,8 @@ def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
                 mythreads = mythreads_x * mythreads_y
             if mythreads==0:
                 print('Could not determine number of threads for model ',model)
-        if model[0:5]=='CCLM_': 
-            myexecutable = 'lmparbin'
-            # CCLM model - parallelization is described in INPUT_ORG, e.g. nprocx= 8, nprocy= 24
-            inputfile = IOW_ESM_ROOT+'/input/'+model+'/INPUT_ORG'
-            mythreads_x = 0
-            mythreads_y = 0
-            if not os.path.isfile(inputfile):
-                print('Could not determine parallelization layout because the following file was missing: '+inputfile)
-            else :
-                f = open(inputfile)
-                for line in f:
-                    match = re.search('nprocx\s*=\s*(\d+)', line) # search for number after 'nprocx=', but allow spaces
-                    if match:
-                        mythreads_x = int(match.group(1))
-                    match = re.search('nprocy\s*=\s*(\d+)', line) # search for number after 'nprocy=', but allow spaces
-                    if match:
-                        mythreads_y = int(match.group(1))
-                f.close()
-                mythreads = mythreads_x * mythreads_y
-            if mythreads==0:
-                print('Could not determine number of threads for model ',model)
                 
-        if model[0:5]=='MOM5_' or model=='flux_calculator': #TODO remove if condition when all models have handlers
+        if model[0:5]=='MOM5_' or model=='flux_calculator' or model[0:5]=='CCLM_': #TODO remove if condition when all models have handlers
             myexecutable = model_handlers[model].get_model_executable()
             mythreads = model_handlers[model].get_num_threads()
             

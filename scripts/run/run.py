@@ -11,7 +11,6 @@ import time
 import date_calculations
 import create_work_directories
 
-import move_results_CCLM
 import move_results_I2LM
 
 import create_namcouple 
@@ -249,19 +248,12 @@ for run in range(runs_per_job):
     if (local_workdir_base==''):
         for i,model in enumerate(models):
 
-            if model[0:5]=='MOM5_' or model=='flux_calculator': #TODO remove if condition when all models have handlers
+            if model[0:5]=='MOM5_' or model=='flux_calculator' or model[0:5]=='CCLM_': #TODO remove if condition when all models have handlers
                 if not model_handlers[model].check_for_success(work_directory_root, start_date, end_date):
                     failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
                     failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
                     failfile.close()
-
-            if model[0:5]=='CCLM_':
-                hotstartfile = work_directory_root+'/'+model+'/lrfd'+str(end_date)+'00o'
-                if not files_exist(hotstartfile):  # this does not exist -> run failed
-                    print('run failed because no file exists:'+hotstartfile)
-                    failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
-                    failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
-                    failfile.close()
+                    
             if model[0:5]=='I2LM_':
                 lastfile = work_directory_root+'/'+model+'/'+str(start_date)+'/lbfd'+str(end_date)+'00.nc'
                 if not files_exist(lastfile):  # this does not exist -> run failed
@@ -339,14 +331,8 @@ for run in range(runs_per_job):
     # move files from global workdir
     for i,model in enumerate(models): 
     
-        if model[0:5]=='MOM5_' or model=='flux_calculator': #TODO remove if condition when all models have handlers
+        if model[0:5]=='MOM5_' or model=='flux_calculator' or model[0:5]=='CCLM_': #TODO remove if condition when all models have handlers
             model_handlers[model].move_results(work_directory_root, start_date, end_date)
-            
-        if model[0:5]=='CCLM_':
-            move_results_CCLM.move_results_CCLM(work_directory_root+'/'+model,                             #workdir
-                                                IOW_ESM_ROOT+'/output/'+run_name+'/'+model+'/'+str(start_date), #outputdir
-                                                IOW_ESM_ROOT+'/hotstart/'+run_name+'/'+model+'/'+str(end_date), #hotstartdir
-                                                str(end_date))
                                                 
         if model[0:5]=='I2LM_':
             move_results_I2LM.move_results_I2LM(work_directory_root+'/'+model,                             #workdir

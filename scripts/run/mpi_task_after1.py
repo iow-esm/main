@@ -72,22 +72,13 @@ if firstinnode[my_id]:
             print("No handler has been found for model " + my_model + ". Add a module model_handling_" + my_model[0:4] + ".py")
             pass # TODO pass has to be replaced by exit when models have a handler
         
-        if my_model[0:5]=='MOM5_' or my_model=='flux_calculator': #TODO remove if condition when all models have handlers
+        if my_model[0:5]=='MOM5_' or my_model=='flux_calculator' or my_model[0:5]=='CCLM_': #TODO remove if condition when all models have handlers
             model_handler = model_handling_module.ModelHandler(global_settings, my_model)
             if not model_handler.check_for_success(local_workdir_base, start_date, end_date):
                 failfile = open(global_workdir_base+'/failed_'+my_model+'.txt', 'w')
                 failfile.writelines('Model '+my_model+' failed and did not reach the end date '+str(end_date)+'\n')
                 failfile.close()
 
-
-    if my_model[0:5]=='CCLM_':
-        if firstthread[my_id]:    # only the first thread must write a hotstart file
-            hotstartfile = local_workdir_base+'/'+my_model+'/lrfd'+end_date+'00o'
-            if not files_exist(hotstartfile):  # this does not exist -> run failed
-                print('run failed because no file exists:'+hotstartfile)
-                failfile = open(global_workdir_base+'/failed_'+my_model+'.txt', 'w')
-                failfile.writelines('Model '+my_model+' failed and did not reach the end date '+end_date+'\n')
-                failfile.close()
     if my_model[0:5]=='I2LM_':
         if firstthread[my_id]:    # only the first thread must write a hotstart file
             lastfile = local_workdir_base+'/'+my_model+'/'+str(start_date)+'/lbfd'+str(end_date)+'00.nc'

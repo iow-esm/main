@@ -169,14 +169,8 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
             os.symlink(global_workdir_base+'/grids.nc',work_dir+'/grids.nc')
             os.symlink(global_workdir_base+'/masks.nc',work_dir+'/masks.nc')
             
-            if model[0:5]=='MOM5_' or model=='flux_calculator': #TODO remove if condition when all models have handlers
+            if model[0:5]=='MOM5_' or model=='flux_calculator' or model[0:5]=='CCLM_': #TODO remove if condition when all models have handlers
                 model_handlers[model].create_work_directory(work_directory_root, start_date, end_date)
-
-            # STEP 7: Do model-dependent tasks such as copying the executable or putting dates into namelists
-            if model[0:5]=='CCLM_':
-                exec(open('create_work_directory_CCLM.py').read(),globals()) # read in function create_work_directory_CCLM      
-                create_work_directory_CCLM(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
-                                           coupling_time_step,run_name,debug_mode)
                                            
             if model[0:5]=='I2LM_':
                 exec(open('create_work_directory_I2LM.py').read(),globals()) # read in function create_work_directory_I2LM                     
