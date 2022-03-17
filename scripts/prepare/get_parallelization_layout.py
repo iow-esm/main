@@ -6,8 +6,6 @@ import os
 import re
 import sys
 
-
-
 def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
 
     # Read global options file
@@ -16,29 +14,17 @@ def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
     sys.path.append(IOW_ESM_ROOT + "/scripts/run")
     # TODO: exec command to be removed at some point and completely replaced by
     from parse_global_settings import GlobalSettings
-    global_settings = GlobalSettings(IOW_ESM_ROOT)    
+    global_settings = GlobalSettings(IOW_ESM_ROOT)   
+   
+    # for model handlin
+    from model_handling import get_model_handlers    
 
-    # Get a list of all subdirectories in "input" folder -> these are the models
-    models = [d for d in os.listdir(IOW_ESM_ROOT+'/input/') if os.path.isdir(os.path.join(IOW_ESM_ROOT+'/input/',d))]
+    # get a list of all subdirectories in "input" folder -> these are the models
+    model_handlers = get_model_handlers(global_settings)
+    models = list(model_handlers.keys())
 
     model_threads = [0 for model in models]     # list how many threads this model uses
-    model_executable = ['' for model in models] # list the name of this model's executable
-
-    # Possibly add flux_calculator as an additional model
-    if flux_calculator_mode=='single_core_per_bottom_model':
-        models           = models           + ['flux_calculator']
-        model_threads    = model_threads    + [0]
-        model_executable = model_executable + ['']
-        
-    import importlib
-    model_handlers = {}
-    for model in models:
-        try:   
-            model_handling_module = importlib.import_module("model_handling_" + model[0:4])
-            model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
-        except:
-            print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
-            sys.exit()    
+    model_executable = ['' for model in models] # list the name of this model's executable 
 
     # Loop over the models to find out how many threads they will need
     for i, model in enumerate(models):
