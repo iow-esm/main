@@ -26,10 +26,6 @@ time.sleep(5.0)
 ###################################
 exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
 
-# read in global settings
-from parse_global_settings import GlobalSettings
-global_settings = GlobalSettings(IOW_ESM_ROOT)
-
 ###############################################
 # STEP 2: Find out the parallelization layout #
 ###############################################
@@ -55,22 +51,12 @@ global_workdir_base = os.environ["IOW_ESM_GLOBAL_WORKDIR_BASE"]
 # STEP 5: Create my model's work directory on the local node. #
 ###############################################################
 firstinnode = layout['this_firstinnode'] # only create the directory if I am the first thread of this model on my node
-if firstinnode[my_id]:
-    import importlib
-    model_handlers = {}
-    try:   
-        model_handling_module = importlib.import_module("model_handling_" + my_model[0:4])
-        model_handlers[my_model] = model_handling_module.ModelHandler(global_settings, my_model)
-    except:
-        print("No handler has been found for model " + my_model + ". Add a module model_handling_" + my_model[0:4] + ".py")
-        pass # TODO pass has to be replaced by exit when models have a handler   
-        
+if firstinnode[my_id]: 
     create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
                                                     local_workdir_base,    # /path/to/work/directory for all models
                                                     link_files_to_workdir, # True if links are sufficient or False if files shall be copied
                                                     str(start_date),       # 'YYYYMMDD'
                                                     str(end_date),         # 'YYYYMMDD'
-                                                    model_handlers,
                                                     debug_mode,            # False if executables compiled for production mode shall be used, 
                                                                            # True if executables compiled for debug mode shall be used
                                                     my_model,              # create workdir for my model only

@@ -20,16 +20,6 @@ def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
 
     # Get a list of all subdirectories in "input" folder -> these are the models
     models = [d for d in os.listdir(IOW_ESM_ROOT+'/input/') if os.path.isdir(os.path.join(IOW_ESM_ROOT+'/input/',d))]
-    
-    import importlib
-    model_handlers = {}
-    for model in models:
-        try:   
-            model_handling_module = importlib.import_module("model_handling_" + model[0:4])
-            model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
-        except:
-            print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
-            pass # TODO pass has to be replaced by exit when models have a handler     
 
     model_threads = [0 for model in models]     # list how many threads this model uses
     model_executable = ['' for model in models] # list the name of this model's executable
@@ -39,6 +29,16 @@ def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
         models           = models           + ['flux_calculator']
         model_threads    = model_threads    + [0]
         model_executable = model_executable + ['']
+        
+    import importlib
+    model_handlers = {}
+    for model in models:
+        try:   
+            model_handling_module = importlib.import_module("model_handling_" + model[0:4])
+            model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
+        except:
+            print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
+            pass # TODO pass has to be replaced by exit when models have a handler     
 
     # Loop over the models to find out how many threads they will need
     for i, model in enumerate(models):
@@ -86,13 +86,10 @@ def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
             if mythreads==0:
                 print('Could not determine number of threads for model ',model)
                 
-        if model[0:5]=='MOM5_': #TODO remove if condition when all models have handlers
+        if model[0:5]=='MOM5_' or model=='flux_calculator': #TODO remove if condition when all models have handlers
             myexecutable = model_handlers[model].get_model_executable()
             mythreads = model_handlers[model].get_num_threads()
             
-        if model=='flux_calculator':
-            mythreads = len(models)-2
-            myexecutable = 'flux_calculator'
         # fill in the number of threads and executable names into the list
         model_threads[i]=mythreads
         model_executable[i]=myexecutable

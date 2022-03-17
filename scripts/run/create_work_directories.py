@@ -13,7 +13,6 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
                             create_links_only,       # True if links are sufficient or False if files shall be copied
                             start_date,              # 'YYYYMMDD'
                             end_date,                # 'YYYYMMDD'
-                            model_handlers,
                             debug_mode = False,      # False if executables compiled for production mode shall be used, 
                                                      # True if executables compiled for debug mode shall be used
                             which_model='',          # Create work directory for a single model only. Empty string '' means all models
@@ -22,6 +21,9 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
 
     # Read global options file
     exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(), globals())# read in function change_in_namelist
+    # TODO: exec command to be removed at some point and completely replaced by
+    from parse_global_settings import GlobalSettings
+    global_settings = GlobalSettings(IOW_ESM_ROOT)
 
     # Define the copy or link function
     if create_links_only:
@@ -45,6 +47,17 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
     # we possibly need flux_calculator as additional model if we run a coupled simulation
     if flux_calculator_mode=='single_core_per_bottom_model' and coupled:
         models = models + ['flux_calculator']    
+
+    # import model handling modules
+    import importlib
+    model_handlers = {}
+    for model in models:
+        try:   
+            model_handling_module = importlib.import_module("model_handling_" + model[0:4])
+            model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
+        except:
+            print("No handler has been found for model " + model + ". Add a module model_handling_" + model[0:4] + ".py")
+            pass # TODO pass has to be replaced by exit when models have a handler 
 
     # Loop over the models
     for model in models:
@@ -156,18 +169,13 @@ def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
             os.symlink(global_workdir_base+'/grids.nc',work_dir+'/grids.nc')
             os.symlink(global_workdir_base+'/masks.nc',work_dir+'/masks.nc')
             
-            if model[0:5]=='MOM5_': #TODO remove if condition when all models have handlers
+            if model[0:5]=='MOM5_' or model=='flux_calculator': #TODO remove if condition when all models have handlers
                 model_handlers[model].create_work_directory(work_directory_root, start_date, end_date)
 
             # STEP 7: Do model-dependent tasks such as copying the executable or putting dates into namelists
             if model[0:5]=='CCLM_':
                 exec(open('create_work_directory_CCLM.py').read(),globals()) # read in function create_work_directory_CCLM      
                 create_work_directory_CCLM(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
-                                           coupling_time_step,run_name,debug_mode)
-                
-            if model=='flux_calculator':
-                exec(open('create_work_directory_flux_calculator.py').read(),globals()) # read in function create_work_directory_MOM5                      
-                create_work_directory_flux_calculator(IOW_ESM_ROOT,work_directory_root,model,str(start_date),str(end_date),str(init_date),
                                            coupling_time_step,run_name,debug_mode)
                                            
             if model[0:5]=='I2LM_':
