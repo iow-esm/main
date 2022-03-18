@@ -16,7 +16,9 @@ if (mydir[-16:] != '/scripts/prepare'):
 IOW_ESM_ROOT = mydir[0:-16]
 
 # read global settings
-exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
+sys.path.append(IOW_ESM_ROOT + "/scripts/run")
+from parse_global_settings import GlobalSettings
+global_settings = GlobalSettings(IOW_ESM_ROOT)
 
 # call get_parallelization_layout
 from get_parallelization_layout import get_parallelization_layout
@@ -26,7 +28,7 @@ parallelization_layout = get_parallelization_layout(IOW_ESM_ROOT)
 file_name = IOW_ESM_ROOT+'/scripts/run/jobscript'
 if os.path.islink(file_name):
     os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
-shutil.copyfile(IOW_ESM_ROOT+'/'+jobscript_template, file_name)
+shutil.copyfile(IOW_ESM_ROOT+'/'+global_settings.jobscript_template, file_name)
 
 # replace the wildcards
 #read input file
@@ -36,7 +38,7 @@ data = fin.read()
 #replace all occurrences of the required string
 data = data.replace('_CORES_', str(parallelization_layout['total_cores']))
 data = data.replace('_NODES_', str(parallelization_layout['total_nodes']))
-data = data.replace('_CORESPERNODE_', str(cores_per_node))
+data = data.replace('_CORESPERNODE_', str(global_settings.cores_per_node))
 #close the input file
 fin.close()
 #open the input file in write mode

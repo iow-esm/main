@@ -9,10 +9,7 @@ import sys
 def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
 
     # Read global options file
-    exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(), globals())# read in global options
-    
     sys.path.append(IOW_ESM_ROOT + "/scripts/run")
-    # TODO: exec command to be removed at some point and completely replaced by
     from parse_global_settings import GlobalSettings
     global_settings = GlobalSettings(IOW_ESM_ROOT)   
    
@@ -38,7 +35,7 @@ def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
     # get total number of threads and nodes
     total_threads = sum(model_threads)
     total_cores = total_threads                        # simple layout, one thread per core, may change later
-    total_nodes = math.ceil(total_threads / cores_per_node) # total number of nodes needed
+    total_nodes = math.ceil(total_threads / global_settings.cores_per_node) # total number of nodes needed
 
     # now generate a list for every thread which gives its core, node and model, 
     # and states whether it is the first thread of this model on its node or the first task of this model in total
@@ -56,7 +53,7 @@ def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
         while model_i >= model_threads[model_num]:
             model_i = 0
             model_num = model_num + 1
-        while node_i >= cores_per_node:
+        while node_i >= global_settings.cores_per_node:
             node_i = 0
             node_num = node_num + 1
         this_thread[i] = i
