@@ -70,6 +70,10 @@ class ModelHandlerBase:
         self.my_directory = my_directory                    # name of model's input folder
         self.model_type = model_type                        # one of the ModelTypes
         
+        # TODO: this should become a list with available grids, e.g. 
+        # self.grids = ["t_grid", "u_grid", "v_grid"] or
+        # self.grids = ["t_grid"]
+        
     def create_work_directory(self, work_directory_root, start_date, end_date):
         pass
         
