@@ -5,6 +5,11 @@ def check_for_hotstart_folders(global_settings, models):
     # find out what is the latest date of each model's hotstart
     last_complete_hotstart_date = -1000
     for model in models:
+    
+        # so far no hotstart files for flux_calculator
+        if model == 'flux_calculator':
+            continue
+            
         my_hotstart_dir = global_settings.root_dir+'/hotstart/'+global_settings.run_name+'/'+model
         # if hotstart dir does not exist yet, create it
         if (not os.path.isdir(my_hotstart_dir)):
@@ -26,6 +31,11 @@ def check_for_hotstart_folders(global_settings, models):
 
     # delete all those output and hotstart files after the last common (=successful) hotstart
     for model in models:
+    
+        # so far no hotstart files for flux_calculator
+        if model == 'flux_calculator':
+            continue
+            
         my_hotstart_dir = global_settings.root_dir+'/hotstart/'+global_settings.run_name+'/'+model
         my_hotstart_dates = [d for d in os.listdir(my_hotstart_dir) if os.path.isdir(os.path.join(my_hotstart_dir,d))]
         my_hotstart_dates = [int(i) for i in my_hotstart_dates]
