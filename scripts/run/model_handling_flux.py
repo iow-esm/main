@@ -45,10 +45,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
         st = os.stat(destfile)                 # get current permissions
         os.chmod(destfile, st.st_mode | 0o777) # add a+rwx permission
 
-        # STEP 2: Read global options file
-        exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read())
-
-        # STEP 3: calculate number of timesteps
+        # STEP 2: calculate number of timesteps
         my_startdate = datetime.strptime(start_date,'%Y%m%d')
         my_enddate = datetime.strptime(end_date,'%Y%m%d')
         my_initdate = datetime.strptime(init_date,'%Y%m%d')
@@ -57,7 +54,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
         runseconds = int(rundays)*24*3600
         timesteps = runseconds//coupling_time_step
 
-        # STEP 4: copy flux_calculator.nml file and change timestep and number of time steps
+        # STEP 3: copy flux_calculator.nml file and change timestep and number of time steps
         os.system('cp '+IOW_ESM_ROOT+'/input/flux_calculator.nml '+full_directory+'/flux_calculator.nml')
         
         change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
@@ -67,7 +64,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
                          after='&input', before='/', start_of_line='num_timesteps',
                          new_value = '='+str(timesteps))
         
-        # STEP 5: Create an empty folder named "mappings" and place exchange grid files and mapping files there
+        # STEP 4: Create an empty folder named "mappings" and place exchange grid files and mapping files there
         os.makedirs(full_directory+'/mappings') 
         os.system('cp '+IOW_ESM_ROOT+'/input/CCLM*/mappings/?_grid_exchangegrid.nc '+full_directory+'/mappings')
         os.system('cp '+IOW_ESM_ROOT+'/input/*/mappings/remap_*.nc '+full_directory+'/mappings')

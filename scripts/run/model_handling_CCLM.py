@@ -52,10 +52,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
         st = os.stat(destfile)                 # get current permissions
         os.chmod(destfile, st.st_mode | 0o777) # add a+rwx permission
 
-        # STEP 2: Read global options file
-        exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read())
-
-        # STEP 3: Adjust times in INPUT_IO
+        # STEP 2: Adjust times in INPUT_IO
         my_startdate = datetime.strptime(start_date,'%Y%m%d')
         my_enddate = datetime.strptime(end_date,'%Y%m%d')
         my_initdate = datetime.strptime(init_date,'%Y%m%d')
@@ -78,7 +75,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
                          after='&OASISCTL', before='/END', start_of_line='dt_cp',
                          new_value = ' = '+str(coupling_time_step))             
 
-        # STEP 5: Copy hotstart files if a corresponding folder exists
+        # STEP 3: Copy hotstart files if a corresponding folder exists
         if (start_date != init_date):
             hotstart_folder = IOW_ESM_ROOT + '/hotstart/' + run_name + '/' + my_directory + '/' + start_date
             os.system('cp '+hotstart_folder+'/* '+full_directory+'/')        # copy all hotstart files 
@@ -89,7 +86,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
             else:
                 os.system('ln -s ' + full_directory + '/OBC/laf' + init_date + '00.nc ' + full_directory + '/')
             
-        # STEP 6: Store some information on the run
+        # STEP 4: Store some information on the run
         info_file_name = full_directory + "/RUN_INFO"
         with open(info_file_name, 'w') as file:
             file.write(get_run_information.get_run_information(IOW_ESM_ROOT, debug_mode))
