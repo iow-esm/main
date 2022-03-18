@@ -22,8 +22,6 @@ time.sleep(5.0)
 ###################################
 # STEP 1: Read in global settings #
 ###################################
-exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
-# TODO: exec command to be removed at some point and completely replaced by
 from parse_global_settings import GlobalSettings
 global_settings = GlobalSettings(IOW_ESM_ROOT)
 
@@ -37,7 +35,7 @@ layout = get_parallelization_layout(IOW_ESM_ROOT)
 ###########################################################################
 # STEP 3: Find out my own thread number and which model I will be running #
 ###########################################################################
-exec(python_get_rank, globals()) # the expression python_get_rank is defined in global_settings.py
+exec(global_settings.python_get_rank, globals()) # the expression python_get_rank is defined in global_settings.py
 my_model = layout['this_model'][int(my_id)]
 
 ######################################################################################
@@ -60,7 +58,7 @@ firstinnode = layout['this_firstinnode'] # only create the directory if I am the
 if firstinnode[my_id]: 
     create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
                                                     local_workdir_base,    # /path/to/work/directory for all models
-                                                    link_files_to_workdir, # True if links are sufficient or False if files shall be copied
+                                                    global_settings.link_files_to_workdir, # True if links are sufficient or False if files shall be copied
                                                     str(start_date),       # 'YYYYMMDD'
                                                     str(end_date),         # 'YYYYMMDD'
                                                     model_handler,         # pass the model handler for this process

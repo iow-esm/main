@@ -55,10 +55,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
         st = os.stat(destfile)                 # get current permissions
         os.chmod(destfile, st.st_mode | 0o777) # add a+rwx permission
 
-        # STEP 2: Read global options file
-        #exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read())
-
-        # STEP 3: Adjust INPUT with global settings
+        # STEP 2: Adjust INPUT with global settings
         my_startdate = datetime.strptime(start_date,'%Y%m%d')
         my_enddate = datetime.strptime(end_date,'%Y%m%d')
         my_initdate = datetime.strptime(init_date,'%Y%m%d')
@@ -85,7 +82,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
                          after='&DATA', before='/END', start_of_line='yncglob_institution',
                          new_value = '=\''+institution+'\',')
         
-        # STEP 2: Read local options file
+        # STEP 3: Read local options file
         exec(open(full_directory  + '/local_settings.py').read(), globals())
         
         change_in_namelist.change_in_namelist(filename=full_directory+'/INPUT',

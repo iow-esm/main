@@ -11,6 +11,8 @@ class GlobalSettings:
             setattr(self, variable, ldict[variable]) 
             
         # TODO test if all non-optional variables are set
+        
+        # TODO set optional arguments to their default here
             
         # memorize the root directory as a part of the global_settings
         self.root_dir = root_dir 
