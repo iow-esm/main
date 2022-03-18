@@ -25,6 +25,9 @@ time.sleep(5.0)
 # STEP 1: Read in global settings #
 ###################################
 exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
+# TODO: exec command to be removed at some point and completely replaced by
+from parse_global_settings import GlobalSettings
+global_settings = GlobalSettings(IOW_ESM_ROOT)
 
 ###############################################
 # STEP 2: Find out the parallelization layout #
@@ -47,6 +50,10 @@ attempt = os.environ["IOW_ESM_ATTEMPT"]
 local_workdir_base = os.environ["IOW_ESM_LOCAL_WORKDIR_BASE"]
 global_workdir_base = os.environ["IOW_ESM_GLOBAL_WORKDIR_BASE"]
 
+# get the model handler for this process
+from model_handling import get_model_handler
+model_handler = get_model_handler(global_settings, my_model)
+
 ###############################################################
 # STEP 5: Create my model's work directory on the local node. #
 ###############################################################
@@ -57,9 +64,7 @@ if firstinnode[my_id]:
                                                     link_files_to_workdir, # True if links are sufficient or False if files shall be copied
                                                     str(start_date),       # 'YYYYMMDD'
                                                     str(end_date),         # 'YYYYMMDD'
-                                                    debug_mode,            # False if executables compiled for production mode shall be used, 
-                                                                           # True if executables compiled for debug mode shall be used
-                                                    my_model,              # create workdir for my model only
+                                                    model_handler,         # pass the model handler for this process
                                                     global_workdir_base)   # we need the global path also because we put some files there
 
     # create an empty file "finished_creating_workdir.txt" that tells other tasks that they may start now

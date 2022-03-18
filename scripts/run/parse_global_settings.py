@@ -12,11 +12,5 @@ class GlobalSettings:
             
         # TODO test if all non-optional variables are set
             
+        # memorize the root directory as a part of the global_settings
         self.root_dir = root_dir 
-        
-        if self.workdir_base[0]=='/': 
-            # workdir_base gives absolute path, just use it
-            self.work_directory_root = self.workdir_base
-        else:
-            # workdir_base gives relative path to IOW_ESM_ROOT
-            self.work_directory_root = self.root_dir + '/' + self.workdir_base

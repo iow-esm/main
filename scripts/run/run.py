@@ -42,6 +42,10 @@ global_settings = GlobalSettings(IOW_ESM_ROOT)
 # get a list of all subdirectories in "input" folder -> these are the models
 model_handlers = get_model_handlers(global_settings)
 models = model_handlers.keys()
+
+print("Found the following models:")
+for model in models:
+    print(" " + model + ", type: " + model_handlers[model].model_type)
       
 # find out what is the latest date of each model's hotstart
 last_complete_hotstart_date = -1000
@@ -177,14 +181,13 @@ for run in range(runs_per_job):
         create_namcouple.create_namcouple(IOW_ESM_ROOT, work_directory_root, start_date, end_date, init_date, coupling_time_step, run_name, debug_mode)       
 
     if local_workdir_base=='':  # workdir is global, so create the directories here
-        create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
+        for model in models:
+            create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
                                                         work_directory_root,   # /path/to/work/directory for all models
                                                         link_files_to_workdir, # True if links are sufficient or False if files shall be copied
                                                         str(start_date),       # 'YYYYMMDD'
                                                         str(end_date),         # 'YYYYMMDD'                                       
-                                                        debug_mode,            # False if executables compiled for production mode shall be used, 
-                                                                               # True if executables compiled for debug mode shall be used
-                                                        '')                    # create workdir for all models
+                                                        model_handlers[model]) # create workdir for all models
 
     # GET NUMBER OF CORES AND NODES
     exec(open(IOW_ESM_ROOT+'/scripts/prepare/get_parallelization_layout.py').read(),globals())
