@@ -8,22 +8,19 @@ import time
 
 import change_in_namelist
 
-from model_handling import get_model_handlers
 
-def create_work_directories(IOW_ESM_ROOT,            # root directory of IOW ESM
+def create_work_directories(global_settings,            # global_settings
                             work_directory_root,     # /path/to/work/directory for all models
-                            create_links_only,       # True if links are sufficient or False if files shall be copied
                             start_date,              # 'YYYYMMDD'
                             end_date,                # 'YYYYMMDD'
                             model_handler,           # model handler which implements the model specific steps for creating the workdir
                             global_workdir_base=''): # in case we create a local work directory, we still need the global one for sharing files
-
-
-    # Read global options file
-    exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(), globals())# read in function change_in_namelist
+    
+    # STEP 0: get local parameters from global settings
+    IOW_ESM_ROOT        = global_settings.root_dir              # root directory of IOW ESM
 
     # Define the copy or link function
-    if create_links_only:
+    if global_settings.link_files_to_workdir:
         def copyfunc(src,dst):
             return os.symlink(src,dst)
     else:

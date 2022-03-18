@@ -56,9 +56,8 @@ model_handler = get_model_handler(global_settings, my_model)
 ###############################################################
 firstinnode = layout['this_firstinnode'] # only create the directory if I am the first thread of this model on my node
 if firstinnode[my_id]: 
-    create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
+    create_work_directories.create_work_directories(global_settings,          # global_settings object
                                                     local_workdir_base,    # /path/to/work/directory for all models
-                                                    global_settings.link_files_to_workdir, # True if links are sufficient or False if files shall be copied
                                                     str(start_date),       # 'YYYYMMDD'
                                                     str(end_date),         # 'YYYYMMDD'
                                                     model_handler,         # pass the model handler for this process
