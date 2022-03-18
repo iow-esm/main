@@ -63,7 +63,11 @@ print('Starting the IOW_ESM job at '+str(start_date), flush=True)
 ########################################################################
 
 for run in range(runs_per_job):
-    # CALCULATE END DATE OF THIS RUN
+
+    ########################################################################
+    # STEP 2a: CALCULATE END DATE OF THIS RUN                              #
+    ########################################################################
+ 
     # determine length and unit of run from given string (e.g. "10 days")
     run_length = run_duration.split(' ') # e.g. '10 days' to ['10', 'days']
     run_units = run_length[1]
@@ -86,14 +90,18 @@ for run in range(runs_per_job):
             print('IOW_ESM job finished integration to final date '+final_date)
             sys.exit()
     
+    
+    ########################################################################
+    # STEP 2b: ATTEMPT HANDLING: PREPARATION                               #
+    ########################################################################
+    
     # check if attempt handler has been set in global_settings
     try: 
         attempt_handler
     # if not take the default
     except:
         attempt_handler = None
-        
-    # ATTEMPT HANDLING: PREPARATION
+
     if attempt_handler is not None:
         # get the next attempt to try (last attempt is stored in a file)
         # use AttemptIterator object for this
@@ -116,7 +124,11 @@ for run in range(runs_per_job):
     
     print('Starting IOW_ESM run from '+str(start_date)+' to '+str(end_date)+' - attempt '+str(attempt), flush=True)
 
-    # PREPARE THE WORK DIRECORIES IF THEY ARE GLOBAL
+
+    ########################################################################
+    # STEP 2c: PREPARE THE GLOBAL WORK DIRECORIES                          #
+    ########################################################################
+
     if workdir_base[0]=='/': 
         # workdir_base gives absolute path, just use it
         work_directory_root = workdir_base
@@ -129,29 +141,30 @@ for run in range(runs_per_job):
     os.system('sync')
     os.makedirs(work_directory_root)              # create empty work directory      
     
-            # Check if the namcouple file should be generated automatically by the flux_calculator
+    
+    ########################################################################
+    # STEP 2d: GENERATE A NAMCOUPLE FILE (IF WANTED)                       #
+    ########################################################################
+    
+    # Check if the namcouple file should be generated automatically by the flux_calculator
     try: 
-        namcouple = generate_namcouple
+        generate_namcouple
     except:
-        namcouple = False
+        generate_namcouple = False
 
-    if namcouple:
+    if generate_namcouple:
         create_namcouple.create_namcouple(IOW_ESM_ROOT, work_directory_root, start_date, end_date, init_date, coupling_time_step, run_name, debug_mode)       
 
-    if local_workdir_base=='':  # workdir is global, so create the directories here
-        for model in models:
-            create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
-                                                        work_directory_root,   # /path/to/work/directory for all models
-                                                        link_files_to_workdir, # True if links are sufficient or False if files shall be copied
-                                                        str(start_date),       # 'YYYYMMDD'
-                                                        str(end_date),         # 'YYYYMMDD'                                       
-                                                        model_handlers[model]) # create workdir for all models
 
+    ########################################################################
+    # STEP 2e: PREPARE THE INDIVIDUAL WORK DIRECTORIES                     #
+    ########################################################################
+    
     # GET NUMBER OF CORES AND NODES
     exec(open(IOW_ESM_ROOT+'/scripts/prepare/get_parallelization_layout.py').read(),globals())
     parallelization_layout = get_parallelization_layout(IOW_ESM_ROOT)        
 
-    # CREATE BATCH SCRIPTS FOR EACH MODEL TO GO TO THEIR INDIVIDUAL WORK DIRECTORIES AND RUN FROM THERE
+    # CREATE WORK DIRECTORIES AND BATCH SCRIPTS FOR EACH MODEL TO GO TO THEIR INDIVIDUAL WORK DIRECTORIES AND RUN FROM THERE
     model_threads = parallelization_layout['model_threads']
     model_executable = parallelization_layout['model_executable']
     for i,model in enumerate(models):
@@ -161,6 +174,13 @@ for run in range(runs_per_job):
         shellscript = open(file_name, 'w')
         shellscript.writelines('#!/bin/bash\n')
         if (local_workdir_base==''):
+            # workdir is global, so create the directories here
+            create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
+                                                work_directory_root,   # /path/to/work/directory for all models
+                                                link_files_to_workdir, # True if links are sufficient or False if files shall be copied
+                                                str(start_date),       # 'YYYYMMDD'
+                                                str(end_date),         # 'YYYYMMDD'                                       
+                                                model_handlers[model]) # create workdir for all models
             shellscript.writelines('cd '+work_directory_root+'/'+model+'\n')
         else:
             shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
@@ -180,6 +200,11 @@ for run in range(runs_per_job):
         st = os.stat(file_name)                 # get current permissions
         os.chmod(file_name, st.st_mode | 0o777) # add a+rwx permission
     
+    
+    ########################################################################
+    # STEP 2f: DO THE WORK                                                 #
+    ########################################################################
+    
     # WRITE mpirun APPLICATION FILE FOR THE MPMD JOB (specify how many tasks of which model are started)
     file_name = 'mpmd_file'
     if os.path.islink(file_name):
@@ -196,9 +221,13 @@ for run in range(runs_per_job):
     print('  starting model task with command: '+full_mpi_run_command, flush=True)
     os.system(full_mpi_run_command)
     print('  ... model task finished.', flush=True)
+    
+    
+    ########################################################################
+    # STEP 2g: CHECK FOR FAILURE                                           #
+    ########################################################################    
             
-    # DO THE LOCAL POSTPROCESSING STEP 1: POSSIBLY COPY LOCAL WORKDIRS TO THE GLOBAL ONE AND CHECK WHETHER THE JOB FAILED
-    # CHECK IF THE RUN FAILED
+    # CHECK IF THE RUN FAILED GLOBALLY
     if (local_workdir_base==''):
         for model in models:
             if not model_handlers[model].check_for_success(work_directory_root, start_date, end_date):
@@ -206,7 +235,7 @@ for run in range(runs_per_job):
                 failfile.writelines('Model '+model+' failed and did not reach the end date '+str(end_date)+'\n')
                 failfile.close()
     else:
-        # DO THE LOCAL POSTPROCESSING STEP 1: POSSIBLY COPY LOCAL WORKDIRS TO THE GLOBAL ONE AND CHECK WHETHER THE JOB FAILED
+        # CHECK IF THE RUN FAILED LOCALLY AND COPY LOCAL WORKDIRS TO THE GLOBAL ONE
         file_name = 'run_after1.sh'
         if os.path.islink(file_name):
             os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
@@ -239,7 +268,11 @@ for run in range(runs_per_job):
         print('IOW_ESM job finally failed integration from '+str(start_date)+' to '+str(end_date))
         sys.exit()
        
-    # ATTEMPT HANDLING: EVALUATION       
+       
+    ########################################################################
+    # STEP 2h: ATTEMPT HANDLING: EVALUATION                                #
+    ########################################################################  
+       
     # if we have attempt handling, we have more options
     if attempt_handler is not None:
     
@@ -270,12 +303,20 @@ for run in range(runs_per_job):
                 
     print('  attempt '+str(attempt)+' succeeded.', flush=True)
 
-    # MOVE OUTPUT AND RESTARTS TO THE CORRESPONDING FOLDERS
+
+    ########################################################################
+    # STEP 2i: MOVE OUTPUT AND RESTARTS TO THE CORRESPONDING FOLDERS       #
+    ######################################################################## 
+
     # move files from global workdir
     for model in models: 
         model_handlers[model].move_results(work_directory_root, start_date, end_date)
 
-    # PROCEED TO NEXT RUN
+
+    ########################################################################
+    # STEP 2j: PROCEED TO NEXT RUN                                         #
+    ######################################################################## 
+
     start_date = end_date
     # but wait until hotstart files are copied
     time.sleep(5.0)    
