@@ -66,9 +66,10 @@ class ModelHandler(model_handling.ModelHandlerBase):
         
         # STEP 4: Create an empty folder named "mappings" and place exchange grid files and mapping files there
         os.makedirs(full_directory+'/mappings') 
-        os.system('cp '+IOW_ESM_ROOT+'/input/CCLM*/mappings/?_grid_exchangegrid.nc '+full_directory+'/mappings')
-        os.system('cp '+IOW_ESM_ROOT+'/input/*/mappings/remap_*.nc '+full_directory+'/mappings')
-        os.system('cp '+IOW_ESM_ROOT+'/input/CCLM*/mappings/regrid_*.nc '+full_directory+'/mappings')
+        for mapping_dir in glob.glob(IOW_ESM_ROOT+'/input/*/mappings'):
+            os.system('cp '+ mapping_dir +'/?_grid_exchangegrid.nc '+full_directory+'/mappings')
+            os.system('cp '+ mapping_dir +'/remap_*.nc '+full_directory+'/mappings')
+            os.system('cp '+ mapping_dir +'/regrid_*.nc '+full_directory+'/mappings')
 
         return
         
