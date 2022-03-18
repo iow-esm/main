@@ -20,8 +20,6 @@ import hotstart_handling
 
 from parse_global_settings import GlobalSettings
 
-
-
 ##################################
 # STEP 0: Get the root directory #
 ##################################
@@ -44,9 +42,6 @@ from get_parallelization_layout import get_parallelization_layout
 ################################################################################################################################
 
 # read in global settings
-exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
-# TODO: exec command to be removed at some point and completely replaced by
-
 global_settings = GlobalSettings(IOW_ESM_ROOT)
 
 # get a list of all subdirectories in "input" folder -> these are the models
@@ -70,14 +65,14 @@ print('Starting the IOW_ESM job at '+str(start_date), flush=True)
 # STEP 2: Do several runs (with possibly several attempts) in this job #
 ########################################################################
 
-for run in range(runs_per_job):
+for run in range(global_settings.runs_per_job):
 
     ########################################################################
     # STEP 2a: CALCULATE END DATE OF THIS RUN                              #
     ########################################################################
  
     # determine length and unit of run from given string (e.g. "10 days")
-    run_length = run_duration.split(' ') # e.g. '10 days' to ['10', 'days']
+    run_length = global_settings.run_duration.split(' ') # e.g. '10 days' to ['10', 'days']
     run_units = run_length[1]
     run_length = int(run_length[0])
     # add this difference to the start_date
@@ -91,11 +86,11 @@ for run in range(runs_per_job):
     end_date = int(datetime.strftime(end_datetime, '%Y%m%d'))
 
     # check whether we exceed the final date
-    if int(init_date) < int(final_date):   # otherwise integrate until model crashes
-        if int(end_date) > int(final_date):
-            end_date = final_date
-        if int(start_date) >= int(final_date):
-            print('IOW_ESM job finished integration to final date '+final_date)
+    if int(global_settings.init_date) < int(global_settings.final_date):   # otherwise integrate until model crashes
+        if int(end_date) > int(global_settings.final_date):
+            end_date = global_settings.final_date
+        if int(start_date) >= int(global_settings.final_date):
+            print('IOW_ESM job finished integration to final date '+global_settings.final_date)
             sys.exit()
     
     
@@ -137,12 +132,12 @@ for run in range(runs_per_job):
     # STEP 2c: PREPARE THE GLOBAL WORK DIRECORIES                          #
     ########################################################################
 
-    if workdir_base[0]=='/': 
+    if global_settings.workdir_base[0]=='/': 
         # workdir_base gives absolute path, just use it
-        work_directory_root = workdir_base
+        work_directory_root = global_settings.workdir_base
     else:
         # workdir_base gives relative path to IOW_ESM_ROOT
-        work_directory_root = IOW_ESM_ROOT+'/'+workdir_base
+        work_directory_root = IOW_ESM_ROOT+'/'+global_settings.workdir_base
 
     if os.path.isdir(work_directory_root):
         os.system('rm -rf '+work_directory_root)  # if workdir exists already, delete it
@@ -156,12 +151,12 @@ for run in range(runs_per_job):
     
     # Check if the namcouple file should be generated automatically by the flux_calculator
     try: 
-        generate_namcouple
+        generate_namcouple = global_settings.generate_namcouple
     except:
         generate_namcouple = False
 
     if generate_namcouple:
-        create_namcouple.create_namcouple(IOW_ESM_ROOT, work_directory_root, start_date, end_date, init_date, coupling_time_step, run_name, debug_mode)       
+        create_namcouple.create_namcouple(global_settings, work_directory_root, start_date, end_date)       
 
 
     ########################################################################
@@ -180,11 +175,11 @@ for run in range(runs_per_job):
             os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
         shellscript = open(file_name, 'w')
         shellscript.writelines('#!/bin/bash\n')
-        if (local_workdir_base==''):
+        if (global_settings.local_workdir_base==''):
             # workdir is global, so create the directories here
             create_work_directories.create_work_directories(IOW_ESM_ROOT,          # root directory of IOW ESM
                                                 work_directory_root,   # /path/to/work/directory for all models
-                                                link_files_to_workdir, # True if links are sufficient or False if files shall be copied
+                                                global_settings.link_files_to_workdir, # True if links are sufficient or False if files shall be copied
                                                 str(start_date),       # 'YYYYMMDD'
                                                 str(end_date),         # 'YYYYMMDD'                                       
                                                 model_handlers[model]) # create workdir for all models
@@ -193,15 +188,15 @@ for run in range(runs_per_job):
             shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
             shellscript.writelines('export IOW_ESM_END_DATE='+str(end_date)+'\n')
             shellscript.writelines('export IOW_ESM_ATTEMPT='+str(attempt)+'\n')
-            shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+local_workdir_base+'\n')
+            shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base+'\n')
             shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+work_directory_root+'\n')
             shellscript.writelines('python3 mpi_task_before.py\n')
-            shellscript.writelines('until [ -f '+local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ]\n')
+            shellscript.writelines('until [ -f '+global_settings.local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ]\n')
             shellscript.writelines('do\n')
             shellscript.writelines('     sleep 1\n')
             shellscript.writelines('done\n')
-            shellscript.writelines('cd '+local_workdir_base+'/'+model+'\n')
-        shellscript.writelines(bash_get_rank+'\n') # e.g. "my_id=${PMI_RANK}"
+            shellscript.writelines('cd '+global_settings.local_workdir_base+'/'+model+'\n')
+        shellscript.writelines(global_settings.bash_get_rank+'\n') # e.g. "my_id=${PMI_RANK}"
         shellscript.writelines('exec ./' + model_executable[i] + ' > logfile_${my_id}.txt 2>&1')
         shellscript.close()
         st = os.stat(file_name)                 # get current permissions
@@ -218,13 +213,13 @@ for run in range(runs_per_job):
         os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
     mpmd_file = open(file_name, 'w')
     for i,model in enumerate(models):
-        mpmd_file.writelines(mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
+        mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
     mpmd_file.close() 
 
     # START THE MPI JOBS
-    full_mpi_run_command = mpi_run_command.replace('_CORES_',str(parallelization_layout['total_cores']))
+    full_mpi_run_command = global_settings.mpi_run_command.replace('_CORES_',str(parallelization_layout['total_cores']))
     full_mpi_run_command = full_mpi_run_command.replace('_NODES_',str(parallelization_layout['total_nodes']))
-    full_mpi_run_command = full_mpi_run_command.replace('_CORESPERNODE_',str(cores_per_node))
+    full_mpi_run_command = full_mpi_run_command.replace('_CORESPERNODE_',str(global_settings.cores_per_node))
     print('  starting model task with command: '+full_mpi_run_command, flush=True)
     os.system(full_mpi_run_command)
     print('  ... model task finished.', flush=True)
@@ -235,7 +230,7 @@ for run in range(runs_per_job):
     ########################################################################    
             
     # CHECK IF THE RUN FAILED GLOBALLY
-    if (local_workdir_base==''):
+    if (global_settings.local_workdir_base==''):
         for model in models:
             if not model_handlers[model].check_for_success(work_directory_root, start_date, end_date):
                 failfile = open(work_directory_root+'/failed_'+model+'.txt', 'w')
@@ -247,7 +242,7 @@ for run in range(runs_per_job):
         if os.path.islink(file_name):
             os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
         shellscript = open(file_name, 'w')
-        shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+local_workdir_base+'\n')
+        shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base+'\n')
         shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+work_directory_root+'\n')
         shellscript.writelines('export IOW_ESM_END_DATE='+str(end_date)+'\n')
         shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
@@ -257,12 +252,12 @@ for run in range(runs_per_job):
         os.chmod(file_name, st.st_mode | 0o777) # add a+rwx permission
 
         mpmd_file = open('mpmd_file', 'w')
-        mpmd_file.writelines(mpi_n_flag+' '+str(parallelization_layout['total_threads'])+' ./run_after1.sh\n')
+        mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(parallelization_layout['total_threads'])+' ./run_after1.sh\n')
         mpmd_file.close()
 
-        full_mpi_run_command = mpi_run_command.replace('_CORES_',str(parallelization_layout['total_cores']))
+        full_mpi_run_command = global_settings.mpi_run_command.replace('_CORES_',str(parallelization_layout['total_cores']))
         full_mpi_run_command = full_mpi_run_command.replace('_NODES_',str(parallelization_layout['total_nodes']))
-        full_mpi_run_command = full_mpi_run_command.replace('_CORESPERNODE_',str(cores_per_node))
+        full_mpi_run_command = full_mpi_run_command.replace('_CORESPERNODE_',str(global_settings.cores_per_node))
         print('  starting after1 task ...', flush=True)
         os.system(full_mpi_run_command)
         print('  ... after1 task finished.', flush=True)
@@ -298,14 +293,14 @@ for run in range(runs_per_job):
                 
             # if not go on with next attempt if we have a resubmit command
             try:
-                resubmit_command
+                global_settings.resubmit_command
             except:
                 print('No command for resubmitting specified in global_settings.py. Abort.')
                 sys.exit()
                
             attempt_iterator.store_last_attempt(attempt)
             print('  attempt '+str(attempt)+' failed. Go on with next attempt.', flush=True)
-            os.system("cd " + IOW_ESM_ROOT + "/scripts/run; " + resubmit_command)
+            os.system("cd " + IOW_ESM_ROOT + "/scripts/run; " + global_settings.resubmit_command)
             sys.exit()
                 
     print('  attempt '+str(attempt)+' succeeded.', flush=True)
@@ -333,10 +328,10 @@ for run in range(runs_per_job):
 # STEP 3: JOB SUCCESSFULLY FINISHED - SUBMIT NEW JOB UNLESS FINAL DATE HAS BEEN REACHED #
 #########################################################################################
 
-if int(start_date) < int(final_date):
-    print('IOW_ESM job did not reach the final date ' +final_date + '. Resubmit a new job.')
+if int(start_date) < int(global_settings.final_date):
+    print('IOW_ESM job did not reach the final date ' +global_settings.final_date + '. Resubmit a new job.')
     try:
-        os.system("cd " + IOW_ESM_ROOT + "/scripts/run; " + resubmit_command)
+        os.system("cd " + IOW_ESM_ROOT + "/scripts/run; " + global_settings.resubmit_command)
     except:
         print('No command for resubmitting specified in global_settings.py. Abort.')
   

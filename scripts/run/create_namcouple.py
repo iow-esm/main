@@ -8,23 +8,12 @@ import shutil
 
 import model_handling_flux
 
-def create_namcouple(IOW_ESM_ROOT,        # root directory of IOW ESM
+def create_namcouple(global_settings,        # global_settings
                        work_directory_root, # /path/to/work/directory for all models
                        start_date,          # 'YYYYMMDD'
-                       end_date,            # 'YYYYMMDD'
-                       init_date,           # 'YYYYMMDD'
-                       coupling_time_step,  # in seconds
-                       runname,             # string
-                       debug_mode = False): # FALSE if executables compiled for production mode shall be used, 
-                                            # TRUE if executables compiled for debug mode shall be used
+                       end_date):            # 'YYYYMMDD' 
 
     print('Generating namcouple via flux_calculator...')
-    
-    # read in global settings
-    exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
-    # TODO: exec command to be removed at some point and completely replaced by
-    from parse_global_settings import GlobalSettings
-    global_settings = GlobalSettings(IOW_ESM_ROOT)
     
     work_dir = work_directory_root+'/flux_calculator'
     
@@ -43,13 +32,13 @@ def create_namcouple(IOW_ESM_ROOT,        # root directory of IOW ESM
     shellscript.close()
     st = os.stat(shellscript_name)                 # get current permissions
     os.chmod(shellscript_name, st.st_mode | 0o777) # add a+rwx permission
-    mpi_command = mpi_run_command.split(' ')[0]
+    mpi_command = global_settings.mpi_run_command.split(' ')[0]
     print('  create namcouple file with command: '+mpi_command, flush=True)
     # this creates namcouple in the flux_calculator work directory and copies it to the other directories
-    os.system(mpi_command + " " + mpi_n_flag + " 1 " + shellscript_name)
+    os.system(mpi_command + " " + global_settings.mpi_n_flag + " 1 " + shellscript_name)
     print('  ... creating namcouple finished ', flush=True)
     
-    destfile = IOW_ESM_ROOT+'/input/namcouple'
+    destfile = global_settings.root_dir+'/input/namcouple'
     sourcefile = work_dir+'/namcouple'
     
     print('  copy ' + sourcefile + ' to ' + destfile, flush=True)
