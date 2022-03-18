@@ -18,18 +18,26 @@ from model_handling import get_model_handlers
 
 import hotstart_handling
 
+from parse_global_settings import GlobalSettings
+
+
+
+##################################
+# STEP 0: Get the root directory #
+##################################
+
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
-fail = False
 if (mydir[-12:] != '/scripts/run'):
-    fail = True
-else:
-    IOW_ESM_ROOT = mydir[0:-12]
-
-if (fail):
     print('usage: python3 ./run.py')
     print('should be called from ${IOW_ESM_ROOT}/scripts/run')
     sys.exit()
+
+# if we started from scripts/run we know our root directory
+IOW_ESM_ROOT = mydir[0:-12]
+
+sys.path.append(IOW_ESM_ROOT + "/scripts/prepare")
+from get_parallelization_layout import get_parallelization_layout
 
 ################################################################################################################################
 # STEP 1: Find out which models we have, how far they have already run, and how far they will be integrated in the current job #
@@ -38,7 +46,7 @@ if (fail):
 # read in global settings
 exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
 # TODO: exec command to be removed at some point and completely replaced by
-from parse_global_settings import GlobalSettings
+
 global_settings = GlobalSettings(IOW_ESM_ROOT)
 
 # get a list of all subdirectories in "input" folder -> these are the models
@@ -161,7 +169,6 @@ for run in range(runs_per_job):
     ########################################################################
     
     # GET NUMBER OF CORES AND NODES
-    exec(open(IOW_ESM_ROOT+'/scripts/prepare/get_parallelization_layout.py').read(),globals())
     parallelization_layout = get_parallelization_layout(IOW_ESM_ROOT)        
 
     # CREATE WORK DIRECTORIES AND BATCH SCRIPTS FOR EACH MODEL TO GO TO THEIR INDIVIDUAL WORK DIRECTORIES AND RUN FROM THERE

@@ -12,16 +12,13 @@ import grid_create_maskfile_CCLM
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
-fail = False
 if (mydir[-16:] != '/scripts/prepare'):
-    fail = True
-else:
-    IOW_ESM_ROOT = mydir[0:-16]
-
-if (fail):
     print('usage: python3 ./create_mappings.py')
     print('should be called from ${IOW_ESM_ROOT}/scripts/prepare')
     sys.exit()
+
+# if we started from scripts/run we know our root directory
+IOW_ESM_ROOT = mydir[0:-16]
 
 #########################################################################################################
 # STEP 1a: Find out which models we have #

@@ -3,25 +3,23 @@
 
 import os
 import shutil
+import sys
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
-fail = False
 if (mydir[-16:] != '/scripts/prepare'):
-    fail = True
-else:
-    IOW_ESM_ROOT = mydir[0:-16]
-
-if (fail):
     print('usage: python3 ./create_jobscript.py')
     print('should be called from ${IOW_ESM_ROOT}/scripts/prepare')
     sys.exit()
+
+# if we started from scripts/run we know our root directory
+IOW_ESM_ROOT = mydir[0:-16]
 
 # read global settings
 exec(open(IOW_ESM_ROOT+'/input/global_settings.py').read(),globals())
 
 # call get_parallelization_layout
-exec(open(IOW_ESM_ROOT+'/scripts/prepare/get_parallelization_layout.py').read(),globals())
+from get_parallelization_layout import get_parallelization_layout
 parallelization_layout = get_parallelization_layout(IOW_ESM_ROOT)
 
 # copy template file

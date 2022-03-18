@@ -3,20 +3,18 @@
 
 import os
 import time
+import sys
 
 import create_work_directories
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
-fail = False
 if (mydir[-12:] != '/scripts/run'):
-    fail = True
-else:
-    IOW_ESM_ROOT = mydir[0:-12]
-
-if (fail):
     print('ERROR: mpi_task.py was started from outside the folder ${IOW_ESM_ROOT}/scripts/run')
     sys.exit()
+
+# if we started from scripts/run we know our root directory
+IOW_ESM_ROOT = mydir[0:-12]
 
 # wait five seconds for file system
 time.sleep(5.0)
@@ -32,7 +30,8 @@ global_settings = GlobalSettings(IOW_ESM_ROOT)
 ###############################################
 # STEP 2: Find out the parallelization layout #
 ###############################################
-exec(open(IOW_ESM_ROOT+'/scripts/prepare/get_parallelization_layout.py').read(),globals())
+sys.path.append(IOW_ESM_ROOT + "/scripts/prepare")
+from get_parallelization_layout import get_parallelization_layout
 layout = get_parallelization_layout(IOW_ESM_ROOT)
 
 ###########################################################################
