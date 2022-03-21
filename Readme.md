@@ -1,13 +1,106 @@
-# IOW Earth system model
+# Purpose, Description
 
-This is the main repository for the IOW earth system model (ESM) project.
-
-This Readme is intended to be a guide mainly for using the IOW ESM.
-Although some hints for development are also given here, the concrete implemetation details are given in the file `documentation/developers_documentation.pdf`.
-**!!!ATTENTION!!! The developer's documentation is under construction!**
+This is the main repository for the IOW earth system model (ESM) project. 
+This is the entry point for using and developing this model.
 
 Further information will follow.
 
+
+# Authors
+
+* SK      (sven.karsten@io-warnemuende.de)
+* HR      (hagen.radtke@io-warnemuende.de)
+
+
+# Versions
+
+## 1.01.00 (in preparation)
+
+| date        | author(s)   | link      |
+|---          |---          |---        |
+| 2022-03-21  | SK          | XXX       | 
+
+<details>
+
+### changes
+* worked on GUI
+  * added cancel button
+  * polished appearence
+* enabled attempt handling
+  * user can add own attempt hanlder with prepare and evaluate
+    attempt methods
+* intensive restructuring of run and prepare scripts
+  * most scripts are now model-independent
+  * model-dependent part is now restricted to one module
+    * such a model has to be added for a new model
+* worked on documentation 
+    
+### dependencies
+* bash, git, (python for GUI) 
+  
+### known issues
+* none
+
+### tested with
+* intensively tested on both HLRN machines
+  * using example setups available under:
+    (coupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+              MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                CCLM_Eurocordex/example_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                MOM5_Baltic/example_8nm/1.00.00 
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                I2LM_Eurocordex/example_0.22deg/1.00.00                              
+  * can be built and run on Haumea but output is not intensively tested
+  
+</details>
+
+
+## 1.00.00 (latest release)
+
+| date        | author(s)   | link      |
+|---          |---          |---        |
+| 2022-01-31  | SK, HR      | [1.00.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.00.00)  |  
+
+<details> 
+
+### changes
+* initial release
+  * scripts for running the model
+  * scripts for creating mapping files and exchange grid
+  * scripts for getting the sources and building them on target machines
+    * supported are `hlrng`, `hlrnb`, `haumea`, (`phy-2` not running here)
+  * scripts for deploying setups to a destiantion path
+  * examples for user configurations
+  * graphical user interface for running these scripts
+
+### dependencies
+* bash, git, (python for GUI) 
+
+### known issues
+* none
+
+### tested with
+* intensively tested on both HLRN machines
+  * using example setups available under:
+    (coupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+              MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                CCLM_Eurocordex/example_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                MOM5_Baltic/example_8nm/1.00.00 
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                I2LM_Eurocordex/example_0.22deg/1.00.00                              
+  * can be built and run on Haumea but output is not intensively tested
+
+</details>
+
+# Usage
+
+This part is intended to be a guide mainly for using the IOW ESM.
+Although some hints for development are also given here, the concrete implemetation details are given in the file `documentation/developers_documentation.pdf`.
+**!!!ATTENTION!!! The developer's documentation is under construction!**
 
 ## Prerequisites
 
