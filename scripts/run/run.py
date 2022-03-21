@@ -100,7 +100,7 @@ for run in range(global_settings.runs_per_job):
     
     # check if attempt handler has been set in global_settings
     try: 
-        attempt_handler
+        attempt_handler = global_settings.attempt_handler
     # if not take the default
     except:
         attempt_handler = None
