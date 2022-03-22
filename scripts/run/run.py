@@ -20,6 +20,8 @@ import hotstart_handling
 
 from parse_global_settings import GlobalSettings
 
+from inspect import signature
+
 ##################################
 # STEP 0: Get the root directory #
 ##################################
@@ -261,11 +263,11 @@ for run in range(global_settings.runs_per_job):
         os.system(full_mpi_run_command)
         print('  ... after1 task finished.', flush=True)
 
-    # see if files exist that indicate that the run failed
-    run_failed = bool(glob.glob(work_directory_root+'/fail*.txt'))
+    # see if files exist that indicate that the run crashed
+    crashed = bool(glob.glob(work_directory_root+'/fail*.txt'))
     
-    # if we have no attempt handling and the model failed we can only stop the entire job
-    if run_failed and (attempt_handler is None):
+    # if we have no attempt handling and the model crashed we can only stop the entire job
+    if crashed and (attempt_handler is None):
         print('IOW_ESM job finally failed integration from '+str(start_date)+' to '+str(end_date))
         sys.exit()
        
@@ -277,10 +279,18 @@ for run in range(global_settings.runs_per_job):
     # if we have attempt handling, we have more options
     if attempt_handler is not None:
     
-        # if model did not crash, it still might not pass the attempt's criterion
-        if not run_failed:
-            print("Model did not crash but still has to pass the evaluation for attempt " + str(attempt) + "...")
-            run_failed = not attempt_handler.evaluate_attempt(attempt)
+        # simple attempt handler: if model crashes, go automatically to next attempt
+        if len(signature(attempt_handler.evaluate_attempt).parameters) == 1:
+            if not crashed:
+                print("Model did not crash but still has to pass the evaluation for attempt " + str(attempt) + "...")
+                run_failed = not attempt_handler.evaluate_attempt(attempt) 
+            else:
+                run_failed = True
+        # this attempt handler may react differently to crashes
+        else:
+            print("Model has to pass the evaluation for attempt " + str(attempt) + "...")
+            # evaluate this attempt: react to crash and/or check attempt's criterion
+            run_failed = not attempt_handler.evaluate_attempt(attempt, crashed)
             
         # something went wrong: either model has crashed or the attempt has not passed the criterion
         if run_failed:
