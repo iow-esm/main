@@ -283,32 +283,37 @@ for run in range(global_settings.runs_per_job):
         if len(signature(attempt_handler.evaluate_attempt).parameters) == 1:
             if not crashed:
                 print("Model did not crash but still has to pass the evaluation for attempt " + str(attempt) + "...")
-                run_failed = not attempt_handler.evaluate_attempt(attempt) 
+                attempt_failed = not attempt_handler.evaluate_attempt(attempt) 
             else:
-                run_failed = True
+                attempt_failed = True
         # this attempt handler may react differently to crashes
         else:
             print("Model has to pass the evaluation for attempt " + str(attempt) + "...")
             # evaluate this attempt: react to crash and/or check attempt's criterion
-            run_failed = not attempt_handler.evaluate_attempt(attempt, crashed)
+            attempt_failed = not attempt_handler.evaluate_attempt(attempt, crashed)
             
-        # something went wrong: either model has crashed or the attempt has not passed the criterion
-        if run_failed:
+        # the attempt has not passed the criterion, iterate to next attempt
+        if attempt_failed:
         
             # if this was the final attempt, we stop here
             if attempt == attempt_handler.attempts[-1]:
                 print('IOW_ESM job finally failed integration from '+str(start_date)+' to '+str(end_date))
                 sys.exit()
                 
-            # if not go on with next attempt if we have a resubmit command
+            print('  attempt '+str(attempt)+' failed. Go on with next attempt.', flush=True)
+            attempt_iterator.store_last_attempt(attempt)
+            
+
+        # something went wrong: either model has crashed or the attempt has not passed the criterion   
+        if attempt_failed or crashed:
+            # in both cases we through away the work and start a new job
             try:
                 global_settings.resubmit_command
             except:
                 print('No command for resubmitting specified in global_settings.py. Abort.')
                 sys.exit()
-               
-            attempt_iterator.store_last_attempt(attempt)
-            print('  attempt '+str(attempt)+' failed. Go on with next attempt.', flush=True)
+            
+            print('Run failed '+str(attempt)+' failed. Try again.', flush=True)
             os.system("cd " + IOW_ESM_ROOT + "/scripts/run; " + global_settings.resubmit_command)
             sys.exit()
                 
