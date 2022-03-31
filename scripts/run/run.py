@@ -192,10 +192,17 @@ for run in range(global_settings.runs_per_job):
             shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base+'\n')
             shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+work_directory_root+'\n')
             shellscript.writelines('python3 mpi_task_before.py\n')
-            shellscript.writelines('until [ -f '+global_settings.local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ]\n')
+            shellscript.writelines('waited=0\n')                        # seconds counter for timeout
+            shellscript.writelines('timeout=60\n')                      # timeout is set to 60 seconds
+            shellscript.writelines('until [ -f '+global_settings.local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ] || [ $waited -eq $timeout ]\n')
             shellscript.writelines('do\n')
             shellscript.writelines('     sleep 1\n')
+            shellscript.writelines('     let "waited++"\n')
             shellscript.writelines('done\n')
+            shellscript.writelines('if [ $waited -eq $timeout ]; then\n') # if timeout has been reached, echo the error and stop the script
+            shellscript.writelines('    echo "Timeout while creating work directories for ' + model + ' has been reached. Abort."\n')
+            shellscript.writelines('    exit\n')
+            shellscript.writelines('fi\n')
             shellscript.writelines('cd '+global_settings.local_workdir_base+'/'+model+'\n')
         shellscript.writelines(global_settings.bash_get_rank+'\n') # e.g. "my_id=${PMI_RANK}"
         shellscript.writelines('exec ./' + model_executable[i] + ' > logfile_${my_id}.txt 2>&1')
