@@ -33,6 +33,8 @@ Further information will follow.
   * most scripts are now model-independent
   * model-dependent part is now restricted to one module
     * such a model has to be added for a new model
+* fixed:
+  * #19 Timeout for waiting for creating work directory, set to 60s
 * worked on documentation 
     
 ### dependencies
