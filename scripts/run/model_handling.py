@@ -2,7 +2,7 @@ import os
 import importlib
 import sys
 
-# possible model types
+
 class ModelTypes:
     """Available model types
     """
@@ -27,9 +27,22 @@ class ModelTypes:
     """Components, tools that are not coupled, as e.g. the int2lm tool.
     """
     
-# get a single model handler
+
 def get_model_handler(global_settings, model):
-    # argument model contains string "model_domain"
+    """Method to get a single model handler.
+    
+    This method imports the model-specific handling module `model_handling_ABCD.py`
+    where `ABCD` is a four letter acronym of the model.
+    
+    :param global_settings:         Object containing the global settings
+    :type global_settings:          class:`GlobalSettings` 
+    
+    :param model:                   Name of the model's input folder, usually model_domain, e.g. MOM5_Baltic. IMPORTANT: model names can only have four letters as e.g. MOM5, CCLM, GETM etc.
+    :type model:                    str
+                                    
+    :return:                        Specific model handler object
+    :rtype:                         class:`ModelHandler`      
+    """
     
     try:   
         # try to import the corresponding module
@@ -43,8 +56,20 @@ def get_model_handler(global_settings, model):
     
     return model_handler
 
-# function to get model handlers from directories found in input folder
+
 def get_model_handlers(global_settings):
+    """Method to get handlers for all models that have input folders.
+    
+    This method checks the input folder and creates model handler objects for found models. 
+    If there is one atmospheric model and at least one bottom model the run will be interpreted as a coupled run.
+    In that case the flux_calculator is added to the models.
+    
+    :param global_settings:         Object containing the global settings
+    :type global_settings:          class:`GlobalSettings` 
+                                    
+    :return:                        Dictionary of specific model handler objects. The keys of the dictionary are the names of the input folders
+    :rtype:                         dict    
+    """
     
     # get a list of input folders 
     models = [d for d in os.listdir(global_settings.root_dir+'/input/') if os.path.isdir(os.path.join(global_settings.root_dir+'/input/',d))]
@@ -80,17 +105,19 @@ def get_model_handlers(global_settings):
 
     return model_handlers
      
-# common base class (interface) for specific model handlers
+     
 class ModelHandlerBase:
     """Base class for all specific model handler.
     
     This constructor must be called in the constructor of the child class as e.g.
     `ModelHandlerBase.__init__(self, model_handling.ModelTypes.bottom, global_settings, my_directory)`
+    The child class must be implmented as `ModelHandler` in a python module called `model_handling_ABCD.py` 
+    where `ABCD` is a four letter acronym of your model.
     
     :param global_settings:         Object containing the global settings
     :type global_settings:          class:`GlobalSettings` 
     
-    :param my_directory:            Name of the model's input folder, usually model_domain, e.g. MOM5_Baltic. IMPORTANT: model names can only have for letters as e.g. MOM5, CCLM, GETM etc.
+    :param my_directory:            Name of the model's input folder, usually model_domain, e.g. MOM5_Baltic. IMPORTANT: model names can only have four letters as e.g. MOM5, CCLM, GETM etc.
     :type my_directory:             str
                                     
     :param model_type:              Must be one of attributes of class `ModelTypes`
@@ -131,7 +158,7 @@ class ModelHandlerBase:
         pass
         
     def check_for_success(self, work_directory_root, start_date, end_date):
-        """Method to if model run was successful or not.
+        """Method to check if model run was successful or not.
 
         This method is overwritten by the child class and will be called after 
         the MPI task has finished.
@@ -155,13 +182,53 @@ class ModelHandlerBase:
         return True
     
     def move_results(self, work_directory_root, start_date, end_date):
+        """Method to move results from work to output folder.
+
+        This method is overwritten by the child class and will be called after 
+        the check_for_success method has returned `True`.
+        
+        It should typically do:
+        
+        * Move all files you want to keep that are used or produced by your model.
+        
+        :param work_directory_root:     Is the local work directory common to all models, thus it is one lvel above my_directory
+        :type work_directory_root:      str
+        
+        :param start_date:              Start date of the current working period, format YYYYMMDD, e.g. 20220325 for the 25th of March 2022
+        :type start_date:               str 
+                                        
+        :param end_date:                End date of the current working period, format YYYYMMDD, e.g. 20220325 for the 25th of March 2022
+        :type end_date:                 str      
+        """     
         pass
     
     def grid_convert_to_SCRIP(self):
         pass
         
     def get_model_executable(self):
+        """Method to get the name of the model's excutable.
+
+        This method is overwritten by the child class and will be called when the MPI run script is created.
+        
+        It should typically do:
+        
+        * Return the name of the executable that is located in your work directory after create_work_directory has been called. 
+                                                            
+        :return:                        Name of the excutable, e.g. "fms_MOM_SIS.x"
+        :rtype:                         str
+        """         
         return ""
         
     def get_num_threads(self):
+        """Method to get the number of threads the model is using.
+
+        This method is overwritten by the child class and will be called when the paralleization layout is created.
+        
+        It should typically do:
+        
+        * Return the number of threads using e.g. settings in the model's input files. 
+                                        
+        :return:                        Number of used threads
+        :rtype:                         int    
+        """    
         return 0
