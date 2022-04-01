@@ -4,10 +4,28 @@ import sys
 
 # possible model types
 class ModelTypes:
-    atmosphere          = "atmosphere"          # model type of all atmospheric models
-    bottom              = "bottom"              # model type of all bottom models
-    flux_calculator     = "flux_calculator"     # reserved only for the flux_calculator
-    other               = "other"               # components, tools that are not coupled, as e.g. int2lm
+    """Available model types
+    """
+    
+    atmosphere          = "atmosphere"
+    """Identifier for atmospheric models.
+    
+    Note that there can be only one atmospheric model in a coupled run.
+    """
+        
+    bottom              = "bottom"
+    """Identifier for bottom models as ocean or land models.
+    
+    In contrast to the atmosphere there can be several bottom models in a coupled run.
+    """
+    
+    flux_calculator     = "flux_calculator"
+    """Reserved only for the flux_calculator.
+    """
+    
+    other               = "other"
+    """Components, tools that are not coupled, as e.g. the int2lm tool.
+    """
     
 # get a single model handler
 def get_model_handler(global_settings, model):
@@ -64,8 +82,23 @@ def get_model_handlers(global_settings):
      
 # common base class (interface) for specific model handlers
 class ModelHandlerBase:
+    """Base class for all specific model handler.
+    
+    This constructor must be called in the constructor of the child class as e.g.
+    `ModelHandlerBase.__init__(self, model_handling.ModelTypes.bottom, global_settings, my_directory)`
+    
+    :param global_settings:         Object containing the global settings
+    :type global_settings:          class:`GlobalSettings` 
+    
+    :param my_directory:            Name of the model's input folder, usually model_domain, e.g. MOM5_Baltic. IMPORTANT: model names can only have for letters as e.g. MOM5, CCLM, GETM etc.
+    :type my_directory:             str
+                                    
+    :param model_type:              Must be one of attributes of class `ModelTypes`
+    :type model_type:               str
+    """
+    
     # base constructor must be called in constructor of inheriting class
-    def __init__(self, model_type, global_settings, my_directory):
+    def __init__(self, model_type, global_settings, my_directory): 
         self.global_settings = global_settings              # global settings object
         self.my_directory = my_directory                    # name of model's input folder
         self.model_type = model_type                        # one of the ModelTypes
@@ -75,9 +108,50 @@ class ModelHandlerBase:
         # self.grids = ["t_grid"]
         
     def create_work_directory(self, work_directory_root, start_date, end_date):
+        """Method to perform model-specific steps for creating the work directory.
+
+        This method is overwritten by the child class and will be called after 
+        the work directory has been created and the content of the input folder has been copied to that work directory.
+        
+        It should typically do:
+        
+        * Copy the executable(s) to the work directory (not into subfolders)
+        
+        * Apply current start date and end date to input files
+        
+        :param work_directory_root:     Is the local work directory common to all models, thus it is one lvel above my_directory
+        :type work_directory_root:      str
+        
+        :param start_date:              Start date of the current working period, format YYYYMMDD, e.g. 20220325 for the 25th of March 2022
+        :type start_date:               str 
+                                        
+        :param end_date:                End date of the current working period, format YYYYMMDD, e.g. 20220325 for the 25th of March 2022
+        :type end_date:                 str
+        """    
         pass
         
     def check_for_success(self, work_directory_root, start_date, end_date):
+        """Method to if model run was successful or not.
+
+        This method is overwritten by the child class and will be called after 
+        the MPI task has finished.
+        
+        It should typically do:
+        
+        * Check for the existence of some specific output files.
+        
+        :param work_directory_root:     Is the local work directory common to all models, thus it is one lvel above my_directory
+        :type work_directory_root:      str
+        
+        :param start_date:              Start date of the current working period, format YYYYMMDD, e.g. 20220325 for the 25th of March 2022
+        :type start_date:               str 
+                                        
+        :param end_date:                End date of the current working period, format YYYYMMDD, e.g. 20220325 for the 25th of March 2022
+        :type end_date:                 str
+        
+        :return:                        `True` if model has finished successfully, `False` otherwise
+        :rtype:                         bool        
+        """        
         return True
     
     def move_results(self, work_directory_root, start_date, end_date):
