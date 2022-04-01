@@ -1,0 +1,32 @@
+format: jb-book
+root: intro.md
+parts:
+- caption: getting_started
+  chapters:
+  - file: getting_started/first_use.md
+- caption: background
+  chapters:
+  - file: background/coupling_concept.md
+- caption: development
+  chapters:
+  - file: development/design_concept.md
+  - file: development/extend_documentation.md
+  - file: development/new_destinations.md
+  - file: development/new_model.md
+- caption: usage
+  chapters:
+  - file: usage/advanced_use.md
+  - file: usage/attempt_handling.md
+  - file: usage/automatic_postprocessing.ipynb
+  - file: usage/create_postprocess_task.ipynb
+  - file: usage/setting_up_global_settings.md
+- caption: scripts
+  chapters:
+  - file: autoapi/index.rst
+- caption: general
+  chapters:
+  - file: general/history.md
+- caption: todos
+  chapters:
+  - file: todos.rst
+ 
