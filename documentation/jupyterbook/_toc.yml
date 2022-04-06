@@ -18,8 +18,10 @@ parts:
   - file: usage/advanced_use.md
   - file: usage/attempt_handling.md
   - file: usage/automatic_postprocessing.ipynb
+  - file: usage/create_forcings_for_CCLM.md
   - file: usage/create_postprocess_task.ipynb
   - file: usage/setting_up_global_settings.md
+  - file: usage/setting_up_jobscript.md
 - caption: scripts
   chapters:
   - file: autoapi/index.rst

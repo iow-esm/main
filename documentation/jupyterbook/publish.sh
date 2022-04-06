@@ -5,6 +5,7 @@
 # The the book can be published as:
 
 cd _build
+git add .
 git commit -a -m "Published book at `date`" 
 git push -u origin master
 
