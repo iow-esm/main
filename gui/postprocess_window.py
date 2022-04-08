@@ -225,7 +225,7 @@ class PostprocessWindow():
         file_content = ""
         
         user_at_host, path = self.master.destinations[self.current_destination].split(":")
-        cmd = "ssh " + user_at_host + " \\\"if [ -f " + path +  "/input/global_settings.py ]; then cat " + path + "/input/global_settings.py; fi; \\\""
+        cmd = "ssh " + user_at_host + " \\\"if [ -f " + path +  "/input/global_settings.py ]; then cat " + path + "/input/global_settings.py | grep 'run_name\\\|init_date\\\|final_date'; fi; \\\""
         file_content = self.master.functions.execute_shell_cmd(cmd, printing = False)
                 
         ldict = {"run_name" : "", "init_date" : "", "final_date" : "", "model_domains" : {}, "dependencies" : {}}

@@ -1,188 +1,10 @@
-# Purpose, Description
+(getting_started:first_use)=
+# First use
 
-This is the main repository for the IOW earth system model (ESM) project. 
-It is the entry point for using and developing this model.
-
-This Readme will guide you through the very first steps to start your first example run.
-
-Further information is available at https://sven-karsten.github.io/iow_esm/intro.html.
-**Note that the documentation is work in progress.**
+First be sure that you have read the `Readme` at https://git.io-warnemuende.de/iow_esm/main and that you fulfill all the prerequisites.
 
 
-# Authors
-
-* SK      (sven.karsten@io-warnemuende.de)
-* HR      (hagen.radtke@io-warnemuende.de)
-
-
-# Versions
-
-## 1.01.00 (in preparation)
-
-| date        | author(s)   | link      |
-|---          |---          |---        |
-| 2022-04-01  | SK          | XXX       | 
-
-<details>
-
-### changes
-* worked on GUI
-  * added cancel button
-  * polished appearence
-* enabled attempt handling
-  * user can add own attempt hanlder with prepare and evaluate
-    attempt methods
-* intensive restructuring of run and prepare scripts
-  * most scripts are now model-independent
-  * model-dependent part is now restricted to one module
-    * such a model has to be added for a new model
-* fixed:
-  * #19 Timeout for waiting for creating work directory, set to 60s
-* worked on documentation 
-  * added sources for jupyterbook
-  * added link to built book on github-pages in Readme
-    
-### dependencies
-* bash, git, (python for GUI) 
-  
-### known issues
-* none
-
-### tested with
-* intensively tested on both HLRN machines
-  * using example setups available under:
-    (coupled) /scratch/usr/mviowmod/IOW_ESM/setups/
-              MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00
-    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
-                CCLM_Eurocordex/example_0.22deg/1.00.00
-    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
-                MOM5_Baltic/example_8nm/1.00.00 
-    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
-                I2LM_Eurocordex/example_0.22deg/1.00.00                              
-  * can be built and run on Haumea but output is not intensively tested
-  
-</details>
-
-
-## 1.00.00 (latest release)
-
-| date        | author(s)   | link      |
-|---          |---          |---        |
-| 2022-01-31  | SK, HR      | [1.00.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.00.00)  |  
-
-<details> 
-
-### changes
-* initial release
-  * scripts for running the model
-  * scripts for creating mapping files and exchange grid
-  * scripts for getting the sources and building them on target machines
-    * supported are `hlrng`, `hlrnb`, `haumea`, (`phy-2` not running here)
-  * scripts for deploying setups to a destiantion path
-  * examples for user configurations
-  * graphical user interface for running these scripts
-
-### dependencies
-* bash, git, (python for GUI) 
-
-### known issues
-* none
-
-### tested with
-* intensively tested on both HLRN machines
-  * using example setups available under:
-    (coupled) /scratch/usr/mviowmod/IOW_ESM/setups/
-              MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00
-    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
-                CCLM_Eurocordex/example_0.22deg/1.00.00
-    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
-                MOM5_Baltic/example_8nm/1.00.00 
-    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
-                I2LM_Eurocordex/example_0.22deg/1.00.00                              
-  * can be built and run on Haumea but output is not intensively tested
-
-</details>
-
-# Usage
-
-This part is intended to be a guide mainly for using the IOW ESM.
-Although some hints for development are also given here, the concrete implemetation details are given at  https://sven-karsten.github.io/iow_esm/intro.html. and in the file `documentation/developers_documentation.pdf`.
-**Note that the documentation is work in progress.**
-
-## Prerequisites
-
-Before doing anything with the IOW ESM some requirements have to be fulfilled.
-
-
-### Local
-
-Your local machine has to provide:
-
-* `bash`
-* configured `git` instance
-* optional: `python` (with the [`tkinter`](https://docs.python.org/3/library/tkinter.html) module) for using the graphical user interface 
-
-
-#### Windows
-
-**!!!ATTENTION!!! It might not correctly work on Windows yet**
-
-If you work on Windows, you can use e.g. the [`MSYS2`](https://www.msys2.org/) software distribution and building platform. 
-For installation, follow the instructions given on the project web site.
-After successful installation you can open an `MSYS2` shell via hitting the Windows key on your keyboard, typing "msys" and opening the installed app.
-In the opnend shell you can then install `git` and `rsync` which are needed by executing
-
-``` bash
-pacman -S git
-pacman -S rsync
-```
-
-
-#### Linux
-
-If you work on Linux you will most probably have a `bash` and you can install `git` with the package manager of your distribution.
-
-
-### Remote
-
-You need accounts on the target servers, where you want to run the model.
-
-
-### Get the main project
-
-
-#### As a user
-
-If you just want to use the latest released version of the IOW ESM you have to execute the following in a shell (`MSYS2` on Windows or `bash` on Linux)
-
-``` bash
-cd /to/your/favorite/directory
-git clone --branch X.XX.XX https://git.io-warnemuende.de/iow_esm/main.git .
-```
-
-where the `X.XX.XX` stands for the version you prefer.
-Which versions are available can be found out by looking at the available Git branches that have names structured as "X.XX.XX".
-
-The place holder `/to/your/favorite/directory` will become the _root directory_ of this project so choose it reasonably.
-
-
-#### As a developer
-
-If you intent to develop the IOW ESM and modify it you have to execute
-
-``` bash
-cd /to/your/favorite/directory
-git clone https://git.io-warnemuende.de/iow_esm/main.git .
-```
-
-This will checkout the master (development) branch.
-
-The place holder `/to/your/favorite/directory` will become the _root directory_ of this project so choose it reasonably.
-
-Note, if you started as user but decide later to develop you can always check out the master branch manually.
-
-
-#### Key agent recommended
+## Key agent recommended
 
 Note that it is strongly recommended to use a [key agent](https://www.ssh.com/academy/ssh/agent) for connecting to the target servers.
 Otherwise you will have to type in your account password very often.
@@ -196,7 +18,7 @@ ssh-add ~/.ssh/<private-key>
 where the `<private-key>` should be the private key generated for the desired target.
 
 
-### Working with the GUI
+## Working with the GUI
 
 If you would like to work with graphical user interface you have to start corresponding python script from a shell
 (`MSYS2` on Windows or `bash` on Linux) by executing the following in the root directory (where this `Readme.md` is located)
@@ -207,10 +29,11 @@ If you would like to work with graphical user interface you have to start corres
 
 The shell where this is executed should be the same as where the key agent is running.
 
-**The GUI will guide you step by step throught the first steps that are described in the following for the command line application.**
+If you use the GUI, it will guide you step by step throught the first steps that are described in the following for the command line application.
+However, you can and should still use this description as a roadmap.
 
 
-## First steps
+## First steps with the command line interface
 
 
 ### Get the component sources
@@ -260,7 +83,7 @@ where
 
 At the moment there are running build scripts only for these targets, which can be found the file `AVAILABLE_TARGETS` as well.
 Do not edit or commit this file unless you really know what you are doing.
-If you want to add more targets, it will be explained in [Enable new destinations](https://sven-karsten.github.io/iow_esm/development/new_destinations.html#enable-new-destinations).
+If you want to add more targets, it will be explained in [Register new destinations](#register-new-destinations).
 
 The second element in a line of `DESTINATIONS.example` corresponds to the *root directory on the target*, the path, where the whole model will be deployed, built and run.
 If the path on the target does not exist, it will be created.
@@ -268,12 +91,12 @@ Be sure that you have write permissions.
 Importantly, the location _must_ have the following format `user@host:/path/to/rootdirectory`.
 Both user and host name are use in the script and cannot be omitted although you might have some shortcuts and aliases for your accounts.
 **Now it is up to you, to create your own file `DESTINATIONS` in your local root directory, but do not commit it!**
-Note that there is also the possibility to give more advanced keywords to run several instances on the same target, see [Advanced destination keywords](https://sven-karsten.github.io/iow_esm/usage/advanced_use.html#advanced-destination-keywords)
+Note that there is also the possibility to give more advanced keywords to run several instances on the same target, see [Advanced destination keywords](#advanced-destination-keywords)
 
 
 ### Build the coupled model for the first time
 
-Each component can be built individually by executing the build scripts in the component's directory, see [Build single components in a different modes and configurations](https://sven-karsten.github.io/iow_esm/usage/advanced_use.html#build-single-components-in-a-different-modes-and-configurations).
+Each component can be built individually by executing the build scripts in the component's directory, see [Build single components in a different modes and configurations](#build-single-components-in-a-different-modes-and-configurations).
 However, for the first build the order is important, since some components of the coupled model depend on each other.
 Therefore, you should use the `build.sh` script in the root directory.
 If you want to build the model e.g. on the HLRN cluster located in Berlin, you can run, e.g.
@@ -286,7 +109,7 @@ This will build the model on `hlrng` in release mode.
 Note that we will stick to this specific target throughout this Readme.
 Nevertheless, if you want to work with another target for your first tests, just replace `hlrng` with another valid keyword.
 Note further that the first argument is non-optional, whereas there are two others which can be omitted, 
-see [Build single components in a different modes and configurations](https://sven-karsten.github.io/iow_esm/usage/advanced_use.html#build-single-components-in-a-different-modes-and-configurations).
+see [Build single components in a different modes and configurations](#build-single-components-in-a-different-modes-and-configurations).
 
 
 ### Deploy dependencies for running (setups)
@@ -359,3 +182,4 @@ If you use one of the setups from the `SETUPS.example` file, there is no need fo
 However for the general case there is the possibility to run preparation scripts that set up the exchange grid 
 and remapping files for the coupler, see `documentation/developers_documentation.pdf`. 
 Note that for an uncoupled run there is no need for the preparation.
+
