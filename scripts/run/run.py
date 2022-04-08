@@ -115,7 +115,7 @@ for run in range(global_settings.runs_per_job):
             
         # do the customer's preparation here
         print("Prepare attempt " + str(attempt) + "...", flush = True)
-        global_settings.attempt_handler.prepare_attempt()
+        global_settings.attempt_handler.prepare_attempt(start_date=start_date, end_date=end_date)
         print("Preparation of attempt " + str(attempt) + " done.", flush = True)
         
     # if there is no attempt handling we only have attempt "1"
@@ -283,7 +283,7 @@ for run in range(global_settings.runs_per_job):
     
         print("Model has to pass the evaluation for attempt " + str(attempt) + "...", flush = True)
         # evaluate this attempt: react to crash and/or check attempt's criterion
-        attempt_failed = not global_settings.attempt_handler.evaluate_attempt(crashed)
+        attempt_failed = not global_settings.attempt_handler.evaluate_attempt(crashed, start_date=start_date, end_date=end_date)
         print("Evaluation for attempt " + str(attempt) + " done.", flush = True)
         
         # store state of attempt_handler for next run
@@ -302,8 +302,8 @@ for run in range(global_settings.runs_per_job):
             print('Go on with next attempt.', flush=True)
             
         # something went wrong: either model has crashed or the attempt has not passed the criterion   
-        if attempt_failed or crashed:
-            # in both cases we through away the work and start a new job
+        if attempt_failed:
+            # if the attempt failed we throw away the work and start a new job
             try:
                 global_settings.resubmit_command
             except:
@@ -312,6 +312,11 @@ for run in range(global_settings.runs_per_job):
             
             print('Run failed. Try again.', flush=True)
             os.system("cd " + IOW_ESM_ROOT + "/scripts/run; " + global_settings.resubmit_command)
+            sys.exit()
+        
+        # if the crashed attempt was not evaluated to false, we stop here
+        if crashed:
+            print('Error: Attempt '+str(attempt)+' has crashed but has been successfully evaluated. Abort.', flush=True)
             sys.exit()
                 
     print('  attempt '+str(attempt)+' succeeded.', flush=True)
