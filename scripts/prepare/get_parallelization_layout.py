@@ -6,13 +6,8 @@ import os
 import re
 import sys
 
-def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
-
-    # Read global options file
-    sys.path.append(IOW_ESM_ROOT + "/scripts/run")
-    from parse_global_settings import GlobalSettings
-    global_settings = GlobalSettings(IOW_ESM_ROOT)   
-   
+def get_parallelization_layout(global_settings):        # root directory of IOW ESM
+       
     # for model handlin
     from model_handling import get_model_handlers    
 

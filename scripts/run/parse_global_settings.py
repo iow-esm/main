@@ -17,16 +17,23 @@ class GlobalSettings:
     :type global_settings:  str
     """
 
-    def __init__(self, root_dir, global_settings = "input/global_settings.py"):
+    def __init__(self, root_dir, run_name):
+
+        # memorize the root directory as a part of the global_settings
+        self.root_dir = root_dir 
+
+        self.run_name = run_name
+
+        self.input_dir = self.root_dir + "/input/" + self.run_name
         
         # create a local dictionary with content of the global_settings file
         ldict = {}
-        exec(open(root_dir + "/" + global_settings).read(), globals(), ldict)
+        exec(open(self.input_dir + "/global_settings.py").read(), globals(), ldict)
         
         # map dictionary entries to class members with the smae name
         for variable in ldict.keys():
             setattr(self, variable, ldict[variable]) 
-            
+        
         # TODO test if all non-optional variables are set
         
         # TODO set optional arguments to their default here
@@ -37,9 +44,6 @@ class GlobalSettings:
         # if not take the default
         except:
             self.attempt_handler = None
-            
-        # memorize the root directory as a part of the global_settings
-        self.root_dir = root_dir 
         
         # construct a unique name of the file for serializing the attempt_handler object
         self.attempt_handler_obj_file = self.root_dir + "/" + self.run_name + "_attempt_handler.obj"

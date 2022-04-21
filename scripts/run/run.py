@@ -20,6 +20,8 @@ import hotstart_handling
 
 from parse_global_settings import GlobalSettings
 
+run_name = str(sys.argv[1])
+
 ##################################
 # STEP 0: Get the root directory #
 ##################################
@@ -27,7 +29,7 @@ from parse_global_settings import GlobalSettings
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
 if (mydir[-12:] != '/scripts/run'):
-    print('usage: python3 ./run.py')
+    print('usage: python3 ./run.py ')
     print('should be called from ${IOW_ESM_ROOT}/scripts/run')
     sys.exit()
 
@@ -42,7 +44,7 @@ from get_parallelization_layout import get_parallelization_layout
 ################################################################################################################################
 
 # read in global settings
-global_settings = GlobalSettings(IOW_ESM_ROOT)
+global_settings = GlobalSettings(IOW_ESM_ROOT, run_name)
 
 # get a list of all subdirectories in "input" folder -> these are the models
 model_handlers = get_model_handlers(global_settings)
@@ -131,10 +133,10 @@ for run in range(global_settings.runs_per_job):
 
     if global_settings.workdir_base[0]=='/': 
         # workdir_base gives absolute path, just use it
-        work_directory_root = global_settings.workdir_base
+        work_directory_root = global_settings.workdir_base + "/" + run_name
     else:
         # workdir_base gives relative path to IOW_ESM_ROOT
-        work_directory_root = IOW_ESM_ROOT+'/'+global_settings.workdir_base
+        work_directory_root = IOW_ESM_ROOT+'/'+global_settings.workdir_base + "/" + run_name
 
     if os.path.isdir(work_directory_root):
         os.system('rm -rf '+work_directory_root)  # if workdir exists already, delete it
@@ -161,7 +163,7 @@ for run in range(global_settings.runs_per_job):
     ########################################################################
     
     # GET NUMBER OF CORES AND NODES
-    parallelization_layout = get_parallelization_layout(IOW_ESM_ROOT)        
+    parallelization_layout = get_parallelization_layout(global_settings)        
 
     # CREATE WORK DIRECTORIES AND BATCH SCRIPTS FOR EACH MODEL TO GO TO THEIR INDIVIDUAL WORK DIRECTORIES AND RUN FROM THERE
     model_threads = parallelization_layout['model_threads']
@@ -186,7 +188,7 @@ for run in range(global_settings.runs_per_job):
             shellscript.writelines('export IOW_ESM_ATTEMPT='+str(attempt)+'\n')
             shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base+'\n')
             shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+work_directory_root+'\n')
-            shellscript.writelines('python3 mpi_task_before.py\n')
+            shellscript.writelines('python3 mpi_task_before.py ' + run_name + '\n')
             shellscript.writelines('waited=0\n')                        # seconds counter for timeout
             shellscript.writelines('timeout=60\n')                      # timeout is set to 60 seconds
             shellscript.writelines('until [ -f '+global_settings.local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ] || [ $waited -eq $timeout ]\n')
@@ -245,11 +247,11 @@ for run in range(global_settings.runs_per_job):
         if os.path.islink(file_name):
             os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
         shellscript = open(file_name, 'w')
-        shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base+'\n')
+        shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base + '/' + run_name + '\n')
         shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+work_directory_root+'\n')
         shellscript.writelines('export IOW_ESM_END_DATE='+str(end_date)+'\n')
         shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
-        shellscript.writelines('python3 mpi_task_after1.py')
+        shellscript.writelines('python3 mpi_task_after1.py ' + run_name + '\n')
         shellscript.close()
         st = os.stat(file_name)                 # get current permissions
         os.chmod(file_name, st.st_mode | 0o777) # add a+rwx permission
