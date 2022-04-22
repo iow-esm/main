@@ -189,12 +189,12 @@ for run in range(global_settings.runs_per_job):
             shellscript.writelines('python3 mpi_task_before.py\n')
             shellscript.writelines('waited=0\n')                        # seconds counter for timeout
             shellscript.writelines('timeout=60\n')                      # timeout is set to 60 seconds
-            shellscript.writelines('until [ -f '+global_settings.local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ] || [ $waited -eq $timeout ]\n')
+            shellscript.writelines('until [ -f '+global_settings.local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ] || [ $waited -ge $timeout ]\n')
             shellscript.writelines('do\n')
             shellscript.writelines('     sleep 1\n')
             shellscript.writelines('     let "waited++"\n')
             shellscript.writelines('done\n')
-            shellscript.writelines('if [ $waited -eq $timeout ]; then\n') # if timeout has been reached, echo the error and stop the script
+            shellscript.writelines('if [ $waited -ge $timeout ]; then\n') # if timeout has been reached, echo the error and stop the script
             shellscript.writelines('    echo "Timeout while creating work directories for ' + model + ' has been reached. Abort."\n')
             shellscript.writelines('    exit\n')
             shellscript.writelines('fi\n')
