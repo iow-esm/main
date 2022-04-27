@@ -17,11 +17,11 @@ Further information is available at https://sven-karsten.github.io/iow_esm/intro
 
 # Versions
 
-## 1.01.00 (in preparation)
+## 1.01.00 (latest release)
 
 | date        | author(s)   | link      |
 |---          |---          |---        |
-| 2022-04-01  | SK          | XXX       | 
+| 2022-04-27  | SK          | [1.01.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.01.00)        | 
 
 <details>
 
@@ -64,7 +64,7 @@ Further information is available at https://sven-karsten.github.io/iow_esm/intro
 </details>
 
 
-## 1.00.00 (latest release)
+## 1.00.00 
 
 | date        | author(s)   | link      |
 |---          |---          |---        |
