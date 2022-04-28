@@ -1,0 +1,22 @@
+# directory where the code will be stored (can be relative to the directory where the test.sh script is)
+main_dir="./IOW_ESM"
+
+# source of the code
+# can be a path to the root directory (absolute or relative to test directory)
+src=".."
+# or a name of a branch existing in https://git.io-warnemuende.de/iow_esm/main.git like e.g.
+#src="1.01.00"
+# Note that if src is not an existing directory it is assumed to be a branch name
+
+# user-specific settings
+# machine keyword
+machine="hlrng"
+# your user name and host name corresponding to machine name
+user_at_host="mvkkarst@glogin"
+# directory where the tests will be done on the target machine
+test_dir="/scratch/usr/mvkkarst/test_area"
+# setups that will be tested, in form of bash dictionary: keywords are setup keywords and values are the paths to the setups
+setups=(["coupled_example"]="${user_at_host}:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00"
+["CCLM_example"]="${user_at_host}:/scratch/usr/mviowmod/IOW_ESM/setups/CCLM_Eurocordex/example_0.22deg/1.00.00"
+["MOM5_example"]="${user_at_host}:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic/example_8nm/1.00.00"
+["I2LM_example"]="${user_at_host}:/scratch/usr/mviowmod/IOW_ESM/setups/I2LM_Eurocordex/example_ERAI_0.22deg/1.00.00")
