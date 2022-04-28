@@ -25,7 +25,6 @@ else
 fi
 
 echo "Apply test config: set version, main_dir, machine, user_at_host, test_dir, setups."
-declare -A setups
 source ${test_config}
 
 echo $src ${main_dir} $machine $user_at_host $test_dir $setups
@@ -61,20 +60,17 @@ echo "Build the components..."
 ./build.sh ${machine}_base
 echo "done."
 
-rm SETUPS
+echo "$setups" > SETUPS
 
 echo "Run all the given test setups..."
-for setup in "${!setups[@]}"; do
+for setup in `awk '{print $1}' SETUPS`; do
 
-        echo "  Register test setup $setup ${setups[$setup]}."
-        echo "$setup" "${setups[$setup]}" >> SETUPS
-
-        echo "  Prepare work directory."
+        echo "  Prepare work directory for setup $setup."
         ssh -t ${user_at_host} "if [ -d ${test_dir}/${setup} ]; then rm -r ${test_dir}/${setup}; fi"
         ssh -t ${user_at_host} "cp -as ${test_dir}/base ${test_dir}/${setup}"
 
         echo "  Register specific destination."
-        echo "${machine}_${setup} ${user_at_host}:${test_dir}/${setup}" >> DESTINATIONS
+        "${machine}_${setup} ${user_at_host}:${test_dir}/${setup}" >> DESTINATIONS
 
         echo "  Deploy test setup $setup"
         ./deploy_setups.sh ${machine}_${setup} ${setup}

@@ -15,8 +15,8 @@ machine="hlrng"
 user_at_host="mvkkarst@glogin"
 # directory where the tests will be done on the target machine
 test_dir="/scratch/usr/mvkkarst/test_area"
-# setups that will be tested, in form of bash dictionary: keywords are setup keywords and values are the paths to the setups
-setups=(["coupled_example"]="${user_at_host}:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00"
-["CCLM_example"]="${user_at_host}:/scratch/usr/mviowmod/IOW_ESM/setups/CCLM_Eurocordex/example_0.22deg/1.00.00"
-["MOM5_example"]="${user_at_host}:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic/example_8nm/1.00.00"
-["I2LM_example"]="${user_at_host}:/scratch/usr/mviowmod/IOW_ESM/setups/I2LM_Eurocordex/example_ERAI_0.22deg/1.00.00")
+# setups that will be tested in format of the usual SETUPS file
+setups="coupled_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00
+CCLM_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/CCLM_Eurocordex/example_0.22deg/1.00.00
+MOM5_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic/example_8nm/1.00.00
+I2LM_example mvkkarst@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/I2LM_Eurocordex/example_ERAI_0.22deg/1.00.00"
