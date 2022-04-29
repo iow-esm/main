@@ -57,7 +57,7 @@ echo "Register the base destination ${machine}_base ${user_at_host}:${test_dir}/
 echo "${machine}_base ${user_at_host}:${test_dir}/base" > DESTINATIONS
 
 echo "Build the components..."
-#./build.sh ${machine}_base
+./build.sh ${machine}_base
 echo "done."
 
 echo "$setups" > SETUPS
