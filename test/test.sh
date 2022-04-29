@@ -57,7 +57,7 @@ echo "Register the base destination ${machine}_base ${user_at_host}:${test_dir}/
 echo "${machine}_base ${user_at_host}:${test_dir}/base" > DESTINATIONS
 
 echo "Build the components..."
-./build.sh ${machine}_base
+#./build.sh ${machine}_base
 echo "done."
 
 echo "$setups" > SETUPS
@@ -70,7 +70,7 @@ for setup in `awk '{print $1}' SETUPS`; do
         ssh -t ${user_at_host} "cp -as ${test_dir}/base ${test_dir}/${setup}"
 
         echo "  Register specific destination."
-        "${machine}_${setup} ${user_at_host}:${test_dir}/${setup}" >> DESTINATIONS
+        echo "${machine}_${setup} ${user_at_host}:${test_dir}/${setup}" >> DESTINATIONS
 
         echo "  Deploy test setup $setup"
         ./deploy_setups.sh ${machine}_${setup} ${setup}
