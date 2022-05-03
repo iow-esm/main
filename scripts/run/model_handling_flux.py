@@ -14,7 +14,10 @@ import model_handling
 class ModelHandler(model_handling.ModelHandlerBase):
     def __init__(self, global_settings, my_directory):
         # initialize base class
-        model_handling.ModelHandlerBase.__init__(self, model_handling.ModelTypes.flux_calculator, global_settings, my_directory)
+        model_handling.ModelHandlerBase.__init__(self,  model_handling.ModelTypes.flux_calculator, 
+                                                        global_settings, 
+                                                        my_directory, 
+                                                        grids = [model_handling.GridTypes.t_grid, model_handling.GridTypes.u_grid, model_handling.GridTypes.v_grid])
         
     def create_work_directory(self, work_directory_root, start_date, end_date):
     

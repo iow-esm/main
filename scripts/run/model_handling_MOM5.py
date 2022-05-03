@@ -23,7 +23,8 @@ class ModelHandler(model_handling.ModelHandlerBase):
         model_handling.ModelHandlerBase.__init__(self, 
                                                  model_handling.ModelTypes.bottom,  # specify this model as a bottom model
                                                  global_settings,                   # pass global settings 
-                                                 my_directory)                      # memorize specific directory name = "model_domain"
+                                                 my_directory,                      # memorize specific directory name = "model_domain"
+                                                 grids = [model_handling.GridTypes.t_grid, model_handling.GridTypes.u_grid, model_handling.GridTypes.v_grid]) # model grids
         
     def create_work_directory(self, work_directory_root, start_date, end_date):
     

@@ -27,6 +27,10 @@ class ModelTypes:
     """Components, tools that are not coupled, as e.g. the int2lm tool.
     """
     
+class GridTypes:
+    t_grid = "t_grid"
+    u_grid = "u_grid"
+    v_grid = "v_grid"
 
 def get_model_handler(global_settings, model):
     """Method to get a single model handler.
@@ -125,14 +129,11 @@ class ModelHandlerBase:
     """
     
     # base constructor must be called in constructor of inheriting class
-    def __init__(self, model_type, global_settings, my_directory): 
+    def __init__(self, model_type, global_settings, my_directory, grids = [GridTypes.t_grid]): 
         self.global_settings = global_settings              # global settings object
         self.my_directory = my_directory                    # name of model's input folder
         self.model_type = model_type                        # one of the ModelTypes
-        
-        # TODO: this should become a list with available grids, e.g. 
-        # self.grids = ["t_grid", "u_grid", "v_grid"] or
-        # self.grids = ["t_grid"]
+        self.grids = grids                                  # one of the available grids
         
     def create_work_directory(self, work_directory_root, start_date, end_date):
         """Method to perform model-specific steps for creating the work directory.
