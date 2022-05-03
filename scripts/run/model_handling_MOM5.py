@@ -430,9 +430,10 @@ class ModelHandler(model_handling.ModelHandlerBase):
 
         # get the index limits for the domains 
         ibeginx, iendx = mpp_compute_extent(grid_dims[1], self.ndivx)   # x direction
-        print(ibeginx, iendx)
         ibeginy, iendy = mpp_compute_extent(grid_dims[0], self.ndivy)   # y direction
-        print(ibeginy, iendy)
+
+        print("Use domain extents in x direction as: ", np.array(iendx, dtype=int) - np.array(ibeginx, dtype=int) + 1)
+        print("Use domain extents in y direction as: ", np.array(iendy, dtype=int) - np.array(ibeginy, dtype=int) + 1)
 
         # get mask file content
         with open(self.maskfile) as mf:
@@ -464,7 +465,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
                 processes[i][j] = counter
                 counter += 1
 
-        print(processes)
+        #print(processes)
 
         # build array with task index for each grid point
         tasks = []

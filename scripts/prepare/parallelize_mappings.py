@@ -60,21 +60,30 @@ for model in bottom_models:
     # create it
     os.makedirs(work_dir)
 
-    print('getting domain decomposition for model '+model)
+    print('Getting domain decomposition for model ' + model + '...')
     # get model task vector from model handler
     model_tasks = model_handlers[model].get_domain_decomposition()
-
+    print('...done.')
 
     eg_tasks = {}
     for grid in model_handlers[model].grids:
-    # get the corresponding exchange grid task vector
+        print('Getting domain decomposition for the ' + grid + ' exchange grid...')
+        # get the corresponding exchange grid task vector
         eg_tasks[grid] = parallelize_mappings_helpers.add_exchange_grid_task_vector(global_settings, model, model_tasks, grid, work_dir)
-        
-    halo_cells = parallelize_mappings_helpers.add_halo_cells(global_settings, model, work_dir)
+        print('...done.')
 
-    parallelize_mappings_helpers.visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks["t_grid"], "t_grid", halo_cells)
+    halo_cells = {}
+    for grid in model_handlers[model].grids:
+        print('Getting halo cells for the ' + grid + ' exchange grid...')
+        halo_cells[grid] = parallelize_mappings_helpers.get_halo_cells(global_settings, model, grid, work_dir)
+        print('...done.')
+        #parallelize_mappings_helpers.visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks[grid], grid, halo_cells[grid])
 
+    for grid in model_handlers[model].grids:
         # sort the exchange grid according to the tasks, get the permutation vector
-        #permutation = parallelize_mappings_helpers.sort_exchange_grid(global_settings, model, eg_tasks, grid)
-
+        print('Sorting the ' + grid + ' exchange grid according to the domain decomposition...')
+        permutation = parallelize_mappings_helpers.sort_exchange_grid(global_settings, model, grid, halo_cells[grid], work_dir)
+        print('...done.')
     
+    for grid in model_handlers[model].grids:
+        parallelize_mappings_helpers.update_remapping(global_settings, model, grid, work_dir)
