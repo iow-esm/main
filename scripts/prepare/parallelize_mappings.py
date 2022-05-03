@@ -23,7 +23,7 @@ IOW_ESM_ROOT = mydir[0:-16]
 # import the global_settings parser and the model handling modules
 sys.path.append(IOW_ESM_ROOT + "/scripts/run")
 from parse_global_settings import GlobalSettings
-from model_handling import get_model_handlers, ModelTypes
+from model_handling import get_model_handlers, ModelTypes, GridTypes
 
 # parse the global settings
 global_settings = GlobalSettings(IOW_ESM_ROOT)
@@ -53,17 +53,28 @@ for model in bottom_models:
 
 # do the conversion of model grids to the SCRIP format
 for model in bottom_models:
+
+    work_dir = global_settings.root_dir + "/input/" + model + "/mappings/parallel"
+    if os.path.isdir(work_dir):
+       os.system('rm -rf '+work_dir)
+    # create it
+    os.makedirs(work_dir)
+
     print('getting domain decomposition for model '+model)
     # get model task vector from model handler
     model_tasks = model_handlers[model].get_domain_decomposition()
+
+
+    eg_tasks = {}
+    for grid in model_handlers[model].grids:
     # get the corresponding exchange grid task vector
-    eg_tasks = parallelize_mappings_helpers.get_exchange_grid_task_vector(global_settings, model, model_tasks, "t_grid")
-    parallelize_mappings_helpers.visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks, "t_grid")
+        eg_tasks[grid] = parallelize_mappings_helpers.add_exchange_grid_task_vector(global_settings, model, model_tasks, grid, work_dir)
+        
+    halo_cells = parallelize_mappings_helpers.add_halo_cells(global_settings, model, work_dir)
 
-    eg_tasks = parallelize_mappings_helpers.get_exchange_grid_task_vector(global_settings, model, model_tasks, "u_grid")
-    parallelize_mappings_helpers.visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks, "u_grid")
+    parallelize_mappings_helpers.visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks["t_grid"], "t_grid", halo_cells)
 
-    # sort the exchange grid according to the tasks, get the permutation vector
-    permutation = parallelize_mappings_helpers.sort_exchange_grid(global_settings, model, eg_tasks, "t_grid")
+        # sort the exchange grid according to the tasks, get the permutation vector
+        #permutation = parallelize_mappings_helpers.sort_exchange_grid(global_settings, model, eg_tasks, grid)
 
     

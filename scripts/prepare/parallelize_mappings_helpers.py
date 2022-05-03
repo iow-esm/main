@@ -2,7 +2,7 @@ from netCDF4 import Dataset
 import os
 import numpy as np
 
-def get_exchange_grid_task_vector(global_settings, model, model_tasks, grid="t_grid"):
+def add_exchange_grid_task_vector(global_settings, model, model_tasks, grid, work_dir):
 
     # get source addresses of model grid cells that correspond to exchage grid cells
     remap_file = global_settings.root_dir + "/input/" + model + "/mappings/remap_" + grid + "_" + model + "_to_exchangegrid.nc"
@@ -32,8 +32,89 @@ def get_exchange_grid_task_vector(global_settings, model, model_tasks, grid="t_g
         for j in src_address_dict[src_address[link]]:
             eg_tasks[j-1] = model_tasks[src_address[link]-1]
 
+    eg_file = work_dir + "/" + grid + "_" + "exchangegrid.nc"
+    os.system("cp " +  global_settings.root_dir + "/input/" + model + "/mappings/" + grid + "_" + "exchangegrid.nc " + eg_file)
+
+    nc = Dataset(eg_file,"a")
+    task_var = nc.createVariable("task","i4",("grid_size",)); task_var[:]=eg_tasks
+    nc.close()
+
     return eg_tasks
 
+def add_halo_cells(global_settings, model, work_dir):
+    # get task vector of t_grid
+    t_eg_file = work_dir + "/t_grid_exchangegrid.nc"
+
+    nc = Dataset(t_eg_file,"r")
+    t_tasks = nc.variables['task'][:]
+    nc.close()
+
+    #create a dictionary for finding the exchange grid cells that correspond to a task,
+    # i.e. task_dict = {"task1" : [cell1, cell2,...], "task2" : [cell3, cell4,...]}
+    t_task_dict = {}
+    for i, task in enumerate(t_tasks):    
+        try:
+            t_task_dict[task].append(i)    # minus one since nc format starts from 1 and python starts from 0
+        except:
+            t_task_dict[task] = [i]        # minus one since nc format starts from 1 and python starts from 0
+
+    #print(t_task_dict)
+
+    halo_cells = {}
+    for task in t_task_dict.keys():
+        halo_cells[task] = []
+
+    for grid in ["u_grid", "v_grid"]:
+
+        # get task vector of other grid (let's call it here just u grid)
+        u_eg_file = work_dir + "/" + grid + "_exchangegrid.nc"
+        nc = Dataset(u_eg_file,"r")
+        u_tasks = nc.variables['task'][:]
+        nc.close()
+
+        #create a dictionary for finding the exchange grid cells that correspond to a task,
+        # i.e. task_dict = {"task1" : [cell1, cell2,...], "task2" : [cell3, cell4,...]}
+        u_task_dict = {}
+        for i, task in enumerate(u_tasks):    
+            try:
+                u_task_dict[task].append(i)    # minus one since nc format starts from 1 and python starts from 0
+            except:
+                u_task_dict[task] = [i]        # minus one since nc format starts from 1 and python starts from 0
+        #print(u_task_dict)
+
+        # get regridding file
+        regrid_file = "regrid_t_grid_" + model + "_to_" + grid + ".nc"
+        os.system("cp " +  global_settings.root_dir + "/input/" + model + "/mappings/" + regrid_file + " " + work_dir + "/" + regrid_file)
+        
+        nc = Dataset(work_dir + "/" + regrid_file,"r")
+        src_address = nc.variables['src_address'][:]    # cells on t grid
+        dst_address = nc.variables['dst_address'][:]    # cells on other grid
+        nc.close()
+
+        dst_adress_dict = {}
+        for i, dst in enumerate(dst_address):    
+            try:
+                dst_adress_dict[dst-1].append(src_address[i]-1)    # minus one since nc format starts from 1 and python starts from 0
+            except:
+                dst_adress_dict[dst-1] = [src_address[i]-1]        # minus one since nc format starts from 1 and python starts from 0
+
+        #print(dst_adress_dict)
+
+        for task in t_task_dict.keys():
+            try:
+                u_cells = u_task_dict[task] # u cells for this task
+            except:
+                continue
+            
+            for u_cell in u_cells:
+                t_cells = dst_adress_dict[u_cell]
+                for t_cell in t_cells:
+                    if t_cell not in t_task_dict[task]:
+                        halo_cells[task].append(t_cell)
+            
+            halo_cells[task]=list(set(halo_cells[task]))
+
+    return halo_cells
 
 def sort_exchange_grid(global_settings, model, eg_tasks, grid="t_grid"):
 
@@ -98,10 +179,6 @@ def sort_exchange_grid(global_settings, model, eg_tasks, grid="t_grid"):
     for i, old_index in enumerate(permutation):
         sorted_grid_area[i] = grid_area[old_index-1]                 
 
-    print(permutation)   
-
-
-
     sorted_eg_file = global_settings.root_dir + "/input/" + model + "/mappings/" + grid + "_" + "exchangegrid_sorted.nc"
 
     nc = Dataset(sorted_eg_file,"w")
@@ -120,6 +197,8 @@ def sort_exchange_grid(global_settings, model, eg_tasks, grid="t_grid"):
     nc.close()
 
     return permutation
+
+
 
 
 def sort_remapping(global_settings, model, permutation, grid="t_grid"):
@@ -183,7 +262,7 @@ def sort_remapping(global_settings, model, permutation, grid="t_grid"):
     # nc.close()
     
 
-def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks, grid = "t_grid"):
+def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks, grid, halo_cells=None):
     import matplotlib.pyplot as plt
     from shapely.geometry import Polygon
     from scipy.spatial import ConvexHull
@@ -231,6 +310,7 @@ def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks
         plt.plot(x_hull, y_hull, 'b-', linewidth=0.5)
         plt.fill(x_hull, y_hull, 'b', alpha=0.2)
 
+    # ocean domain decomposition
     model_tasks_dict = {}
     for i, task in enumerate(model_tasks):
         try:
@@ -259,7 +339,7 @@ def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks
         x_hull = list(points[hull.vertices,0]) + [points[hull.vertices,0][0]]
         y_hull = list(points[hull.vertices,1]) + [points[hull.vertices,1][0]]
 
-        plt.plot(x_hull, y_hull, 'r-', linewidth=2)
+        plt.plot(x_hull, y_hull, 'r-', linewidth=1)
         plt.fill(x_hull, y_hull, 'r', alpha=0.2)
 
     nc_file = global_settings.root_dir + "/input/" + model + "/mappings/" + grid + "_exchangegrid.nc"
@@ -269,6 +349,7 @@ def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks
     imask = nc.variables['grid_imask'][:]
     nc.close()
     
+    # exchange grid domain decomposition
     eg_tasks_dict = {}
     for i, task in enumerate(eg_tasks):
         try:
@@ -276,7 +357,9 @@ def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks
         except:
             eg_tasks_dict[task]=[i]
 
-    #print(eg_tasks_dict)
+    if halo_cells is not None:
+        for task in eg_tasks_dict.keys():
+            eg_tasks_dict[task] += halo_cells[task]
 
     for task in eg_tasks_dict.keys():
 
@@ -299,8 +382,9 @@ def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks
         x_hull = list(points[hull.vertices,0]) + [points[hull.vertices,0][0]]
         y_hull = list(points[hull.vertices,1]) + [points[hull.vertices,1][0]]
 
-        plt.plot(x_hull, y_hull, 'g--', linewidth=2)
-        plt.fill(x_hull, y_hull, 'g', alpha=0.2)
+        plt.plot(x_hull, y_hull, 'g--', linewidth=0.5)
+        plt.fill(x_hull, y_hull, 'g', alpha=0.4)
 
     plt.savefig('domain_decomposition_' + model + "_" + grid + '.pdf')
+    plt.close()
     #plt.show()
