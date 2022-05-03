@@ -2,8 +2,9 @@
 # Call this script from the /scripts/prepare folder
 
 import os
-import shutil
 import sys
+
+import parallelize_mappings_helpers
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
@@ -48,7 +49,21 @@ for model in bottom_models:
 # STEP 1b: For each of them get the domain decomposition                                                #
 #########################################################################################################
 
+
+
 # do the conversion of model grids to the SCRIP format
 for model in bottom_models:
     print('getting domain decomposition for model '+model)
-    model_handlers[model].get_domain_decomposition()
+    # get model task vector from model handler
+    model_tasks = model_handlers[model].get_domain_decomposition()
+    # get the corresponding exchange grid task vector
+    eg_tasks = parallelize_mappings_helpers.get_exchange_grid_task_vector(global_settings, model, model_tasks, "t_grid")
+    parallelize_mappings_helpers.visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks, "t_grid")
+
+    eg_tasks = parallelize_mappings_helpers.get_exchange_grid_task_vector(global_settings, model, model_tasks, "u_grid")
+    parallelize_mappings_helpers.visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks, "u_grid")
+
+    # sort the exchange grid according to the tasks, get the permutation vector
+    permutation = parallelize_mappings_helpers.sort_exchange_grid(global_settings, model, eg_tasks, "t_grid")
+
+    

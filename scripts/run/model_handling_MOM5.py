@@ -442,28 +442,31 @@ class ModelHandler(model_handling.ModelHandlerBase):
         lines.pop(0)    # layout
 
         # matrix containing the process indeces
-        processes = np.zeros(shape=(self.ndivy, self.ndivx))
+        processes = np.zeros(shape=(self.ndivx, self.ndivy), dtype=int)
 
         # go through the lines and mark masked unused domains with -1
         for line in lines:
             i,j = line.strip().split(",")
             i = int(i)
             j = int(j)
-            processes[j-1][i-1] = -1.0
+            processes[i-1][j-1] = -1
 
         # count remaining processes (that are not masked out)
-        counter = 0.0
+        counter = 0
+
         for j in range(0, self.ndivy):
             for i in range(0, self.ndivx):
 
-                if processes[j][i] == -1.0:
+                if processes[i][j] == -1:
                     continue
                 
-                processes[j][i] = counter
+                processes[i][j] = counter
                 counter += 1
 
+        print(processes)
+
         # build array with task index for each grid point
-        task = []
+        tasks = []
         for j in range(0, grid_dims[0]):
             # check in which domain this gridpoint is in y direction
             for k,endy in enumerate(iendy):
@@ -473,13 +476,13 @@ class ModelHandler(model_handling.ModelHandlerBase):
             for i in range(0, grid_dims[1]):
                 # check in which domain this gridpoint is in x direction
                 for k,endx in enumerate(iendx):
-                    if (i <= endx) and (i >= ibeginy[k]):
+                    if (i <= endx) and (i >= ibeginx[k]):
                         kx = k
                         break
 
                 # store the task corresponding to this grid point           
-                task.append(processes[ky][kx]) 
+                tasks.append(processes[kx][ky]) 
 
-        print(task)
+        return tasks
 
 
