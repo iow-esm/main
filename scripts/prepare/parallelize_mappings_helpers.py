@@ -160,9 +160,12 @@ def sort_exchange_grid(global_settings, model, grid, halo_cells, work_dir):
     permutation = []
     # get the task vector for the sorted exchange grid (will be stored in the exchange grid nc-file)
     sorted_tasks = []
+    # mark which cells are halo cells (=1) and which are original cells (=0)
+    halo = []
     for task in eg_tasks_dict.keys():
         permutation += eg_tasks_dict[task] + halo_cells[task]
         sorted_tasks += [task]*len(eg_tasks_dict[task] + halo_cells[task])
+        halo += [0]*len(eg_tasks_dict[task]) + [1]*len(halo_cells[task])
 
     grid_size = [*range(1, len(sorted_tasks) + 1)]
     ncells = len(grid_size)
@@ -207,7 +210,8 @@ def sort_exchange_grid(global_settings, model, grid, halo_cells, work_dir):
     grid_corner_lat_var = nc.createVariable("grid_corner_lat","f8",("grid_size","grid_corners",)); grid_corner_lat_var.units="degrees"; grid_corner_lat_var[:]=sorted_grid_corner_lat
     grid_corner_lon_var = nc.createVariable("grid_corner_lon","f8",("grid_size","grid_corners",)); grid_corner_lon_var.units="degrees"; grid_corner_lon_var[:]=sorted_grid_corner_lon
     grid_area_var       = nc.createVariable("grid_area"      ,"f8",("grid_size",               )); grid_area_var.units      ="square radians"; grid_area_var[:]=sorted_grid_area
-    task_var = nc.createVariable("task","i4",("grid_size",)); task_var[:]=sorted_tasks
+    task_var = nc.createVariable("task","i4",("grid_size",)); task_var[:] = sorted_tasks
+    halo_var = nc.createVariable("halo","i4",("grid_size",)); halo_var[:] = halo
     permutation_var = nc.createVariable("permutation","i4",("grid_size",)); permutation_var[:]=(np.array(permutation) + 1) # plus one since nc format starts from 1 and python starts from 0
     nc.sync()
     nc.close()
@@ -215,8 +219,13 @@ def sort_exchange_grid(global_settings, model, grid, halo_cells, work_dir):
     return permutation
 
 def update_remapping(global_settings, model, grid, work_dir):
+    update_remapping_from_model_to_exchange(global_settings, model, grid, work_dir)
+    update_remapping_from_exchange_to_model(global_settings, model, grid, work_dir)
+
+def update_remapping_from_model_to_exchange(global_settings, model, grid, work_dir):
 
     # 1. update remapping from model grid to exchange grid
+    # src = model grid, dst = exchange grid
 
     # read in information from updated exchange grid file
     eg_file  = work_dir + "/" + grid + "_exchangegrid.nc"
@@ -228,7 +237,7 @@ def update_remapping(global_settings, model, grid, work_dir):
     dst_grid_rank = nc.variables['grid_rank'][:]
     dst_grid_dims = nc.variables['grid_dims'][:]
 
-    # the permutation has been applied to these variables
+    # the permutation has been applied to these variables in sort_exchange_grid so just use them
     sorted_dst_grid_center_lat = nc.variables['grid_center_lat'][:]
     sorted_dst_grid_center_lon = nc.variables['grid_center_lon'][:]
     sorted_dst_grid_imask = nc.variables['grid_imask'][:]
@@ -239,18 +248,24 @@ def update_remapping(global_settings, model, grid, work_dir):
     remap_file = global_settings.root_dir + "/input/" + model + "/mappings/remap_" + grid + "_" + model + "_to_exchangegrid.nc"
 
     nc = Dataset(remap_file,"r")
+    num_wgts = nc.variables['num_wgts'][:]
     src_grid_size = nc.variables['src_grid_size'][:]
     src_grid_corners = nc.variables['src_grid_corners'][:]
     src_grid_rank = nc.variables['src_grid_rank'][:]
     src_grid_dims = nc.variables['src_grid_dims'][:]
     src_address = nc.variables['src_address'][:]
+    src_grid_center_lat = nc.variables['src_grid_center_lat'][:]
+    src_grid_center_lon = nc.variables['src_grid_center_lon'][:]
+    src_grid_imask = nc.variables['src_grid_imask'][:]
+    src_grid_area = nc.variables['src_grid_area'][:]
+    src_grid_frac = nc.variables['src_grid_frac'][:]
     dst_grid_frac = nc.variables['dst_grid_frac'][:]
     remap_matrix = nc.variables['remap_matrix'][:][:]
     nc.close()
 
     # do the update
     num_links = dst_grid_size  
-    ncells = len(dst_grid_size)
+    ncells = len(num_links)
 
     # new exchange grid adresses are just from 1 to len(dst_grid_size)
     sorted_dst_address = dst_grid_size
@@ -262,24 +277,152 @@ def update_remapping(global_settings, model, grid, work_dir):
 
     sorted_src_address = [-1]*ncells
     for i, old_index in enumerate(permutation):
-        sorted_src_address[i] = src_address[old_index-1]     
+        sorted_src_address[i] = src_address[old_index-1]               
 
-    sorted_remap_matrix = [-1]*ncells
+    sorted_remap_matrix = np.full((len(num_links), len(num_wgts)), -1.0)
     for i, old_index in enumerate(permutation):
-        sorted_remap_matrix[i] = remap_matrix[old_index-1]               
+        sorted_remap_matrix[i, 0] = remap_matrix[old_index-1, 0]               
 
     model_grid_title       = model+'_'+grid
     exchangegrid_title      = model+'_'+grid+'_exchangegrid' 
 
     # write new remapping
     remap_file = work_dir + "/remap_" + grid + "_" + model + "_to_exchangegrid.nc"
-    nc = Dataset(remap_file,"w")
-    nc.title = remap_file
+
+    write_remap_file(remap_file, model_grid_title, exchangegrid_title,
+                    src_grid_size=src_grid_size, dst_grid_size=dst_grid_size,
+                    src_grid_corners=src_grid_corners, dst_grid_corners=dst_grid_corners,
+                    src_grid_rank=src_grid_rank, dst_grid_rank=dst_grid_rank,
+                    num_links=num_links,
+                    num_wgts=num_wgts,
+                    src_grid_dims=src_grid_dims, dst_grid_dims=dst_grid_dims,
+                    src_grid_center_lat=src_grid_center_lat, dst_grid_center_lat=sorted_dst_grid_center_lat,
+                    src_grid_center_lon=src_grid_center_lon, dst_grid_center_lon=sorted_dst_grid_center_lon,
+                    src_grid_imask=src_grid_imask, dst_grid_imask=sorted_dst_grid_imask,
+                    src_grid_area=src_grid_area,  dst_grid_area=sorted_dst_grid_area,
+                    src_grid_frac=src_grid_frac,  dst_grid_frac=sorted_dst_grid_frac,
+                    src_address=sorted_src_address, dst_address=sorted_dst_address,
+                    remap_matrix=sorted_remap_matrix)
+
+def update_remapping_from_exchange_to_model(global_settings, model, grid, work_dir):
+
+    ################## 2. update remapping from exchange grid to model grid
+    # src = exchange grid, dst = model grid
+
+    # read in information from updated exchange grid file
+    eg_file  = work_dir + "/" + grid + "_exchangegrid.nc"
+    nc = Dataset(eg_file,"r")
+    permutation =  nc.variables['permutation'][:]
+    
+    src_grid_size = nc.variables['grid_size'][:]
+    src_grid_corners = nc.variables['grid_corners'][:]
+    src_grid_rank = nc.variables['grid_rank'][:]
+    src_grid_dims = nc.variables['grid_dims'][:]
+
+    # the permutation has been applied to these variables in sort_exchange_grid so just use them
+    sorted_src_grid_center_lat = nc.variables['grid_center_lat'][:]
+    sorted_src_grid_center_lon = nc.variables['grid_center_lon'][:]
+    sorted_src_grid_imask = nc.variables['grid_imask'][:]
+    sorted_src_grid_area = nc.variables['grid_area'][:]
+    halo = nc.variables['halo'][:]
+    nc.close()
+
+    # read in current remapping
+    remap_file = global_settings.root_dir + "/input/" + model + "/mappings/remap_" + grid + "_exchangegrid_to_" + model + ".nc"
+
+    nc = Dataset(remap_file,"r")
+    num_wgts = nc.variables['num_wgts'][:]
+    num_links = nc.variables['num_links'][:]
+    dst_grid_size = nc.variables['dst_grid_size'][:]
+    dst_grid_corners = nc.variables['dst_grid_corners'][:]
+    dst_grid_rank = nc.variables['dst_grid_rank'][:]
+    dst_grid_dims = nc.variables['dst_grid_dims'][:]
+    dst_address = nc.variables['dst_address'][:]
+    dst_grid_center_lat = nc.variables['dst_grid_center_lat'][:]
+    dst_grid_center_lon = nc.variables['dst_grid_center_lon'][:]
+    dst_grid_imask = nc.variables['dst_grid_imask'][:]
+    dst_grid_area = nc.variables['dst_grid_area'][:]
+    dst_grid_frac = nc.variables['dst_grid_frac'][:]
+    src_grid_frac = nc.variables['src_grid_frac'][:]
+    remap_matrix = nc.variables['remap_matrix'][:][:]
+    nc.close()    
+
+    # keep num_links as is
+    # number of exchange grid cells
+    ncells = len(src_grid_size)
+
+    # new exchange grid addresses should be without halo cells, thus the length is the original num_links
+    sorted_src_address = [-1]*len(num_links)
+    # get all exchange grid (src) cells that are not halo cells
+    j = 0 # counter for non-halo cells
+    for i, src in enumerate(src_grid_size):
+        if halo[i] != 1:
+            sorted_src_address[j] = src
+            j += 1
+
+    # apply permutation to field array that is not present in the exchange grid file
+    sorted_src_grid_frac = [-1]*ncells
+    for i, old_index in enumerate(permutation):
+        sorted_src_grid_frac[i] = src_grid_frac[old_index-1] 
+
+    # apply permutation but leave out halo cells
+    sorted_dst_address = [-1]*num_links # take length of num_links since halo cells are excluded
+    j = 0 # counter for non-halo cells
+    for i, old_index in enumerate(permutation):
+        if halo[i] != 1:
+            sorted_dst_address[j] = dst_address[old_index-1]   
+            j += 1            
+
+    sorted_remap_matrix = np.full((len(num_links), len(num_wgts)), -1.0)
+    j = 0 # counter for non-halo cells
+    for i, old_index in enumerate(permutation):
+        if halo[i] != 1:
+            sorted_remap_matrix[j, 0] = remap_matrix[old_index-1, 0] 
+            j += 1
+
+    model_grid_title       = model+'_'+grid
+    exchangegrid_title      = model+'_'+grid+'_exchangegrid' 
+
+    # write new remapping
+    remap_file = work_dir + "/remap_" + grid + "_exchangegrid_to_" + model + ".nc"            
+
+    write_remap_file(remap_file, exchangegrid_title, model_grid_title,
+                    src_grid_size=src_grid_size, dst_grid_size=dst_grid_size,
+                    src_grid_corners=src_grid_corners, dst_grid_corners=dst_grid_corners,
+                    src_grid_rank=src_grid_rank, dst_grid_rank=dst_grid_rank,
+                    num_links=num_links,
+                    num_wgts=num_wgts,
+                    src_grid_dims=src_grid_dims, dst_grid_dims=dst_grid_dims,
+                    src_grid_center_lat=sorted_src_grid_center_lat, dst_grid_center_lat=dst_grid_center_lat,
+                    src_grid_center_lon=sorted_src_grid_center_lon, dst_grid_center_lon=dst_grid_center_lon,
+                    src_grid_imask=sorted_src_grid_imask, dst_grid_imask=dst_grid_imask,
+                    src_grid_area=sorted_src_grid_area,  dst_grid_area=dst_grid_area,
+                    src_grid_frac=sorted_src_grid_frac,  dst_grid_frac=dst_grid_frac,
+                    src_address=sorted_src_address, dst_address=sorted_dst_address,
+                    remap_matrix=sorted_remap_matrix)
+    
+def write_remap_file(file_name, src_grid_name, dst_grid_name,
+                    src_grid_size=None, dst_grid_size=None,
+                    src_grid_corners=None, dst_grid_corners=None,
+                    src_grid_rank=None, dst_grid_rank=None,
+                    num_links=None,
+                    num_wgts=None,
+                    src_grid_dims=None, dst_grid_dims=None,
+                    src_grid_center_lat=None, dst_grid_center_lat=None,
+                    src_grid_center_lon=None, dst_grid_center_lon=None,
+                    src_grid_imask=None, dst_grid_imask=None,
+                    src_grid_area=None,  dst_grid_area=None,
+                    src_grid_frac=None,  dst_grid_frac=None,
+                    src_address=None, dst_address=None,
+                    remap_matrix=None):
+
+    nc = Dataset(file_name,"w")
+    nc.title = file_name
     nc.normalization = 'no norm' 
     nc.map_method = 'Conservative remapping'
     nc.conventions = "SCRIP" 
-    nc.source_grid = exchangegrid_title
-    nc.dest_grid = model_grid_title
+    nc.source_grid = src_grid_name
+    nc.dest_grid = dst_grid_name
     nc.createDimension("src_grid_size"   ,len(src_grid_size) ); src_grid_size_var    = nc.createVariable("src_grid_size"   ,"i4",("src_grid_size"   ,)); src_grid_size_var[:]    = src_grid_size
     nc.createDimension("dst_grid_size"   ,len(dst_grid_size)  ); dst_grid_size_var    = nc.createVariable("dst_grid_size"   ,"i4",("dst_grid_size"   ,)); dst_grid_size_var[:]    = dst_grid_size
     nc.createDimension("src_grid_corners"   ,len(src_grid_corners)); src_grid_corners_var    = nc.createVariable("src_grid_corners"   ,"i4",("src_grid_corners"   ,)); src_grid_corners_var[:]  = src_grid_corners
@@ -287,24 +430,23 @@ def update_remapping(global_settings, model, grid, work_dir):
     nc.createDimension("src_grid_rank"   ,len(src_grid_rank)   ); src_grid_rank_var    = nc.createVariable("src_grid_rank"   ,"i4",("src_grid_rank"   ,)); src_grid_rank_var[:]    = src_grid_rank
     nc.createDimension("dst_grid_rank"   ,len(dst_grid_rank)   ); dst_grid_rank_var    = nc.createVariable("dst_grid_rank"   ,"i4",("dst_grid_rank"   ,)); dst_grid_rank_var[:]    = dst_grid_rank
     nc.createDimension("num_links"   , len(num_links)   ); num_links_var    = nc.createVariable("num_links"   ,"i4",("num_links"   ,)); num_links_var[:]    = num_links
-    nc.createDimension("num_wgts"   ,1   ); num_wgts_var    = nc.createVariable("num_wgts"   ,"i4",("num_wgts"   ,)); num_wgts_var[:]    = np.arange(1)
+    nc.createDimension("num_wgts"   , len(num_wgts)   ); num_wgts_var    = nc.createVariable("num_wgts"   ,"i4",("num_wgts"   ,)); num_wgts_var[:]    = num_wgts
     src_grid_dims_var       = nc.createVariable("src_grid_dims"      ,"i4",("src_grid_rank",               )); src_grid_dims_var.missval=np.int32(-1)  ; src_grid_dims_var[:]      = src_grid_dims
     dst_grid_dims_var       = nc.createVariable("dst_grid_dims"      ,"i4",("dst_grid_rank",               )); dst_grid_dims_var.missval=np.int32(-1)  ; dst_grid_dims_var[:]      = dst_grid_dims
-    # src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]=np.deg2rad([np.mean([poly_y[k][0:(corners[k]-1)]]) for k in range(global_k)])
-    dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]= sorted_dst_grid_center_lat
-    # src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad([np.mean([poly_x[k][0:(corners[k]-1)]]) for k in range(global_k)])
-    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]= sorted_dst_grid_center_lon
-    # src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =[1]*global_k
-    dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     = sorted_dst_grid_imask
-    # src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =area3
-    dst_grid_area_var       = nc.createVariable("dst_grid_area"      ,"f8",("dst_grid_size",               )); dst_grid_area_var.units='square radians'; dst_grid_area_var[:]      = sorted_dst_grid_area
-    # src_grid_frac_var       = nc.createVariable("src_grid_frac"      ,"f8",("src_grid_size",               )); src_grid_frac_var.units='unitless'      ; src_grid_frac_var[:]      =[1.0]*global_k
-    dst_grid_frac_var       = nc.createVariable("dst_grid_frac"      ,"f8",("dst_grid_size",               )); dst_grid_frac_var.units='unitless'      ; dst_grid_frac_var[:]      = sorted_dst_grid_frac
-    src_address_var         = nc.createVariable("src_address"        ,"i4",("num_links",                   ));                                           src_address_var[:]        = sorted_src_address
-    dst_address_var         = nc.createVariable("dst_address"        ,"i4",("num_links",                   ));                                           dst_address_var[:]        = sorted_dst_address
-    remap_matrix_var        = nc.createVariable("remap_matrix"       ,"f8",("num_links","num_wgts",        ));                                           remap_matrix_var[:,:]     = sorted_remap_matrix
+    src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]= src_grid_center_lat
+    dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]= dst_grid_center_lat
+    src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]= src_grid_center_lon
+    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]= dst_grid_center_lon
+    src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     = src_grid_imask
+    dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     = dst_grid_imask
+    src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      = src_grid_area
+    dst_grid_area_var       = nc.createVariable("dst_grid_area"      ,"f8",("dst_grid_size",               )); dst_grid_area_var.units='square radians'; dst_grid_area_var[:]      = dst_grid_area
+    src_grid_frac_var       = nc.createVariable("src_grid_frac"      ,"f8",("src_grid_size",               )); src_grid_frac_var.units='unitless'      ; src_grid_frac_var[:]      = src_grid_frac
+    dst_grid_frac_var       = nc.createVariable("dst_grid_frac"      ,"f8",("dst_grid_size",               )); dst_grid_frac_var.units='unitless'      ; dst_grid_frac_var[:]      = dst_grid_frac
+    src_address_var         = nc.createVariable("src_address"        ,"i4",("num_links",                   ));                                           src_address_var[:]        = src_address
+    dst_address_var         = nc.createVariable("dst_address"        ,"i4",("num_links",                   ));                                           dst_address_var[:]        = dst_address
+    remap_matrix_var        = nc.createVariable("remap_matrix"       ,"f8",("num_links","num_wgts",        ));                                           remap_matrix_var[:,:]     = remap_matrix
     nc.close()
-    
 
 def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks, grid, halo_cells=None):
     import matplotlib.pyplot as plt
