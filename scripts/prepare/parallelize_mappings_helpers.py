@@ -38,89 +38,70 @@ def add_exchange_grid_task_vector(global_settings, model, model_tasks, grid, wor
     os.system("cp " +  global_settings.root_dir + "/input/" + model + "/mappings/" + grid + "_" + "exchangegrid.nc " + eg_file)
 
     nc = Dataset(eg_file,"a")
+    try:
+        nc.renameVariable("task", "task2")
+    except:
+        pass
     task_var = nc.createVariable("task","i4",("grid_size",)); task_var[:]=eg_tasks
     nc.close()
 
     return eg_tasks
 
 def get_halo_cells(global_settings, model, grid, work_dir):
-    # get task vector of t_grid
-    t_eg_file = work_dir + "/" + grid + "_exchangegrid.nc"
-
-    nc = Dataset(t_eg_file,"r")
-    t_tasks = nc.variables['task'][:]
+    
+    # get task vector of  source grid
+    src_eg_file = work_dir + "/" + grid + "_exchangegrid.nc"
+    nc = Dataset(src_eg_file,"r")
+    src_tasks = nc.variables['task'][:]
     nc.close()
 
-    #create a dictionary for finding the exchange grid cells that correspond to a task,
-    # i.e. task_dict = {"task1" : [cell1, cell2,...], "task2" : [cell3, cell4,...]}
-    t_task_dict = {}
-    for i, task in enumerate(t_tasks):    
-        try:
-            t_task_dict[task].append(i)    # minus one since nc format starts from 1 and python starts from 0
-        except:
-            t_task_dict[task] = [i]        # minus one since nc format starts from 1 and python starts from 0
-
-    #print(t_task_dict)
-
+    # preprare halo cells as dictionary with halo_cells["task1"] = [cell1, cell2, ...]
     halo_cells = {}
-    for task in t_task_dict.keys():
+    for task in src_tasks:
         halo_cells[task] = []
 
     # find out to which grid this grid is regridded
     regrid_files = glob.glob(global_settings.root_dir + "/input/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_*.nc")
 
-    other_grids = []
+    dst_grids = []
     for file in regrid_files:
-        other_grids.append(file.split("_to_")[-1].split(".nc")[0])
+        dst_grids.append(file.split("_to_")[-1].split(".nc")[0])
 
-    for other_grid in other_grids:
+    for dst_grid in dst_grids:
 
-        # get task vector of other grid (let's call it here just u grid)
-        u_eg_file = work_dir + "/" + other_grid + "_exchangegrid.nc"
-        nc = Dataset(u_eg_file,"r")
-        u_tasks = nc.variables['task'][:]
+        # get task vector of destiantion grid
+        dst_eg_file = work_dir + "/" + dst_grid + "_exchangegrid.nc"
+        nc = Dataset(dst_eg_file,"r")
+        dst_tasks = nc.variables['task'][:]
         nc.close()
 
-        #create a dictionary for finding the exchange grid cells that correspond to a task,
-        # i.e. task_dict = {"task1" : [cell1, cell2,...], "task2" : [cell3, cell4,...]}
-        u_task_dict = {}
-        for i, task in enumerate(u_tasks):    
-            try:
-                u_task_dict[task].append(i)    # minus one since nc format starts from 1 and python starts from 0
-            except:
-                u_task_dict[task] = [i]        # minus one since nc format starts from 1 and python starts from 0
-        #print(u_task_dict)
-
         # get regridding file
-        regrid_file = global_settings.root_dir + "/input/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_" + other_grid + ".nc"
-        #os.system("cp " +  global_settings.root_dir + "/input/" + model + "/mappings/" + regrid_file + " " + work_dir + "/" + regrid_file)
+        regrid_file = global_settings.root_dir + "/input/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_" + dst_grid + ".nc"
         
         nc = Dataset(regrid_file,"r")
+        num_links = nc.variables['num_links'][:]    # links for mapping from t grid to other grid
         src_address = nc.variables['src_address'][:]    # cells on t grid
         dst_address = nc.variables['dst_address'][:]    # cells on other grid
         nc.close()
 
-        dst_adress_dict = {}
-        for i, dst in enumerate(dst_address):    
-            try:
-                dst_adress_dict[dst-1].append(src_address[i]-1)    # minus one since nc format starts from 1 and python starts from 0
-            except:
-                dst_adress_dict[dst-1] = [src_address[i]-1]        # minus one since nc format starts from 1 and python starts from 0
+        # go through all the links
+        for link in num_links - 1:          # minus one since nc format starts from 1 and python starts from 0
+            src = src_address[link] - 1     # minus one since nc format starts from 1 and python starts from 0
+            dst = dst_address[link] - 1     # minus one since nc format starts from 1 and python starts from 0
 
-        #print(dst_adress_dict)
+            # get tasks of the addresses
+            src_task = src_tasks[src]
+            dst_task = dst_tasks[dst]
 
-        for task in t_task_dict.keys():
-            try:
-                u_cells = u_task_dict[task] # u cells for this task
-            except:
-                continue
-            
-            for u_cell in u_cells:
-                t_cells = dst_adress_dict[u_cell]
-                for t_cell in t_cells:
-                    if t_cell not in t_task_dict[task]:
-                        halo_cells[task].append(t_cell)
-            
+            # if the tasks differ we get a halo cell for the destination cell task
+            if src_task != dst_task:
+                try:
+                    halo_cells[dst_task].append(src)
+                except:
+                    halo_cells[dst_task] = [src]
+
+        # make halo cells unique for the individual tasks  
+        for task in halo_cells.keys():
             halo_cells[task]=list(set(halo_cells[task]))
 
     return halo_cells
@@ -153,6 +134,13 @@ def sort_exchange_grid(global_settings, model, grid, halo_cells, work_dir):
         except:
             eg_tasks_dict[t] = [i]
 
+    # add halo cells
+    for t in halo_cells.keys():
+        try:
+            eg_tasks_dict[t] += halo_cells[t]
+        except:
+            eg_tasks_dict[t] = halo_cells[t]
+
     # sort the dictionary according to the task index
     eg_tasks_dict = dict(sorted(eg_tasks_dict.items()))
 
@@ -163,9 +151,10 @@ def sort_exchange_grid(global_settings, model, grid, halo_cells, work_dir):
     # mark which cells are halo cells (=1) and which are original cells (=0)
     halo = []
     for task in eg_tasks_dict.keys():
-        permutation += eg_tasks_dict[task] + halo_cells[task]
-        sorted_tasks += [task]*len(eg_tasks_dict[task] + halo_cells[task])
-        halo += [0]*len(eg_tasks_dict[task]) + [1]*len(halo_cells[task])
+        permutation += eg_tasks_dict[task]
+        sorted_tasks += [task]*len(eg_tasks_dict[task])
+        halo += [0]*(len(eg_tasks_dict[task]) - len(halo_cells[task]))
+        halo += [1]*len(halo_cells[task])
 
     grid_size = [*range(1, len(sorted_tasks) + 1)]
     ncells = len(grid_size)
@@ -447,6 +436,103 @@ def write_remap_file(file_name, src_grid_name, dst_grid_name,
     dst_address_var         = nc.createVariable("dst_address"        ,"i4",("num_links",                   ));                                           dst_address_var[:]        = dst_address
     remap_matrix_var        = nc.createVariable("remap_matrix"       ,"f8",("num_links","num_wgts",        ));                                           remap_matrix_var[:,:]     = remap_matrix
     nc.close()
+
+def update_regridding(global_settings, model, grid, work_dir):
+    # get task vector of t_grid
+    src_eg_file = work_dir + "/" + grid + "_exchangegrid.nc"
+
+    nc = Dataset(src_eg_file,"r")
+    src_tasks = nc.variables['task'][:]
+    src_permutation = nc.variables['permutation'][:]
+    src_halo = nc.variables['halo'][:]
+    nc.close()
+
+    # find out to which grid this grid is regridded
+    regrid_files = glob.glob(global_settings.root_dir + "/input/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_*.nc")
+
+    dst_grids = []
+    for file in regrid_files:
+        dst_grids.append(file.split("_to_")[-1].split(".nc")[0])
+
+    for dst_grid in dst_grids:
+
+        # get task vector of other grid (let's call it here just u grid)
+        dst_eg_file = work_dir + "/" + dst_grid + "_exchangegrid.nc"
+        nc = Dataset(dst_eg_file,"r")
+        dst_tasks = nc.variables['task'][:]
+        dst_permutation = nc.variables['permutation'][:]
+        dst_halo = nc.variables['halo'][:]
+        nc.close()
+
+        # get current regridding file
+        regrid_file = global_settings.root_dir + "/input/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_" + dst_grid + ".nc"
+        #os.system("cp " +  global_settings.root_dir + "/input/" + model + "/mappings/" + regrid_file + " " + work_dir + "/" + regrid_file)
+        
+        nc = Dataset(regrid_file,"r")
+        num_links = nc.variables['num_links'][:]
+        num_wgts = nc.variables['num_wgts'][:]
+        src_address = nc.variables['src_address'][:]    # cells on t grid
+        dst_address = nc.variables['dst_address'][:]    # cells on other grid
+        remap_matrix = nc.variables['remap_matrix'][:][:]
+        nc.close()
+
+        # get inverse permutation of core cells (non-halo cells)
+        # inv_src_permutation[old_index] = new_index
+        inv_src_permutation = {}
+        for i, per in enumerate(src_permutation):
+            if src_halo[i] != 1:
+                inv_src_permutation[per] = i
+
+        # get inverse permutation of core cells (non-halo cells)
+        # inv_src_permutation[old_index] = new_index
+        inv_dst_permutation = {}
+        for i, per in enumerate(dst_permutation):
+            if dst_halo[i] != 1:
+                inv_dst_permutation[per] = i     
+
+        # find the inverse permutation for the task specific halo cells 
+        # inv_src_halo_permutation[task] = { old_index : new_index }
+        inv_src_halo_permutation = {}
+        for i, per in enumerate(src_permutation):
+            if src_halo[i] == 1:
+                try:
+                    inv_src_halo_permutation[src_tasks[i]][per] = i
+                except:
+                    inv_src_halo_permutation[src_tasks[i]] = {per : i}
+
+        sorted_src_address = []
+        sorted_dst_address = []
+        for link in num_links-1:
+            # get old indices for this link
+            old_src = src_address[link]
+            old_dst = dst_address[link]
+            # map old indices to new ones
+            new_src = inv_src_permutation[old_src]
+            new_dst = inv_dst_permutation[old_dst]
+            # get the task indeces for these cells
+            src_task = src_tasks[new_src]
+            dst_task = dst_tasks[new_dst]
+            # src and dst cell are from different tasks, tkae the corresponding halo cell instead
+            if src_task != dst_task:
+                # get src from halo of this task
+                new_src = inv_src_halo_permutation[dst_task][old_src]
+                sorted_src_address.append(new_src)
+            else:
+                sorted_src_address.append(new_src)
+            
+            sorted_dst_address.append(new_dst)
+
+        # write updated regridding file
+        regrid_file = work_dir + "/regrid_" + grid + "_" + model + "_to_" + dst_grid + ".nc"
+
+        nc = Dataset(regrid_file,'w')
+        nc.createDimension("num_links"   ,len(num_links)   ); num_links_var    = nc.createVariable("num_links"   ,"i4",("num_links"   ,)); num_links_var[:]    = num_links
+        nc.createDimension("num_wgts"   , len(num_wgts)   ); num_wgts_var    = nc.createVariable("num_wgts"   ,"i4",("num_wgts"   ,)); num_wgts_var[:]    = num_wgts
+        src_address_var         = nc.createVariable("src_address"        ,"i4",("num_links",                   )); src_address_var[:]        = np.array(sorted_src_address) + 1 # plus one since nc format starts from 1 and python starts from 0
+        dst_address_var         = nc.createVariable("dst_address"        ,"i4",("num_links",                   )); dst_address_var[:]        = np.array(sorted_dst_address) + 1 # plus one since nc format starts from 1 and python starts from 0
+        remap_matrix_var        = nc.createVariable("remap_matrix"       ,"f8",("num_links","num_wgts",        )); remap_matrix_var[:,:]     = remap_matrix
+        nc.close()    
+        
 
 def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks, grid, halo_cells=None):
     import matplotlib.pyplot as plt

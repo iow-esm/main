@@ -86,4 +86,9 @@ for model in bottom_models:
         print('...done.')
     
     for grid in model_handlers[model].grids:
+        print('Updating the remapping between model ' + grid + ' and exchange ' + grid + '...')
         parallelize_mappings_helpers.update_remapping(global_settings, model, grid, work_dir)
+        print('...done.')
+        print('Updating the regridding from ' + grid + ' exchange grid...')
+        parallelize_mappings_helpers.update_regridding(global_settings, model, grid, work_dir)
+        print('...done.')
