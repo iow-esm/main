@@ -161,29 +161,31 @@ def sort_exchange_grid(global_settings, model, grid, halo_cells, work_dir):
     grid_dims[0] = ncells
 
     # sort other quantities according to new order
-    sorted_grid_center_lat = [-1]*ncells
+    sorted_grid_center_lat = np.full((ncells), -1000.0)
     for i, old_index in enumerate(permutation):
-        sorted_grid_center_lat[i] = grid_center_lat[old_index-1]    # minus one since nc format starts from 1 and python starts from 0
+        sorted_grid_center_lat[i] = grid_center_lat[old_index]    
 
-    sorted_grid_center_lon = [-1]*ncells
+    sorted_grid_center_lon = np.full((ncells), -1000.0)
     for i, old_index in enumerate(permutation):
-        sorted_grid_center_lon[i] = grid_center_lon[old_index-1]     
+        sorted_grid_center_lon[i] = grid_center_lon[old_index]     
 
     sorted_grid_imask = [-1]*ncells
     for i, old_index in enumerate(permutation):
-        sorted_grid_imask[i] = grid_imask[old_index-1]           
+        sorted_grid_imask[i] = grid_imask[old_index]           
 
-    sorted_grid_corner_lat = [-1]*ncells
+    sorted_grid_corner_lat = np.full((ncells, len(grid_corners)), -1000.0)
     for i, old_index in enumerate(permutation):
-        sorted_grid_corner_lat[i] = grid_corner_lat[old_index-1]
+        for j in range(0, len(grid_corners)):
+            sorted_grid_corner_lat[i, j] = grid_corner_lat[old_index, j]
 
-    sorted_grid_corner_lon = [-1]*ncells
+    sorted_grid_corner_lon = np.full((ncells, len(grid_corners)), -1000.0)
     for i, old_index in enumerate(permutation):
-        sorted_grid_corner_lon[i] = grid_corner_lon[old_index-1]      
+        for j in range(0, len(grid_corners)):
+            sorted_grid_corner_lon[i, j] = grid_corner_lon[old_index, j]     
 
-    sorted_grid_area = [-1]*ncells
+    sorted_grid_area = np.full((ncells), -1.0)
     for i, old_index in enumerate(permutation):
-        sorted_grid_area[i] = grid_area[old_index-1]                 
+        sorted_grid_area[i] = grid_area[old_index]                 
 
     sorted_eg_file = work_dir + "/" + grid + "_" + "exchangegrid.nc"
 
@@ -196,8 +198,8 @@ def sort_exchange_grid(global_settings, model, grid, halo_cells, work_dir):
     grid_center_lat_var = nc.createVariable("grid_center_lat","f8",("grid_size",               )); grid_center_lat_var.units="degrees"; grid_center_lat_var[:]=sorted_grid_center_lat
     grid_center_lon_var = nc.createVariable("grid_center_lon","f8",("grid_size",               )); grid_center_lon_var.units="degrees"; grid_center_lon_var[:]=sorted_grid_center_lon
     grid_imask_var      = nc.createVariable("grid_imask"     ,"i4",("grid_size",               )); grid_imask_var.missval=np.int32(-1); grid_imask_var[:]     =sorted_grid_imask
-    grid_corner_lat_var = nc.createVariable("grid_corner_lat","f8",("grid_size","grid_corners",)); grid_corner_lat_var.units="degrees"; grid_corner_lat_var[:]=sorted_grid_corner_lat
-    grid_corner_lon_var = nc.createVariable("grid_corner_lon","f8",("grid_size","grid_corners",)); grid_corner_lon_var.units="degrees"; grid_corner_lon_var[:]=sorted_grid_corner_lon
+    grid_corner_lat_var = nc.createVariable("grid_corner_lat","f8",("grid_size","grid_corners",)); grid_corner_lat_var.units="degrees"; grid_corner_lat_var[:,:]=sorted_grid_corner_lat
+    grid_corner_lon_var = nc.createVariable("grid_corner_lon","f8",("grid_size","grid_corners",)); grid_corner_lon_var.units="degrees"; grid_corner_lon_var[:,:]=sorted_grid_corner_lon
     grid_area_var       = nc.createVariable("grid_area"      ,"f8",("grid_size",               )); grid_area_var.units      ="square radians"; grid_area_var[:]=sorted_grid_area
     task_var = nc.createVariable("task","i4",("grid_size",)); task_var[:] = sorted_tasks
     halo_var = nc.createVariable("halo","i4",("grid_size",)); halo_var[:] = halo
@@ -534,7 +536,7 @@ def update_regridding(global_settings, model, grid, work_dir):
         nc.close()    
         
 
-def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks, grid, halo_cells=None):
+def visualize_domain_decomposition(global_settings, model, grid, model_tasks, eg_tasks=None, halo_cells=None):
     import matplotlib.pyplot as plt
     from shapely.geometry import Polygon
     from scipy.spatial import ConvexHull
@@ -614,14 +616,19 @@ def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks
         plt.plot(x_hull, y_hull, 'r-', linewidth=1)
         plt.fill(x_hull, y_hull, 'r', alpha=0.2)
 
+    # exchange grid domain decomposition
+
     nc_file = global_settings.root_dir + "/input/" + model + "/mappings/" + grid + "_exchangegrid.nc"
     nc = Dataset(nc_file, 'r')
     grid_corner_lat = nc.variables['grid_corner_lat'][:][:]
     grid_corner_lon = nc.variables['grid_corner_lon'][:][:]
     imask = nc.variables['grid_imask'][:]
-    nc.close()
     
-    # exchange grid domain decomposition
+    # take exchange grid tasks from file
+    if eg_tasks is None:
+        eg_tasks = nc.variables['task'][:]
+    nc.close()
+
     eg_tasks_dict = {}
     for i, task in enumerate(eg_tasks):
         try:
@@ -629,6 +636,7 @@ def visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks
         except:
             eg_tasks_dict[task]=[i]
 
+    # if halo cells are not yet included in the exchange grid file
     if halo_cells is not None:
         for task in eg_tasks_dict.keys():
             eg_tasks_dict[task] += halo_cells[task]

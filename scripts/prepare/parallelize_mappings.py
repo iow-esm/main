@@ -106,7 +106,7 @@ for model in bottom_models:
         print('Getting halo cells for the ' + grid + ' exchange grid...')
         halo_cells[grid] = parallelize_mappings_helpers.get_halo_cells(global_settings, model, grid, work_dir)
         print('...done.')
-        #parallelize_mappings_helpers.visualize_domain_decomposition(global_settings, model, model_tasks, eg_tasks[grid], grid, halo_cells[grid])
+        #parallelize_mappings_helpers.visualize_domain_decomposition(global_settings, model, grid, model_tasks, eg_tasks[grid], halo_cells[grid])
 
     for grid in model_handlers[model].grids:
         # sort the exchange grid according to the tasks, get the permutation vector
@@ -174,3 +174,7 @@ for model in bottom_models + [atmos_model]:
     # move the files
     os.system("mv " + work_dir + "/* " + model_dir + "/")
     os.system("rm -rf " + work_dir)
+
+#for model in bottom_models:
+#    for grid in model_handlers[model].grids:
+#        parallelize_mappings_helpers.visualize_domain_decomposition(global_settings, model, grid, model_tasks)
