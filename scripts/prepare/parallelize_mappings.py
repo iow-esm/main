@@ -66,8 +66,8 @@ for model in bottom_models + [atmos_model]:
 
     #TODO don't do backup when everything works as expected
     if os.path.isdir(model_dir + "/serial"):
-        os.system("mv " + model_dir + "/serial/* " + model_dir + "/")
         os.system("rm " + model_dir + "/*.nc")
+        os.system("mv " + model_dir + "/serial/* " + model_dir + "/")
 
 #########################################################################################################
 # STEP 1b: For each of them get the domain decomposition                                                #
@@ -97,7 +97,7 @@ for model in bottom_models:
         print('...done.')
 
     for grid in model_handlers[model].grids:
-        print('Add tesk vector for the ' + grid + ' exchange grid...')
+        print('Add task vector for the ' + grid + ' exchange grid...')
         parallelize_mappings_helpers.add_exchange_grid_task_vector(global_settings, model, eg_tasks[grid], grid, work_dir)
         print('...done.')
 
@@ -142,8 +142,15 @@ for model in bottom_models:
         os.system("cp " + regrid_file + " " + atmos_work_dir + "/" + new_file_name)
 print('...done.')
 
-# update mapping between updated exchange grid and atmos model grid
-for grid in model_handlers[atmos_model].grids:
+# find total set of available grids
+all_grids = []
+for model in bottom_models:
+    all_grids += model_handlers[model].grids
+
+all_grids = list(set(all_grids))
+
+# update mapping between updated exchange grids and atmos model grid
+for grid in all_grids:
     print('Updating the remapping between model ' + atmos_model + ' ' + grid + ' and exchange ' + grid + '...')
     parallelize_mappings_helpers.update_remapping(global_settings, atmos_model, grid, atmos_work_dir)
     print('...done.')
@@ -160,6 +167,9 @@ for model in bottom_models + [atmos_model]:
     os.makedirs(model_dir + "/serial")
     os.system("rsync -t " + model_dir + "/* " + model_dir + "/serial/")
     os.system("rm " + model_dir + "/*.nc")
+    # restore unchanged files from serial
+    os.system("cp " +  model_dir + "/serial/maskfile*.nc " + model_dir)
+    os.system("cp " +  model_dir + "/serial/?_grid.nc " + model_dir)
 
     # move the files
     os.system("mv " + work_dir + "/* " + model_dir + "/")
