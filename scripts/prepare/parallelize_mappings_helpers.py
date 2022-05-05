@@ -4,7 +4,7 @@ import os
 import numpy as np
 import glob
 
-def add_exchange_grid_task_vector(global_settings, model, model_tasks, grid, work_dir):
+def get_exchange_grid_task_vector(global_settings, model, model_tasks, grid, work_dir):
 
     # get source addresses of model grid cells that correspond to exchage grid cells
     remap_file = global_settings.root_dir + "/input/" + model + "/mappings/remap_" + grid + "_" + model + "_to_exchangegrid.nc"
@@ -33,19 +33,19 @@ def add_exchange_grid_task_vector(global_settings, model, model_tasks, grid, wor
     for link in num_links-1:
         for j in src_address_dict[src_address[link]]:
             eg_tasks[j-1] = model_tasks[src_address[link]-1]
+    
+    return eg_tasks
+
+def add_exchange_grid_task_vector(global_settings, model, eg_tasks, grid, work_dir):
 
     eg_file = work_dir + "/" + grid + "_" + "exchangegrid.nc"
     os.system("cp " +  global_settings.root_dir + "/input/" + model + "/mappings/" + grid + "_" + "exchangegrid.nc " + eg_file)
 
     nc = Dataset(eg_file,"a")
-    try:
-        nc.renameVariable("task", "task2")
-    except:
-        pass
     task_var = nc.createVariable("task","i4",("grid_size",)); task_var[:]=eg_tasks
     nc.close()
 
-    return eg_tasks
+    
 
 def get_halo_cells(global_settings, model, grid, work_dir):
     
