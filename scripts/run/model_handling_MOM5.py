@@ -88,7 +88,6 @@ class ModelHandler(model_handling.ModelHandlerBase):
             hotstart_folder = IOW_ESM_ROOT + '/hotstart/' + run_name + '/' + my_directory + '/' + start_date
             os.system('cp '+hotstart_folder+'/*.res.nc '+full_directory+'/INPUT/')    # copy MOM5 hotstart files
             os.system('cp '+hotstart_folder+'/coupler.res '+full_directory+'/INPUT/') # copy MOM5 file stating present date
-            os.system('cp '+hotstart_folder+'/res*.nc '+full_directory+'/')           # copy OASIS3 hotstart files
         # otherwise use initial data in INIT folder for a cold start
         else:
             if not os.path.isdir(full_directory + '/INIT'):
@@ -135,18 +134,25 @@ class ModelHandler(model_handling.ModelHandlerBase):
 
         # STEP 2: MOVE OUTPUT
         os.system('mv '+workdir+'/*.nc.???? '+outputdir+'/out_raw/.')
-        os.system('mv '+workdir+'/MS*.nc '+outputdir+'/.')
-        os.system('mv '+workdir+'/MR*.nc '+outputdir+'/.')
+
+        # if we run with verbos flux calculator the exchanged fields are stored in files MS*.nc and MR*.nc
+        # if files are present we keep them
+        if glob.glob(workdir+'/MS*.nc') != []:
+            os.system('mv '+workdir+'/MS*.nc '+outputdir+'/.')
+        if glob.glob(workdir+'/MR*.nc') != []:
+            os.system('mv '+workdir+'/MR*.nc '+outputdir+'/.')
         
+        # store run information (commit ID's of built components, global_settings,...)
         if os.path.isfile(workdir + '/RUN_INFO'):     
-            files_to_keep = ["input.nml", "data_table", "diag_table", "field_table"]
-            for file in files_to_keep:
-                os.system('(echo \"*** ' + file + '\"; cat ' + workdir+'/'+file+'; echo) >> '+workdir+'/RUN_INFO')
             os.system('mv '+workdir+'/RUN_INFO '+outputdir+'/.')
+
+        # keep the important input files
+        files_to_keep = ["input.nml", "data_table", "diag_table", "field_table"]
+        for file in files_to_keep:
+            os.system('mv '+workdir+'/'+file+' '+outputdir+'/.')
 
         # STEP 3: MOVE HOTSTART
         os.system('mv '+workdir+'/RESTART/* '+hotstartdir+'/.')  # MOM hotstart files
-        os.system('mv '+workdir+'/restart* '+hotstartdir+'/.')  # OASIS hotstart file
     
     def grid_convert_to_SCRIP(self):
         IOW_ESM_ROOT = self.global_settings.root_dir        # root directory of IOW ESM

@@ -156,8 +156,14 @@ class ModelHandler(model_handling.ModelHandlerBase):
         # STEP 2: MOVE OUTPUT
         os.system('mv '+workdir+'/'+str(start_date)+'/* '+outputdir+'/.')
         
+        # store run information (commit ID's of built components, global_settings,...)
         if os.path.isfile(workdir + '/RUN_INFO'):
             os.system('mv '+workdir+'/RUN_INFO '+outputdir+'/.')
+
+        # keep the important input files
+        files_to_keep = ["INPUT"]
+        for file in files_to_keep:         
+            os.system('mv '+workdir+'/'+file+' '+outputdir+'/.')               
 
         # STEP 3: MOVE HOTSTART
         # there is no real hotstart file, the existence of the hotstart folder marks where we stopped
