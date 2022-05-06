@@ -105,7 +105,8 @@ def get_model_handlers(global_settings):
     if global_settings.flux_calculator_mode != model_handling_flux.FluxCalculatorModes.none and coupled:
         model = 'flux_calculator'
         models = models + [model] 
-        model_handlers[model] = model_handling_flux.ModelHandler(global_settings, model)#, model_handlers)
+        # add flux calculator instance and pass the model handlers of the other models as argument
+        model_handlers[model] = model_handling_flux.ModelHandler(global_settings, model, model_handlers)
 
     return model_handlers
      
