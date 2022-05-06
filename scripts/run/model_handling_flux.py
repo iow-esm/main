@@ -11,13 +11,19 @@ import glob
 
 import model_handling
 
+class FluxCalculatorModes:
+    single_core = "single_core_per_bottom_model"
+    on_bottom_cores = "on_bottom_model_cores"
+    none = "none"
+
 class ModelHandler(model_handling.ModelHandlerBase):
-    def __init__(self, global_settings, my_directory):
+    def __init__(self, global_settings, my_directory):#, model_handlers):
         # initialize base class
         model_handling.ModelHandlerBase.__init__(self,  model_handling.ModelTypes.flux_calculator, 
                                                         global_settings, 
                                                         my_directory, 
-                                                        grids = [model_handling.GridTypes.t_grid, model_handling.GridTypes.u_grid, model_handling.GridTypes.v_grid])
+                                                        grids = [model_handling.GridTypes.t_grid, model_handling.GridTypes.u_grid, model_handling.GridTypes.v_grid])     
+        #self.model_handlers = model_handlers                                                                                                                                    
         
     def create_work_directory(self, work_directory_root, start_date, end_date):
     
@@ -66,6 +72,12 @@ class ModelHandler(model_handling.ModelHandlerBase):
         change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
                          after='&input', before='/', start_of_line='num_timesteps',
                          new_value = '='+str(timesteps))
+        # TODO when several bottom models are supported, here should be a check for which model we adapt the num_tasks_per_model
+        mythreads = self.get_my_threads()
+        for i, model in enumerate(mythreads.keys()):
+            change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
+                            after='&input', before='/', start_of_line='num_tasks_per_model(' + str(i+1) + ')',
+                            new_value = '='+str(mythreads[model]) + ',_*_')                         
         
         # STEP 4: Create an empty folder named "mappings" and place exchange grid files and mapping files there
         os.makedirs(full_directory+'/mappings') 
@@ -80,6 +92,34 @@ class ModelHandler(model_handling.ModelHandlerBase):
         return 'flux_calculator'
         
     def get_num_threads(self):
-        # only one thread for the flux_calculator so far
-        mythreads = 1
+
+        mythreads = self.get_my_threads()
+        # get total number of threads for the flux calculator
+        sum_mythreads = 0
+        for model in mythreads.keys():
+            sum_mythreads += mythreads[model]  
+
+        return sum_mythreads
+
+    def get_my_threads(self):
+        # if we run on bottom cores, get the number of cores from them
+        mythreads = {"MOM5_Baltic" : 117}
+        return mythreads
+
+        # get a list of all subdirectories in "input" folder -> these are the models
+        models = list(self.model_handlers.keys())
+
+        # get number of threads from the bottom models 
+        mythreads = {}
+        for model in models:
+            if self.model_handlers[model].model_type != model_handling.ModelTypes.bottom:
+                continue
+
+            if self.global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+                mythreads[model] = self.model_handlers[model].get_num_threads()  
+            elif self.global_settings.flux_calculator_mode == FluxCalculatorModes.single_core:
+                mythreads[model] = 1  
+            else:
+                mythreads[model] = 0      
+        
         return mythreads

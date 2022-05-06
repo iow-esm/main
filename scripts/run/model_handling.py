@@ -98,14 +98,14 @@ def get_model_handlers(global_settings):
             found_atmos = True
                # if there are other models and fluxcalcualtor should be included we perform a coupled run
             if (len(models) > 1) and (global_settings.flux_calculator_mode != "none"):
-                coupled = True     
-        
+                coupled = True
+
     # we need flux_calculator as additional model if we run a coupled simulation
-    if global_settings.flux_calculator_mode=='single_core_per_bottom_model' and coupled:
+    import model_handling_flux    
+    if global_settings.flux_calculator_mode != model_handling_flux.FluxCalculatorModes.none and coupled:
         model = 'flux_calculator'
         models = models + [model] 
-        model_handling_module = importlib.import_module("model_handling_" + model[0:4])
-        model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
+        model_handlers[model] = model_handling_flux.ModelHandler(global_settings, model)#, model_handlers)
 
     return model_handlers
      
