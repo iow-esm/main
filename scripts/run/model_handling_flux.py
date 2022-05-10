@@ -14,6 +14,7 @@ import model_handling
 class FluxCalculatorModes:
     single_core = "single_core_per_bottom_model"
     on_bottom_cores = "on_bottom_model_cores"
+    on_extra_cores = "on_extra_cores"
     none = "none"
 
 class ModelHandler(model_handling.ModelHandlerBase):
@@ -130,7 +131,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
             if self.model_handlers[model].model_type != model_handling.ModelTypes.bottom:
                 continue
 
-            if self.global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores: # one core for each bottom model one
+            if self.global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores or self.global_settings.flux_calculator_mode == FluxCalculatorModes.on_extra_cores: # one core for each bottom model one
                 mythreads[model] = self.model_handlers[model].get_num_threads()  
             elif self.global_settings.flux_calculator_mode == FluxCalculatorModes.single_core: # single core per bottom model
                 mythreads[model] = 1  

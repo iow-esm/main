@@ -19,6 +19,7 @@ from model_handling import get_model_handlers
 import hotstart_handling
 
 from parse_global_settings import GlobalSettings
+from model_handling_flux import FluxCalculatorModes
 
 ##################################
 # STEP 0: Get the root directory #
@@ -209,14 +210,35 @@ for run in range(global_settings.runs_per_job):
     ########################################################################
     # STEP 2f: DO THE WORK                                                 #
     ########################################################################
-    
+    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+        node_list = global_settings.get_node_list()
+        threads_of_model = {}
+        for i, model in enumerate(parallelization_layout["this_model"]):
+            try:
+                threads_of_model[model].append(i)
+            except:
+                threads_of_model[model] = [i]
+
+        machines={}
+        for model in threads_of_model.keys():
+            machines[model] = {}
+
+        for model in threads_of_model.keys():
+            with open("machines_" + model, "w") as file:
+                for thread in threads_of_model[model]:
+                    node = node_list[parallelization_layout["this_node"][thread]]
+                    file.write(str(node) + '\n')
+        
     # WRITE mpirun APPLICATION FILE FOR THE MPMD JOB (specify how many tasks of which model are started)
     file_name = 'mpmd_file'
     if os.path.islink(file_name):
         os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
     mpmd_file = open(file_name, 'w')
     for i,model in enumerate(models):
-        mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
+        if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+            mpmd_file.writelines('-machine machines_'+model+' ./run_'+model+'.sh\n')
+        else:
+            mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
     mpmd_file.close() 
 
     # START THE MPI JOBS

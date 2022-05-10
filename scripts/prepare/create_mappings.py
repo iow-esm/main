@@ -211,5 +211,5 @@ print('done.')
 
 from model_handling_flux import FluxCalculatorModes
 # if the flux calculator should be parallized, execute the script right here (can be also started manually)
-if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+if global_settings.flux_calculator_mode != FluxCalculatorModes.single_core:
     exec(open("parallelize_mappings.py").read())
