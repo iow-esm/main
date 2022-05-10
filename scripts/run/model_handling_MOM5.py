@@ -407,7 +407,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
                     imax = ieg
                     ndmax = ndivs
                 # do bottom half of decomposition, going over the midpoint for odd ndivs
-                if( ndiv < (ndivs-1)/2+1 ):
+                if( ndiv < (ndivs-1)//2+1 ):
                     # domain is sized by dividing remaining points by remaining domains
                     ie = ist + np.ceil((imax-ist+1.0)/(ndmax-ndiv) ) - 1
                     ndmirror = (ndivs-1) - ndiv # mirror domain
