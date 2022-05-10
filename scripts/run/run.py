@@ -20,6 +20,7 @@ import hotstart_handling
 
 from parse_global_settings import GlobalSettings
 from model_handling_flux import FluxCalculatorModes
+from model_handling import ModelTypes
 
 ##################################
 # STEP 0: Get the root directory #
@@ -210,7 +211,8 @@ for run in range(global_settings.runs_per_job):
     ########################################################################
     # STEP 2f: DO THE WORK                                                 #
     ########################################################################
-    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores: \
+        #or (global_settings.flux_calculator_mode == FluxCalculatorModes.on_extra_cores): # TODO to be removed
         node_list = global_settings.get_node_list()
         threads_of_model = {}
         for i, model in enumerate(parallelization_layout["this_model"]):
@@ -224,10 +226,17 @@ for run in range(global_settings.runs_per_job):
             machines[model] = {}
 
         for model in threads_of_model.keys():
+            threads_on_node = {}
+            for thread in threads_of_model[model]:
+                node = node_list[parallelization_layout["this_node"][thread]]
+                try:
+                    threads_on_node[node] += 1
+                except:
+                    threads_on_node[node] = 1
+
             with open("machines_" + model, "w") as file:
-                for thread in threads_of_model[model]:
-                    node = node_list[parallelization_layout["this_node"][thread]]
-                    file.write(str(node) + '\n')
+                for node in threads_on_node.keys():
+                    file.write(str(node)+':'+str(threads_on_node[node])+'\n')
         
     # WRITE mpirun APPLICATION FILE FOR THE MPMD JOB (specify how many tasks of which model are started)
     file_name = 'mpmd_file'
@@ -235,8 +244,9 @@ for run in range(global_settings.runs_per_job):
         os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
     mpmd_file = open(file_name, 'w')
     for i,model in enumerate(models):
-        if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
-            mpmd_file.writelines('-machine machines_'+model+' ./run_'+model+'.sh\n')
+        if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores: \
+            #or global_settings.flux_calculator_mode == FluxCalculatorModes.on_extra_cores: # TODO to be removed
+            mpmd_file.writelines('-machine machines_'+model+' ./run_'+model+'.sh\n')         
         else:
             mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
     mpmd_file.close() 
