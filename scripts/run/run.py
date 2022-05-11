@@ -14,12 +14,13 @@ import create_work_directories
 import create_namcouple 
 import postprocess_handling
 
-from model_handling import get_model_handlers, ModelTypes
+from model_handling import get_model_handlers
 
 import hotstart_handling
 
 from parse_global_settings import GlobalSettings
 from model_handling_flux import FluxCalculatorModes
+from model_handling import ModelTypes
 
 ##################################
 # STEP 0: Get the root directory #
@@ -210,18 +211,32 @@ for run in range(global_settings.runs_per_job):
     ########################################################################
     # STEP 2f: DO THE WORK                                                 #
     ########################################################################
-    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
-        for model in models:
-            if model_handlers[model].model_type == ModelTypes.bottom:
-                os.system('cat run_'+model+'.sh > run_'+model+'_flux_calculator.sh')
-                os.system('echo " &" >> run_'+model+'_flux_calculator.sh')
-                if (global_settings.local_workdir_base==''):
-                    os.system('echo cd '+work_directory_root+'/flux_calculator >> run_'+model+'_flux_calculator.sh')
-                os.system('echo "exec ./' + model_handlers["flux_calculator"].get_model_executable() + ' > logfile_\${my_id}.txt 2>&1" >> run_'+model+'_flux_calculator.sh')
-                os.system('echo "wait" >> run_'+model+'_flux_calculator.sh')
-                st = os.stat('run_'+model+'_flux_calculator.sh')                 # get current permissions
-                os.chmod('run_'+model+'_flux_calculator.sh', st.st_mode | 0o777) # add a+rwx permission
+    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores: \
+        #or (global_settings.flux_calculator_mode == FluxCalculatorModes.on_extra_cores): # TODO to be removed
+        node_list = global_settings.get_node_list()
+        threads_of_model = {}
+        for i, model in enumerate(parallelization_layout["this_model"]):
+            try:
+                threads_of_model[model].append(i)
+            except:
+                threads_of_model[model] = [i]
 
+        machines={}
+        for model in threads_of_model.keys():
+            machines[model] = {}
+
+        for model in threads_of_model.keys():
+            threads_on_node = {}
+            for thread in threads_of_model[model]:
+                node = node_list[parallelization_layout["this_node"][thread]]
+                try:
+                    threads_on_node[node] += 1
+                except:
+                    threads_on_node[node] = 1
+
+            with open("machines_" + model, "w") as file:
+                for node in threads_on_node.keys():
+                    file.write(str(node)+':'+str(threads_on_node[node])+'\n')
         
     # WRITE mpirun APPLICATION FILE FOR THE MPMD JOB (specify how many tasks of which model are started)
     file_name = 'mpmd_file'
@@ -229,13 +244,9 @@ for run in range(global_settings.runs_per_job):
         os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
     mpmd_file = open(file_name, 'w')
     for i,model in enumerate(models):
-        if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
-            if model_handlers[model].model_type == ModelTypes.bottom:
-                mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'_flux_calculator.sh\n')
-            elif model_handlers[model].model_type == ModelTypes.flux_calculator:    
-                continue
-            else:
-                mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
+        if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores: \
+            #or global_settings.flux_calculator_mode == FluxCalculatorModes.on_extra_cores: # TODO to be removed
+            mpmd_file.writelines('-machine machines_'+model+' ./run_'+model+'.sh\n')         
         else:
             mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
     mpmd_file.close() 
