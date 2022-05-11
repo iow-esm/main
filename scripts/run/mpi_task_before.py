@@ -4,6 +4,7 @@
 import os
 import time
 import sys
+from xml.parsers.expat import model
 
 import create_work_directories
 
@@ -68,3 +69,18 @@ if firstinnode[my_id]:
     # create an empty file "finished_creating_workdir.txt" that tells other tasks that they may start now
     f = open(local_workdir_base+'/'+my_model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+attempt+'.txt','w')
     f.close()
+
+    from model_handling_flux import FluxCalculatorModes
+    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+        my_model = 'flux_calculator'
+        model_handler = model_handlers[my_model]
+        create_work_directories.create_work_directories(global_settings,          # global_settings object
+                                                    local_workdir_base,    # /path/to/work/directory for all models
+                                                    str(start_date),       # 'YYYYMMDD'
+                                                    str(end_date),         # 'YYYYMMDD'
+                                                    model_handler,         # pass the model handler for this process
+                                                    global_workdir_base)   # we need the global path also because we put some files there
+
+        # create an empty file "finished_creating_workdir.txt" that tells other tasks that they may start now
+        f = open(local_workdir_base+'/'+my_model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+attempt+'.txt','w')
+        f.close()
