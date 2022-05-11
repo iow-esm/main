@@ -1,7 +1,7 @@
 # Parallelize the flux calulator
 
 It is possible to run the flux calculator in parallel where each process takes care of a specific part of the exchage grid.
-These parts are determined according to the ocean model's parallelization: for each process of the ocean model, the corresponding ocean grid cells are identified and exchange grid cells that are linked to these cells are grouped together. Since some fields have to be regridded to other grids (e.g from the _t_ to the _u_ grid) there are overlaps (halos) between the groups, see {numref}`Fig. {number} <fig-parallelize_flux_calculator>` 
+These parts are determined according to the ocean model's parallelization: for each process of the ocean model, the corresponding ocean grid cells are identified and exchange grid cells that are linked to these cells are grouped together. Since some fields have to be regridded to other grids (e.g from the _t_ to the _u_ grid) there are overlaps between the groups, these overlaps are called halos, see {numref}`Fig. {number} <fig-parallelize_flux_calculator>` 
 
 ```{figure} ../figures/parallelize_flux_calculator.png
 ---
@@ -15,13 +15,46 @@ Blue are the ocean model's grid cells, red is the domain decomposition for the o
 
 ## Adapt the global settings
 
-In order to run the flux calculator in parallel you have to specify
+There are two posibilities to parallelize the flux calculator.
+
+
+### On bottom model cores
+
+In order to run the flux calculator processes _on the same cores_ as the ocean model you have to specify
 
 ``` python
 flux_calculator_mode = "on_bottom_model_cores"
 ```
 
 in your `global_settings.py` in the `input` folder.
+Moreover you have define a python function that returns a list of your used node names (strings), e.g. if you are working on of the HLRN machines you can use the environment variable `SLURM_NODELIST` and this functions might look like
+
+``` python
+def get_node_list(): import os; nodes=os.environ["SLURM_NODELIST"]; return [nodes[0:3]+node for node in nodes[4:-1].split(",")]
+```
+
+It will return for example `["bcn1001", "bcn1003", "bcn1005"]`.
+
+This option does not yield the shortest computation time but saves computational resources since the flux calculator and the ocean model share the same cores.
+
+**Importantly**, if you use Intel MPI for paralleization on the HLRN machines you have to put 
+``` bash 
+export PSM2_MULTI_EP=0
+```
+into your jobscript template after the MPI module has been loaded. 
+This enables putting more tasks on the node than available cores, see also https://www.hlrn.de/doc/display/PUB/MPI+Jobs+with+more+than+40+%2896%29+tasks+per+node+failing.
+
+### On extra cores
+
+In order to run the flux calculator processes _on extra cores_ you have to specify
+
+``` python
+flux_calculator_mode = "on_extra_cores"
+```
+
+in your `global_settings.py` in the `input` folder.
+
+This option yields the shortest computation time but consumes more computational resources since the flux calculator and the ocean model run on different cores.
 
 
 ## Create mappings
@@ -38,3 +71,5 @@ python3 create_mappings.py
 Alternatively you can use the `prepare-before-run` option of the run script, see [](usage:advanced_use:running_during_development).
 
 Techinically the `parallelize_mappings.py` script in `scripts/prepare` creates the mapping files that are necessary for the parallel mode.
+
+Note that if you change the domain decomposition of on of your bottom models you have to execute the `parallelize_mappings.py` script again.

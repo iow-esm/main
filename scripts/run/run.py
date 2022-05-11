@@ -211,9 +211,11 @@ for run in range(global_settings.runs_per_job):
     ########################################################################
     # STEP 2f: DO THE WORK                                                 #
     ########################################################################
-    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores: \
-        #or (global_settings.flux_calculator_mode == FluxCalculatorModes.on_extra_cores): # TODO to be removed
+    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+        # get a list of node names that are currently used
         node_list = global_settings.get_node_list()
+
+        # find out which threads belong to which models
         threads_of_model = {}
         for i, model in enumerate(parallelization_layout["this_model"]):
             try:
@@ -221,21 +223,23 @@ for run in range(global_settings.runs_per_job):
             except:
                 threads_of_model[model] = [i]
 
-        machines={}
-        for model in threads_of_model.keys():
-            machines[model] = {}
-
-        for model in threads_of_model.keys():
-            threads_on_node = {}
-            for thread in threads_of_model[model]:
-                node = node_list[parallelization_layout["this_node"][thread]]
-                try:
-                    threads_on_node[node] += 1
-                except:
-                    threads_on_node[node] = 1
-
-            with open("machines_" + model, "w") as file:
+        # write a machine file
+        with open("machine_file", "w") as file:
+            # find out which model has how many threads on which node
+            for model in threads_of_model.keys():
+                threads_on_node = {}
+                for thread in threads_of_model[model]:
+                    # get the node of this model thread from the parallelization layout
+                    node = node_list[parallelization_layout["this_node"][thread]]
+                    # add this thread to that node
+                    try:
+                        threads_on_node[node] += 1
+                    except:
+                        threads_on_node[node] = 1
+                # write how many threads are used for this model on the corresponding nodes
                 for node in threads_on_node.keys():
+                    # TODO specify how to write a line of a machine(host) file in the global_settings.py
+                    # TODO this is only working for Intel MPI at the moment
                     file.write(str(node)+':'+str(threads_on_node[node])+'\n')
         
     # WRITE mpirun APPLICATION FILE FOR THE MPMD JOB (specify how many tasks of which model are started)
@@ -243,12 +247,11 @@ for run in range(global_settings.runs_per_job):
     if os.path.islink(file_name):
         os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
     mpmd_file = open(file_name, 'w')
+    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+        # TODO this is only working for Intel MPI at the moment
+        mpmd_file.writelines("-machine machine_file\n")    
     for i,model in enumerate(models):
-        if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores: \
-            #or global_settings.flux_calculator_mode == FluxCalculatorModes.on_extra_cores: # TODO to be removed
-            mpmd_file.writelines('-machine machines_'+model+' ./run_'+model+'.sh\n')         
-        else:
-            mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
+        mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
     mpmd_file.close() 
 
     # START THE MPI JOBS
@@ -287,6 +290,9 @@ for run in range(global_settings.runs_per_job):
         os.chmod(file_name, st.st_mode | 0o777) # add a+rwx permission
 
         mpmd_file = open('mpmd_file', 'w')
+        if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+            # TODO this is only working for Intel MPI at the moment
+            mpmd_file.writelines("-machine machine_file\n")    
         mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(parallelization_layout['total_threads'])+' ./run_after1.sh\n')
         mpmd_file.close()
 

@@ -6,7 +6,7 @@ import os
 import re
 import sys
 
-
+import copy
 
 def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
 
@@ -25,15 +25,16 @@ def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
     model_threads = [0 for model in models]     # list how many threads this model uses
     model_executable = ['' for model in models] # list the name of this model's executable 
 
-    total_threads = 0
     total_cores = 0
-    total_nodes = 0
+
+    # list of threads
     threads = []
 
+    # to get the mode of flux calculator 
     from model_handling_flux import FluxCalculatorModes
 
-    core = 0
-    node = 0
+    core = 0    # counter for cores on a node 
+    node = 0    # counter for the nodes
     first_thread_of_flux_calculator = True
 
     # Loop over the models to find out how many threads they will need
@@ -45,41 +46,55 @@ def get_parallelization_layout(IOW_ESM_ROOT):        # root directory of IOW ESM
         model_threads[i]=mythreads
         model_executable[i]=myexecutable
 
-        total_threads += mythreads
-
+        # skip flux calculator here and append them later (flux_calculator is always the last model)
         if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
             if model_handlers[model].model_type == ModelTypes.flux_calculator:
                 continue
 
         for j in range(mythreads):
-            threads.append({    "model" : model,
-                                "model_type" : model_handlers[model].model_type,
-                                "core" : core,
-                                "node" : node,
-                                "first_of_model" : (j==0),
-                                "first_of_node" : (core == 0) or (j==0) })
-
-            if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
-                if model_handlers[model].model_type == ModelTypes.bottom:     
-                    threads.append({    "model" : "flux_calculator",
-                                        "model_type" : ModelTypes.flux_calculator,
-                                        "core" : core,
-                                        "node" : node,
-                                        "first_of_model" : first_thread_of_flux_calculator,
-                                        "first_of_node" : (core == 0) or (j==0) })    
-                    first_thread_of_flux_calculator = False                                           
-
+            # store information of this thread
+            threads.append({"model" : model,
+                            "model_type" : model_handlers[model].model_type,
+                            "core" : core,
+                            "node" : node,
+                            "first_of_model" : (j==0),
+                            "first_of_node" : (core == 0) or (j==0) })
+            # increase #core for this node
             core += 1
             total_cores += 1
+
+            # we go to the next node
             if core % global_settings.cores_per_node == 0:
+                # restart core counting, increment node index
                 core = 0
                 node += 1   
-                total_nodes +=1                          
 
-    # started from zero so add one for the total number
-    total_nodes +=1
-    total_cores += 1
+    # get the number of nodes from node indeces (they start from zero)
+    total_nodes = max([thread["node"] for thread in threads]) + 1  
 
+    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+        # add flux calculator threads at the end
+        flux_calculator_threads = []
+        for thread in threads:
+            # go through all bottom threads
+            if thread["model_type"] != ModelTypes.bottom:
+                continue
+            
+            # use bottom thread as template for flux calculator thread
+            flux_calculator_threads.append(copy.deepcopy(thread))
+            # change model information of this thread to be used by flux calculator
+            flux_calculator_threads[-1]["model"] = "flux_calculator"
+            flux_calculator_threads[-1]["model_type"] =  ModelTypes.flux_calculator
+            flux_calculator_threads[-1]["first_of_model"] = first_thread_of_flux_calculator
+            if first_thread_of_flux_calculator:
+                first_thread_of_flux_calculator = False  
+
+        # append flux calculator threads to other threads           
+        threads += flux_calculator_threads
+
+    total_threads = len(threads)
+
+    # transform to original format
     this_thread = [0]*total_threads
     this_core = [0]*total_threads
     this_node = [0]*total_threads
