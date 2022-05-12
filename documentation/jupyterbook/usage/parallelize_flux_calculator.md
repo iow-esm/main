@@ -27,15 +27,6 @@ flux_calculator_mode = "on_bottom_model_cores"
 ```
 
 in your `global_settings.py` in the `input` folder.
-Moreover you have define a python function that returns a list of your used node names (strings), e.g. if you are working on of the HLRN machines you can use the environment variable `SLURM_NODELIST` and this functions might look like
-
-``` python
-def get_node_list(): import os; nodes=os.environ["SLURM_NODELIST"]; return [nodes[0:3]+node for node in nodes[4:-1].split(",")]
-```
-
-It will return for example `["bcn1001", "bcn1003", "bcn1005"]`.
-
-This option does not yield the shortest computation time but saves computational resources since the flux calculator and the ocean model share the same cores.
 
 **Importantly**, if you use Intel MPI for paralleization on the HLRN machines you have to put 
 ``` bash 
@@ -43,6 +34,7 @@ export PSM2_MULTI_EP=0
 ```
 into your jobscript template after the MPI module has been loaded. 
 This enables putting more tasks on the node than available cores, see also https://www.hlrn.de/doc/display/PUB/MPI+Jobs+with+more+than+40+%2896%29+tasks+per+node+failing.
+
 
 ### On extra cores
 

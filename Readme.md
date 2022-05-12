@@ -17,6 +17,44 @@ Further information is available at https://sven-karsten.github.io/iow_esm/intro
 
 # Versions
 
+## 1.02.00 (in preparation)
+
+| date        | author(s)   | link      |
+|---          |---          |---        |
+| 2022-04-27  | SK          | XXX        | 
+
+<details>
+
+### changes
+* flux calculator can now run in parallel
+  * see documentation/jupyterbook/usage/parallelize_flux_calculator.md for details
+* factored out machine-dependent settings from global settings
+  * machine settings are now implemented in machine_settings_*
+  * one of these files is chosen by keyword "machine" global settings
+  * these settings can be overwritten by explicitly putting the variables in global settings
+
+### dependencies
+* bash, git, (python for GUI) 
+  
+### known issues
+* none
+
+### tested with
+* intensively tested on both HLRN machines
+  * using example setups available under:
+    (coupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+              MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                CCLM_Eurocordex/example_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                MOM5_Baltic/example_8nm/1.00.00 
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                I2LM_Eurocordex/example_0.22deg/1.00.00                              
+  * can be built and run on Haumea but output is not intensively tested
+  
+</details>
+
+
 ## 1.01.00 (latest release)
 
 | date        | author(s)   | link      |
