@@ -47,9 +47,11 @@ attempt = os.environ["IOW_ESM_ATTEMPT"]
 local_workdir_base = os.environ["IOW_ESM_LOCAL_WORKDIR_BASE"]
 global_workdir_base = os.environ["IOW_ESM_GLOBAL_WORKDIR_BASE"]
 
+# get all model handlers such that the flux calculator knows about the other models
+from model_handling import get_model_handlers
+model_handlers = get_model_handlers(global_settings)
 # get the model handler for this process
-from model_handling import get_model_handler
-model_handler = get_model_handler(global_settings, my_model)
+model_handler = model_handlers[my_model]
 
 ###############################################################
 # STEP 5: Create my model's work directory on the local node. #

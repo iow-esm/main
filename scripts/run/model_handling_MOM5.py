@@ -23,7 +23,8 @@ class ModelHandler(model_handling.ModelHandlerBase):
         model_handling.ModelHandlerBase.__init__(self, 
                                                  model_handling.ModelTypes.bottom,  # specify this model as a bottom model
                                                  global_settings,                   # pass global settings 
-                                                 my_directory)                      # memorize specific directory name = "model_domain"
+                                                 my_directory,                      # memorize specific directory name = "model_domain"
+                                                 grids = [model_handling.GridTypes.t_grid, model_handling.GridTypes.u_grid, model_handling.GridTypes.v_grid]) # model grids
         
     def create_work_directory(self, work_directory_root, start_date, end_date):
     
@@ -87,7 +88,6 @@ class ModelHandler(model_handling.ModelHandlerBase):
             hotstart_folder = IOW_ESM_ROOT + '/hotstart/' + run_name + '/' + my_directory + '/' + start_date
             os.system('cp '+hotstart_folder+'/*.res.nc '+full_directory+'/INPUT/')    # copy MOM5 hotstart files
             os.system('cp '+hotstart_folder+'/coupler.res '+full_directory+'/INPUT/') # copy MOM5 file stating present date
-            os.system('cp '+hotstart_folder+'/res*.nc '+full_directory+'/')           # copy OASIS3 hotstart files
         # otherwise use initial data in INIT folder for a cold start
         else:
             if not os.path.isdir(full_directory + '/INIT'):
@@ -134,18 +134,25 @@ class ModelHandler(model_handling.ModelHandlerBase):
 
         # STEP 2: MOVE OUTPUT
         os.system('mv '+workdir+'/*.nc.???? '+outputdir+'/out_raw/.')
-        os.system('mv '+workdir+'/MS*.nc '+outputdir+'/.')
-        os.system('mv '+workdir+'/MR*.nc '+outputdir+'/.')
+
+        # if we run with verbos flux calculator the exchanged fields are stored in files MS*.nc and MR*.nc
+        # if files are present we keep them
+        if glob.glob(workdir+'/MS*.nc') != []:
+            os.system('mv '+workdir+'/MS*.nc '+outputdir+'/.')
+        if glob.glob(workdir+'/MR*.nc') != []:
+            os.system('mv '+workdir+'/MR*.nc '+outputdir+'/.')
         
+        # store run information (commit ID's of built components, global_settings,...)
         if os.path.isfile(workdir + '/RUN_INFO'):     
-            files_to_keep = ["input.nml", "data_table", "diag_table", "field_table"]
-            for file in files_to_keep:
-                os.system('(echo \"*** ' + file + '\"; cat ' + workdir+'/'+file+'; echo) >> '+workdir+'/RUN_INFO')
             os.system('mv '+workdir+'/RUN_INFO '+outputdir+'/.')
+
+        # keep the important input files
+        files_to_keep = ["input.nml", "data_table", "diag_table", "field_table"]
+        for file in files_to_keep:
+            os.system('mv '+workdir+'/'+file+' '+outputdir+'/.')
 
         # STEP 3: MOVE HOTSTART
         os.system('mv '+workdir+'/RESTART/* '+hotstartdir+'/.')  # MOM hotstart files
-        os.system('mv '+workdir+'/restart* '+hotstartdir+'/.')  # OASIS hotstart file
     
     def grid_convert_to_SCRIP(self):
         IOW_ESM_ROOT = self.global_settings.root_dir        # root directory of IOW ESM
@@ -321,10 +328,15 @@ class ModelHandler(model_handling.ModelHandlerBase):
                 if match:
                     mythreads_x = int(match.group(1))
                     mythreads_y = int(match.group(2))
+                    # memorize the layout for getting the domain decomposition
+                    self.ndivx = mythreads_x
+                    self.ndivy = mythreads_y
                 match = re.search("mask_table\s*=\s*'([^']*)'", line) # search for anything between single quotes behind 'mask_table=', 
                                                                       # but allow spaces
                 if match:
                     maskfile = IOW_ESM_ROOT+'/input/'+model+'/'+match.group(1)
+                    # memorize the mask file for getting the domain decomposition
+                    self.maskfile = maskfile
                     if not os.path.isfile(maskfile):
                         print('Could not determine parallelization layout because the following MOM5 mask file was missing: '+maskfile)
                         mythreads_masked = -1
@@ -339,3 +351,146 @@ class ModelHandler(model_handling.ModelHandlerBase):
             mythreads = mythreads_x * mythreads_y - mythreads_masked
             
         return mythreads
+
+    def get_domain_decomposition(self):
+
+        # get the correct paths
+        IOW_ESM_ROOT = self.global_settings.root_dir              # root directory of IOW ESM
+        full_directory = IOW_ESM_ROOT+'/input/' + self.my_directory
+
+        # check if grid_spec.nc exists
+        grid_spec_file = full_directory +'/INPUT/grid_spec.nc'
+        if not (os.path.isfile(grid_spec_file)):
+            print('ERROR in get_domain_decomposition: File '+full_directory+'/INPUT/grid_spec.nc not found.')
+            return
+
+        # open dataset
+        nc = Dataset(grid_spec_file,"r")
+
+        # get grid size as shape of the "Geographic longitude of T_cell centers"
+        x_t = nc.variables['x_T'     ][:,:]
+        grid_dims = x_t.shape
+        nc.close()
+        
+        # get the mask file (use get_num_threads method that sets self.maskfile, self.ndivx, self.ndivy)
+        if self.get_num_threads() <= 0:
+            print("Gettin the number of threads failed. Abort.")
+            return []
+
+        # mimic domain decomposition from MOM5 code (mpp_domain.c)
+        def mpp_compute_extent(npts, ndivs):
+
+            #print(npts, ndivs)
+            
+            ibegin= [0]*ndivs
+            iend = [0]*ndivs
+
+            ndivs_is_odd = ndivs%2
+            npts_is_odd = npts%2
+            symmetrize = 0
+
+            if( ndivs_is_odd and npts_is_odd ):
+                symmetrize = 1
+            if( ndivs_is_odd == 0 and npts_is_odd == 0 ):
+                symmetrize = 1
+            if( ndivs_is_odd and npts_is_odd == 0 and ndivs < npts/2 ):
+                symmetrize = 1
+
+            isg = 0
+            ieg = npts-1
+            ist = isg
+
+            for ndiv in range(0,ndivs):
+
+                #mirror domains are stored in the list and retrieved if required. 
+                if( ndiv == 0 ): # initialize max points and max domains 
+                    imax = ieg
+                    ndmax = ndivs
+                # do bottom half of decomposition, going over the midpoint for odd ndivs
+                if( ndiv < (ndivs-1)//2+1 ):
+                    # domain is sized by dividing remaining points by remaining domains
+                    ie = ist + np.ceil((imax-ist+1.0)/(ndmax-ndiv) ) - 1
+                    ndmirror = (ndivs-1) - ndiv # mirror domain
+
+                    if( (ndmirror > ndiv) and symmetrize ): # only for domains over the midpoint
+	                    # mirror extents, the max(,) is to eliminate overlaps
+                        ibegin[ndmirror] = max(isg+ieg-ie, ie+1)
+                        iend[ndmirror] = max(isg+ieg-ist, ie+1)
+                        imax = ibegin[ndmirror] - 1
+                        ndmax -= 1
+                else:
+                    if( symmetrize ):
+	                    #do top half of decomposition by retrieving saved values */
+                        ist = ibegin[ndiv]
+                        ie = iend[ndiv]
+    
+                    else:
+                        ie = ist + np.ceil((imax-ist+1.0)/(ndmax-ndiv)) - 1
+
+                ibegin[ndiv] = ist
+                iend[ndiv] = ie
+
+                ist = ie + 1              
+
+            return ibegin, iend                        
+
+        # get the index limits for the domains 
+        ibeginx, iendx = mpp_compute_extent(grid_dims[1], self.ndivx)   # x direction
+        ibeginy, iendy = mpp_compute_extent(grid_dims[0], self.ndivy)   # y direction
+
+        print("Use domain extents in x direction as: ", np.array(iendx, dtype=int) - np.array(ibeginx, dtype=int) + 1)
+        print("Use domain extents in y direction as: ", np.array(iendy, dtype=int) - np.array(ibeginy, dtype=int) + 1)
+
+        # get mask file content
+        with open(self.maskfile) as mf:
+            lines = mf.readlines()
+
+        # throw away first two lines
+        lines.pop(0)    # number of masked domains
+        lines.pop(0)    # layout
+
+        # matrix containing the process indeces
+        processes = np.zeros(shape=(self.ndivx, self.ndivy), dtype=int)
+
+        # go through the lines and mark masked unused domains with -1
+        for line in lines:
+            i,j = line.strip().split(",")
+            i = int(i)
+            j = int(j)
+            processes[i-1][j-1] = -1
+
+        # count remaining processes (that are not masked out)
+        counter = 0
+
+        for j in range(0, self.ndivy):
+            for i in range(0, self.ndivx):
+
+                if processes[i][j] == -1:
+                    continue
+                
+                processes[i][j] = counter
+                counter += 1
+
+        #print(processes)
+
+        # build array with task index for each grid point
+        tasks = []
+        for j in range(0, grid_dims[0]):
+            # check in which domain this gridpoint is in y direction
+            for k,endy in enumerate(iendy):
+                if (j <= endy) and (j >= ibeginy[k]):
+                    ky = k
+                    break
+            for i in range(0, grid_dims[1]):
+                # check in which domain this gridpoint is in x direction
+                for k,endx in enumerate(iendx):
+                    if (i <= endx) and (i >= ibeginx[k]):
+                        kx = k
+                        break
+
+                # store the task corresponding to this grid point           
+                tasks.append(processes[kx][ky]) 
+
+        return tasks
+
+

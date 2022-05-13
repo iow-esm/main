@@ -11,10 +11,38 @@ import glob
 
 import model_handling
 
+class FluxCalculatorModes:
+    single_core = "single_core_per_bottom_model"
+    on_bottom_cores = "on_bottom_model_cores"
+    on_extra_cores = "on_extra_cores"
+    none = "none"
+
 class ModelHandler(model_handling.ModelHandlerBase):
-    def __init__(self, global_settings, my_directory):
+    """Base class for all specific model handler.
+    
+    This constructor must be called in the constructor of the child class as e.g.
+    `ModelHandlerBase.__init__(self, model_handling.ModelTypes.bottom, global_settings, my_directory)`
+    The child class must be implmented as `ModelHandler` in a python module called `model_handling_ABCD.py` 
+    where `ABCD` is a four letter acronym of your model.
+    
+    :param global_settings:         Object containing the global settings
+    :type global_settings:          class:`GlobalSettings` 
+    
+    :param my_directory:            Name of the model's input folder, usually model_domain, e.g. MOM5_Baltic. IMPORTANT: model names can only have four letters as e.g. MOM5, CCLM, GETM etc.
+    :type my_directory:             str
+                                    
+    :param model_handlers:          Dictionary with model handlers of other models that are coupled to the flux calculator. The keys are the directory names of the other models.
+                                    Default: {} must be present to be created in the `model_handling.get_model_handler` method. 
+    :type model_type:               dict {str : class:`ModelHandler`}
+    """
+    def __init__(self, global_settings, my_directory, model_handlers = {}):
         # initialize base class
-        model_handling.ModelHandlerBase.__init__(self, model_handling.ModelTypes.flux_calculator, global_settings, my_directory)
+        model_handling.ModelHandlerBase.__init__(self,  model_handling.ModelTypes.flux_calculator, 
+                                                        global_settings, 
+                                                        my_directory, 
+                                                        grids = [model_handling.GridTypes.t_grid, model_handling.GridTypes.u_grid, model_handling.GridTypes.v_grid])     
+        # memorize the model handlers for the other models
+        self.model_handlers = model_handlers                                                                                                                                    
         
     def create_work_directory(self, work_directory_root, start_date, end_date):
     
@@ -63,6 +91,12 @@ class ModelHandler(model_handling.ModelHandlerBase):
         change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
                          after='&input', before='/', start_of_line='num_timesteps',
                          new_value = '='+str(timesteps))
+        # TODO when several bottom models are supported, here should be a check for which model we adapt the num_tasks_per_model
+        mythreads = self.get_my_threads()
+        for i, model in enumerate(mythreads.keys()):
+            change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
+                            after='&input', before='/', start_of_line='num_tasks_per_model(' + str(i+1) + ')',
+                            new_value = '='+str(mythreads[model]) + ',_*_')                         
         
         # STEP 4: Create an empty folder named "mappings" and place exchange grid files and mapping files there
         os.makedirs(full_directory+'/mappings') 
@@ -77,6 +111,31 @@ class ModelHandler(model_handling.ModelHandlerBase):
         return 'flux_calculator'
         
     def get_num_threads(self):
-        # only one thread for the flux_calculator so far
-        mythreads = 1
+
+        mythreads = self.get_my_threads()
+        # get total number of threads for the flux calculator
+        sum_mythreads = 0
+        for model in mythreads.keys():
+            sum_mythreads += mythreads[model]  
+
+        return sum_mythreads
+
+    def get_my_threads(self):
+        # get a list of the models that are coupled to the flux calculator
+        models = list(self.model_handlers.keys())
+
+        # get number of threads from the bottom models or 
+        mythreads = {}
+        for model in models:
+            # only consider bottom models here
+            if self.model_handlers[model].model_type != model_handling.ModelTypes.bottom:
+                continue
+
+            if self.global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores or self.global_settings.flux_calculator_mode == FluxCalculatorModes.on_extra_cores: # one core for each bottom model one
+                mythreads[model] = self.model_handlers[model].get_num_threads()  
+            elif self.global_settings.flux_calculator_mode == FluxCalculatorModes.single_core: # single core per bottom model
+                mythreads[model] = 1  
+            else: # case flux_calculator_mode = 'none' -> no flux calculator should run
+                mythreads[model] = 0      
+        
         return mythreads
