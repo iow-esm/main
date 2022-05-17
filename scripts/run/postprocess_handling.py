@@ -87,6 +87,16 @@ def postprocess_handling(global_settings, models, initial_start_date, end_date):
                     task_end_date = postprocess_tasks[model][task]["end_date"]
                 except:
                     task_end_date = end_date 
-                    
+
+                # check if this task should only be done when we reach the final date
+                try:
+                    task_only_at_end = postprocess_tasks[model][task]["only_at_end"]
+                except:
+                    task_only_at_end = False
+
+                if task_only_at_end:
+                    if int(end_date) < int(global_settings.final_date):
+                        continue
+
                 print('Start postprocessing task ' + task + ' of model ' + model + ' with parameters: ', task_run_name, task_init_date, task_end_date, flush=True)
                 start_postprocessing(global_settings.root_dir, task_run_name, model, task_init_date, task_end_date, task = task)
