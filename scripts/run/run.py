@@ -48,6 +48,10 @@ from get_parallelization_layout import get_parallelization_layout
 # read in global settings
 global_settings = GlobalSettings(IOW_ESM_ROOT)
 
+# remove finished marker
+if glob.glob(IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt"):
+    os.system("rm " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt")
+
 # get a list of all subdirectories in "input" folder -> these are the models
 model_handlers = get_model_handlers(global_settings)
 models = model_handlers.keys()
@@ -368,6 +372,10 @@ if int(start_date) < int(global_settings.final_date):
 # STEP 4: JOB SUCCESSFULLY FINISHED - START PROCESSSING (IF WANTED)                     #
 #########################################################################################                                             
 postprocess_handling.postprocess_handling(global_settings, models, initial_start_date, end_date)
+
+# if this run has successfully finished, mark it
+if int(start_date) >= int(global_settings.final_date):
+    os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt")
 
 
 
