@@ -99,6 +99,7 @@ for run in range(global_settings.runs_per_job):
             end_date = global_settings.final_date
         if int(start_date) >= int(global_settings.final_date):
             print('IOW_ESM job finished integration to final date '+global_settings.final_date)
+            os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt")
             sys.exit()
     
     
