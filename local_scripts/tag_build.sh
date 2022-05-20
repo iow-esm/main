@@ -16,7 +16,7 @@ local="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 last_build_file="${local}/../LAST_BUILD_${target}_${debug}"
 
 # find out if the working directory has uncommitted changes
-dirt=`git status | grep "nothing to commit, working tree clean"`
+dirt=`git status | grep "nothing to commit"`
 # if yes, grep did not find the string and the variable is empty thus we tag this
 if [ -z "${dirt}" ]; then
 	dirt="+uncommited"
