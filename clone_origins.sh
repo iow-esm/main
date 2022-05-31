@@ -46,7 +46,7 @@ awk -v local="$local" -v ori="$1" '{
 	
 	print "if [ -d "local"/"dir"/.git ]; then"
 	print " cd "local"/"dir
-	print " if ! git pull "remote" "version"; then"
+	print " if ! git pull "remote" && git checkout "version"; then"
 	print "  rm -rf "local"/"dir
 	print " fi"
 	print " cd -"
