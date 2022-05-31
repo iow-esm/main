@@ -4,7 +4,7 @@
 ## Enter new version here            ##
 #######################################
 
-new_version="1.01.00"
+new_version="1.02.00"
 commit_message="Release $new_version
 
 This is a new version with new features and bug fixes, see Readme.
@@ -18,11 +18,11 @@ This is a new version with new features and bug fixes, see Readme.
 
 origins=(
 "components/OASIS3-MCT      :   1.00.00"
-"components/flux_calculator :   1.00.00"
+"components/flux_calculator :   1.01.00"
 "components/MOM5            :   1.00.00"
-"components/CCLM            :   1.00.01"
+"components/CCLM            :   1.00.02"
 "tools/I2LM                 :   1.00.00"
-"postprocess                :   1.01.00"
+"postprocess                :   1.01.02"
 )
 
 #######################################

@@ -13,6 +13,7 @@ parts:
   - file: development/extend_documentation.md
   - file: development/new_destinations.md
   - file: development/new_model.md
+  - file: development/release_new_version.md
   - file: development/testing.md
 - caption: usage
   chapters:
