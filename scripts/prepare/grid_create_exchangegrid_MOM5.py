@@ -248,16 +248,16 @@ def grid_create_exchangegrid_MOM5(IOW_ESM_ROOT,        # root directory of IOW E
     print('    writing exchange grid SCRIP file...')
     nc = netCDF4.Dataset(exchange_grid_file,"w")
     nc.title = exchangegrid_title
-    nc.createDimension("grid_size"   ,global_k  ); grid_size_var    = nc.createVariable("grid_size"   ,"i4",("grid_size"   ,)); grid_size_var[:]    = [n+1 for n in range(global_k)]
-    nc.createDimension("grid_corners",max(corners[0:global_k])); grid_corners_var = nc.createVariable("grid_corners","i4",("grid_corners",)); grid_corners_var[:] = [n+1 for n in range(max(corners[0:global_k]))]
+    nc.createDimension("grid_size"   ,len(grid_imask_2)  ); grid_size_var    = nc.createVariable("grid_size"   ,"i4",("grid_size"   ,)); grid_size_var[:]    = [n+1 for n in range(len(grid_imask_2))]
+    nc.createDimension("grid_corners",4); grid_corners_var = nc.createVariable("grid_corners","i4",("grid_corners",)); grid_corners_var[:] = [n+1 for n in range(4)]
     nc.createDimension("grid_rank"   ,1   ); grid_rank_var    = nc.createVariable("grid_rank"   ,"i4",("grid_rank"   ,)); grid_rank_var[:]    = [1]
-    grid_dims_var       = nc.createVariable("grid_dims"      ,"i4",("grid_rank",               )); grid_dims_var.missval=np.int32(-1) ; grid_dims_var[:]      =[global_k]
-    grid_center_lat_var = nc.createVariable("grid_center_lat","f8",("grid_size",               )); grid_center_lat_var.units="degrees"; grid_center_lat_var[:]=[np.mean([poly_y[k][0:(corners[k]-1)]]) for k in range(global_k)]
-    grid_center_lon_var = nc.createVariable("grid_center_lon","f8",("grid_size",               )); grid_center_lon_var.units="degrees"; grid_center_lon_var[:]=[np.mean([poly_x[k][0:(corners[k]-1)]]) for k in range(global_k)]
-    grid_imask_var      = nc.createVariable("grid_imask"     ,"i4",("grid_size",               )); grid_imask_var.missval=np.int32(-1); grid_imask_var[:]     =[1]*global_k
-    grid_corner_lat_var = nc.createVariable("grid_corner_lat","f8",("grid_size","grid_corners",)); grid_corner_lat_var.units="degrees"; grid_corner_lat_var[:]=np.ma.asarray([[poly_y[k][0:max(corners[0:global_k])]] for k in range(global_k)])
-    grid_corner_lon_var = nc.createVariable("grid_corner_lon","f8",("grid_size","grid_corners",)); grid_corner_lon_var.units="degrees"; grid_corner_lon_var[:]=np.ma.asarray([[poly_x[k][0:max(corners[0:global_k])]] for k in range(global_k)])
-    grid_area_var       = nc.createVariable("grid_area"      ,"f8",("grid_size",               )); grid_area_var.units      ="square radians"; grid_area_var[:]=area3
+    grid_dims_var       = nc.createVariable("grid_dims"      ,"i4",("grid_rank",               )); grid_dims_var.missval=np.int32(-1) ; grid_dims_var[:]      =[len(grid_imask_2)]
+    grid_center_lat_var = nc.createVariable("grid_center_lat","f8",("grid_size",               )); grid_center_lat_var.units="degrees"; grid_center_lat_var[:]=grid_center_lat2
+    grid_center_lon_var = nc.createVariable("grid_center_lon","f8",("grid_size",               )); grid_center_lon_var.units="degrees"; grid_center_lon_var[:]=grid_center_lon2
+    grid_imask_var      = nc.createVariable("grid_imask"     ,"i4",("grid_size",               )); grid_imask_var.missval=np.int32(-1); grid_imask_var[:]     =grid_imask_2
+    grid_corner_lat_var = nc.createVariable("grid_corner_lat","f8",("grid_size","grid_corners",)); grid_corner_lat_var.units="degrees"; grid_corner_lat_var[:]=grid_corner_lat2
+    grid_corner_lon_var = nc.createVariable("grid_corner_lon","f8",("grid_size","grid_corners",)); grid_corner_lon_var.units="degrees"; grid_corner_lon_var[:]=grid_corner_lon2
+    grid_area_var       = nc.createVariable("grid_area"      ,"f8",("grid_size",               )); grid_area_var.units      ="square radians"; grid_area_var[:]=area2
     nc.sync()
     nc.close()
 
@@ -269,30 +269,30 @@ def grid_create_exchangegrid_MOM5(IOW_ESM_ROOT,        # root directory of IOW E
     nc.map_method = 'Conservative remapping'
     nc.conventions = "SCRIP" 
     nc.source_grid = atmos_grid_title
-    nc.dest_grid = exchangegrid_title
+    nc.dest_grid = bottom_grid_title
     nc.createDimension("src_grid_size"   ,len(grid_imask_1)  ); src_grid_size_var    = nc.createVariable("src_grid_size"   ,"i4",("src_grid_size"   ,)); src_grid_size_var[:]    = [n+1 for n in range(len(grid_imask_1))]
-    nc.createDimension("dst_grid_size"   ,global_k  ); dst_grid_size_var    = nc.createVariable("dst_grid_size"   ,"i4",("dst_grid_size"   ,)); dst_grid_size_var[:]    = [n+1 for n in range(global_k)]
+    nc.createDimension("dst_grid_size"   ,len(grid_imask_2)  ); dst_grid_size_var    = nc.createVariable("dst_grid_size"   ,"i4",("dst_grid_size"   ,)); dst_grid_size_var[:]    = [n+1 for n in range(len(grid_imask_2))]
     nc.createDimension("src_grid_corners"   ,4  ); src_grid_corners_var    = nc.createVariable("src_grid_corners"   ,"i4",("src_grid_corners"   ,)); src_grid_corners_var[:]    = [n+1 for n in range(4)]
-    nc.createDimension("dst_grid_corners"   ,max(corners[0:global_k])  ); dst_grid_corners_var    = nc.createVariable("dst_grid_corners"   ,"i4",("dst_grid_corners"   ,)); dst_grid_corners_var[:]    = [n+1 for n in range(max(corners[0:global_k]))]
+    nc.createDimension("dst_grid_corners"   ,4  ); dst_grid_corners_var    = nc.createVariable("dst_grid_corners"   ,"i4",("dst_grid_corners"   ,)); dst_grid_corners_var[:]    = [n+1 for n in range(4)]
     nc.createDimension("src_grid_rank"   ,len(grid_dims_1)   ); src_grid_rank_var    = nc.createVariable("src_grid_rank"   ,"i4",("src_grid_rank"   ,)); src_grid_rank_var[:]    = [n+1 for n in range(len(grid_dims_1))]
-    nc.createDimension("dst_grid_rank"   ,1   ); dst_grid_rank_var    = nc.createVariable("dst_grid_rank"   ,"i4",("dst_grid_rank"   ,)); dst_grid_rank_var[:]    = [1]
+    nc.createDimension("dst_grid_rank"   ,len(grid_dims_1)   ); dst_grid_rank_var    = nc.createVariable("dst_grid_rank"   ,"i4",("dst_grid_rank"   ,)); dst_grid_rank_var[:]    = [n+1 for n in range(len(grid_dims_2))]
     nc.createDimension("num_links"   ,global_k   ); num_links_var    = nc.createVariable("num_links"   ,"i4",("num_links"   ,)); num_links_var[:]    = [n+1 for n in range(global_k)]
     nc.createDimension("num_wgts"   ,1   ); num_wgts_var    = nc.createVariable("num_wgts"   ,"i4",("num_wgts"   ,)); num_wgts_var[:]    = [1]
     src_grid_dims_var       = nc.createVariable("src_grid_dims"      ,"i4",("src_grid_rank",               )); src_grid_dims_var.missval=np.int32(-1)  ; src_grid_dims_var[:]      =grid_dims_1
-    dst_grid_dims_var       = nc.createVariable("dst_grid_dims"      ,"i4",("dst_grid_rank",               )); dst_grid_dims_var.missval=np.int32(-1)  ; dst_grid_dims_var[:]      =[global_k]
+    dst_grid_dims_var       = nc.createVariable("dst_grid_dims"      ,"i4",("dst_grid_rank",               )); dst_grid_dims_var.missval=np.int32(-1)  ; dst_grid_dims_var[:]      =grid_dims_2
     src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]=np.deg2rad(grid_center_lat1)
-    dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad([np.mean([poly_y[k][0:(corners[k]-1)]]) for k in range(global_k)])
+    dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad(grid_center_lat2)
     src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad(grid_center_lon1)
-    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad([np.mean([poly_x[k][0:(corners[k]-1)]]) for k in range(global_k)])
+    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(grid_center_lon2)
     src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =grid_imask_1
-    dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =[1]*global_k
+    dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =grid_imask_2
     src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =area1
-    dst_grid_area_var       = nc.createVariable("dst_grid_area"      ,"f8",("dst_grid_size",               )); dst_grid_area_var.units='square radians'; dst_grid_area_var[:]      =area3
+    dst_grid_area_var       = nc.createVariable("dst_grid_area"      ,"f8",("dst_grid_size",               )); dst_grid_area_var.units='square radians'; dst_grid_area_var[:]      =area2
     src_grid_frac_var       = nc.createVariable("src_grid_frac"      ,"f8",("src_grid_size",               )); src_grid_frac_var.units='unitless'      ; src_grid_frac_var[:]      =area1_fraction
-    dst_grid_frac_var       = nc.createVariable("dst_grid_frac"      ,"f8",("dst_grid_size",               )); dst_grid_frac_var.units='unitless'      ; dst_grid_frac_var[:]      =[1.0]*global_k
+    dst_grid_frac_var       = nc.createVariable("dst_grid_frac"      ,"f8",("dst_grid_size",               )); dst_grid_frac_var.units='unitless'      ; dst_grid_frac_var[:]      =area2_fraction
     src_address_var         = nc.createVariable("src_address"        ,"i4",("num_links",                   ));                                           src_address_var[:]        =[n+1 for n in atmos_index[0:global_k]]
-    dst_address_var         = nc.createVariable("dst_address"        ,"i4",("num_links",                   ));                                           dst_address_var[:]        =[n+1 for n in range(global_k)]
-    remap_matrix_var        = nc.createVariable("remap_matrix"       ,"f8",("num_links","num_wgts",        ));                                           remap_matrix_var[:,:]     =np.ma.asarray([[1.0] for k in range(global_k)])
+    dst_address_var         = nc.createVariable("dst_address"        ,"i4",("num_links",                   ));                                           dst_address_var[:]        =[n+1 for n in bottom_index[0:global_k]]
+    remap_matrix_var        = nc.createVariable("remap_matrix"       ,"f8",("num_links","num_wgts",        ));                                           remap_matrix_var[:,:]     =np.ma.asarray([[val] for val in fraction_of_bottom_normalized])
     nc.close()
 
     print('        exchange -> atmos...')
@@ -301,29 +301,29 @@ def grid_create_exchangegrid_MOM5(IOW_ESM_ROOT,        # root directory of IOW E
     nc.normalization = 'no norm' 
     nc.map_method = 'Conservative remapping'
     nc.conventions = "SCRIP" 
-    nc.source_grid = exchangegrid_title
+    nc.source_grid = bottom_grid_title
     nc.dest_grid = atmos_grid_title
-    nc.createDimension("src_grid_size"   ,global_k  ); src_grid_size_var    = nc.createVariable("src_grid_size"   ,"i4",("src_grid_size"   ,)); src_grid_size_var[:]    = [n+1 for n in range(global_k)]
+    nc.createDimension("src_grid_size"   ,len(grid_imask_2)  ); src_grid_size_var    = nc.createVariable("src_grid_size"   ,"i4",("src_grid_size"   ,)); src_grid_size_var[:]    = [n+1 for n in range(len(grid_imask_2))]
     nc.createDimension("dst_grid_size"   ,len(grid_imask_1)  ); dst_grid_size_var    = nc.createVariable("dst_grid_size"   ,"i4",("dst_grid_size"   ,)); dst_grid_size_var[:]    = [n+1 for n in range(len(grid_imask_1))]
-    nc.createDimension("src_grid_corners"   ,max(corners[0:global_k])  ); src_grid_corners_var    = nc.createVariable("src_grid_corners"   ,"i4",("src_grid_corners"   ,)); src_grid_corners_var[:]    = [n+1 for n in range(max(corners[0:global_k]))]
+    nc.createDimension("src_grid_corners"   ,4  ); src_grid_corners_var    = nc.createVariable("src_grid_corners"   ,"i4",("src_grid_corners"   ,)); src_grid_corners_var[:]    = [n+1 for n in range(4)]
     nc.createDimension("dst_grid_corners"   ,4  ); dst_grid_corners_var    = nc.createVariable("dst_grid_corners"   ,"i4",("dst_grid_corners"   ,)); dst_grid_corners_var[:]    = [n+1 for n in range(4)]
-    nc.createDimension("src_grid_rank"   ,1   ); src_grid_rank_var    = nc.createVariable("src_grid_rank"   ,"i4",("src_grid_rank"   ,)); src_grid_rank_var[:]    = [1]
+    nc.createDimension("src_grid_rank"   ,len(grid_dims_2)   ); src_grid_rank_var    = nc.createVariable("src_grid_rank"   ,"i4",("src_grid_rank"   ,)); src_grid_rank_var[:]    = [n+1 for n in range(len(grid_dims_2))]
     nc.createDimension("dst_grid_rank"   ,len(grid_dims_1)   ); dst_grid_rank_var    = nc.createVariable("dst_grid_rank"   ,"i4",("dst_grid_rank"   ,)); dst_grid_rank_var[:]    = [n+1 for n in range(len(grid_dims_1))]
     nc.createDimension("num_links"   ,global_k   ); num_links_var    = nc.createVariable("num_links"   ,"i4",("num_links"   ,)); num_links_var[:]    = [n+1 for n in range(global_k)]
     nc.createDimension("num_wgts"   ,1   ); num_wgts_var    = nc.createVariable("num_wgts"   ,"i4",("num_wgts"   ,)); num_wgts_var[:]    = [1]
-    src_grid_dims_var       = nc.createVariable("src_grid_dims"      ,"i4",("src_grid_rank",               )); src_grid_dims_var.missval=np.int32(-1)  ; src_grid_dims_var[:]      =[global_k]
+    src_grid_dims_var       = nc.createVariable("src_grid_dims"      ,"i4",("src_grid_rank",               )); src_grid_dims_var.missval=np.int32(-1)  ; src_grid_dims_var[:]      =grid_dims_2
     dst_grid_dims_var       = nc.createVariable("dst_grid_dims"      ,"i4",("dst_grid_rank",               )); dst_grid_dims_var.missval=np.int32(-1)  ; dst_grid_dims_var[:]      =grid_dims_1
-    src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]=np.deg2rad([np.mean([poly_y[k][0:(corners[k]-1)]]) for k in range(global_k)])
+    src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]=np.deg2rad(grid_center_lat2)
     dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad(grid_center_lat1)
-    src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad([np.mean([poly_x[k][0:(corners[k]-1)]]) for k in range(global_k)])
+    src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad(grid_center_lon2)
     dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(grid_center_lon1)
-    src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =[1]*global_k
+    src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =grid_imask_2
     dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =grid_imask_1
-    src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =area3
+    src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =area2
     dst_grid_area_var       = nc.createVariable("dst_grid_area"      ,"f8",("dst_grid_size",               )); dst_grid_area_var.units='square radians'; dst_grid_area_var[:]      =area1
-    src_grid_frac_var       = nc.createVariable("src_grid_frac"      ,"f8",("src_grid_size",               )); src_grid_frac_var.units='unitless'      ; src_grid_frac_var[:]      =[1.0]*global_k
+    src_grid_frac_var       = nc.createVariable("src_grid_frac"      ,"f8",("src_grid_size",               )); src_grid_frac_var.units='unitless'      ; src_grid_frac_var[:]      =area2_fraction
     dst_grid_frac_var       = nc.createVariable("dst_grid_frac"      ,"f8",("dst_grid_size",               )); dst_grid_frac_var.units='unitless'      ; dst_grid_frac_var[:]      =area1_fraction
-    src_address_var         = nc.createVariable("src_address"        ,"i4",("num_links",                   ));                                           src_address_var[:]        =[n+1 for n in range(global_k)]
+    src_address_var         = nc.createVariable("src_address"        ,"i4",("num_links",                   ));                                           src_address_var[:]        =[n+1 for n in bottom_index[0:global_k]]
     dst_address_var         = nc.createVariable("dst_address"        ,"i4",("num_links",                   ));                                           dst_address_var[:]        =[n+1 for n in atmos_index[0:global_k]]
     remap_matrix_var        = nc.createVariable("remap_matrix"       ,"f8",("num_links","num_wgts",        ));                                           remap_matrix_var[:,:]     =np.ma.asarray([[val] for val in fraction_of_atmos_normalized])
     nc.close()
@@ -337,28 +337,37 @@ def grid_create_exchangegrid_MOM5(IOW_ESM_ROOT,        # root directory of IOW E
     nc.source_grid = bottom_grid_title
     nc.dest_grid = exchangegrid_title
     nc.createDimension("src_grid_size"   ,len(grid_imask_2)  ); src_grid_size_var    = nc.createVariable("src_grid_size"   ,"i4",("src_grid_size"   ,)); src_grid_size_var[:]    = [n+1 for n in range(len(grid_imask_2))]
-    nc.createDimension("dst_grid_size"   ,global_k  ); dst_grid_size_var    = nc.createVariable("dst_grid_size"   ,"i4",("dst_grid_size"   ,)); dst_grid_size_var[:]    = [n+1 for n in range(global_k)]
+    nc.createDimension("dst_grid_size"   ,len(grid_imask_2)  ); src_grid_size_var    = nc.createVariable("dst_grid_size"   ,"i4",("dst_grid_size"   ,)); dst_grid_size_var[:]    = [n+1 for n in range(len(grid_imask_2))]
+    #nc.createDimension("dst_grid_size"   ,global_k  ); dst_grid_size_var    = nc.createVariable("dst_grid_size"   ,"i4",("dst_grid_size"   ,)); dst_grid_size_var[:]    = [n+1 for n in range(global_k)]
     nc.createDimension("src_grid_corners"   ,4  ); src_grid_corners_var    = nc.createVariable("src_grid_corners"   ,"i4",("src_grid_corners"   ,)); src_grid_corners_var[:]    = [n+1 for n in range(4)]
-    nc.createDimension("dst_grid_corners"   ,max(corners[0:global_k])  ); dst_grid_corners_var    = nc.createVariable("dst_grid_corners"   ,"i4",("dst_grid_corners"   ,)); dst_grid_corners_var[:]    = [n+1 for n in range(max(corners[0:global_k]))]
+    nc.createDimension("dst_grid_corners"   ,4  ); src_grid_corners_var    = nc.createVariable("dst_grid_corners"   ,"i4",("dst_grid_corners"   ,)); dst_grid_corners_var[:]    = [n+1 for n in range(4)]
+    #nc.createDimension("dst_grid_corners"   ,max(corners[0:global_k])  ); dst_grid_corners_var    = nc.createVariable("dst_grid_corners"   ,"i4",("dst_grid_corners"   ,)); dst_grid_corners_var[:]    = [n+1 for n in range(max(corners[0:global_k]))]
     nc.createDimension("src_grid_rank"   ,len(grid_dims_2)   ); src_grid_rank_var    = nc.createVariable("src_grid_rank"   ,"i4",("src_grid_rank"   ,)); src_grid_rank_var[:]    = [n+1 for n in range(len(grid_dims_2))]
-    nc.createDimension("dst_grid_rank"   ,1   ); dst_grid_rank_var    = nc.createVariable("dst_grid_rank"   ,"i4",("dst_grid_rank"   ,)); dst_grid_rank_var[:]    = [n+1 for n in range(1)]
-    nc.createDimension("num_links"   ,global_k   ); num_links_var    = nc.createVariable("num_links"   ,"i4",("num_links"   ,)); num_links_var[:]    = [n+1 for n in range(global_k)]
+    nc.createDimension("dst_grid_rank"   ,1  ); dst_grid_rank_var    = nc.createVariable("dst_grid_rank"   ,"i4",("dst_grid_rank"   ,)); dst_grid_rank_var[:]    = [n+1 for n in range(1)]
+    #nc.createDimension("dst_grid_rank"   ,1   ); dst_grid_rank_var    = nc.createVariable("dst_grid_rank"   ,"i4",("dst_grid_rank"   ,)); dst_grid_rank_var[:]    = [n+1 for n in range(1)]
+    nc.createDimension("num_links"   ,len(grid_imask_2)   ); num_links_var    = nc.createVariable("num_links"   ,"i4",("num_links"   ,)); num_links_var[:]    = [n+1 for n in range(len(grid_imask_2))]
+    #nc.createDimension("num_links"   ,global_k   ); num_links_var    = nc.createVariable("num_links"   ,"i4",("num_links"   ,)); num_links_var[:]    = [n+1 for n in range(global_k)]
     nc.createDimension("num_wgts"   ,1   ); num_wgts_var    = nc.createVariable("num_wgts"   ,"i4",("num_wgts"   ,)); num_wgts_var[:]    = [1]
     src_grid_dims_var       = nc.createVariable("src_grid_dims"      ,"i4",("src_grid_rank",               )); src_grid_dims_var.missval=np.int32(-1)  ; src_grid_dims_var[:]      =grid_dims_2
-    dst_grid_dims_var       = nc.createVariable("dst_grid_dims"      ,"i4",("dst_grid_rank",               )); dst_grid_dims_var.missval=np.int32(-1)  ; dst_grid_dims_var[:]      =[global_k]
+    dst_grid_dims_var       = nc.createVariable("dst_grid_dims"      ,"i4",("dst_grid_rank",               )); dst_grid_dims_var.missval=np.int32(-1)  ; dst_grid_dims_var[:]      = [len(grid_imask_2)]
+    #dst_grid_dims_var       = nc.createVariable("dst_grid_dims"      ,"i4",("dst_grid_rank",               )); dst_grid_dims_var.missval=np.int32(-1)  ; dst_grid_dims_var[:]      =[global_k]
     src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]=np.deg2rad(grid_center_lat2)
-    dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad([np.mean([poly_y[k][0:(corners[k]-1)]]) for k in range(global_k)])
+    dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad(grid_center_lat2)
+    #dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad([np.mean([poly_y[k][0:(corners[k]-1)]]) for k in range(global_k)])
     src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad(grid_center_lon2)
-    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad([np.mean([poly_x[k][0:(corners[k]-1)]]) for k in range(global_k)])
+    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(grid_center_lon2)
+    #dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad([np.mean([poly_x[k][0:(corners[k]-1)]]) for k in range(global_k)])
     src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =grid_imask_2
-    dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =[1]*global_k
+    dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =grid_imask_2
+    #dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =[1]*global_k
     src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =area2
-    dst_grid_area_var       = nc.createVariable("dst_grid_area"      ,"f8",("dst_grid_size",               )); dst_grid_area_var.units='square radians'; dst_grid_area_var[:]      =area3
-    src_grid_frac_var       = nc.createVariable("src_grid_frac"      ,"f8",("src_grid_size",               )); src_grid_frac_var.units='unitless'      ; src_grid_frac_var[:]      =area2_fraction
-    dst_grid_frac_var       = nc.createVariable("dst_grid_frac"      ,"f8",("dst_grid_size",               )); dst_grid_frac_var.units='unitless'      ; dst_grid_frac_var[:]      =[1.0]*global_k
-    src_address_var         = nc.createVariable("src_address"        ,"i4",("num_links",                   ));                                           src_address_var[:]        =[n+1 for n in bottom_index[0:global_k]]
-    dst_address_var         = nc.createVariable("dst_address"        ,"i4",("num_links",                   ));                                           dst_address_var[:]        =[n+1 for n in range(global_k)]
-    remap_matrix_var        = nc.createVariable("remap_matrix"       ,"f8",("num_links","num_wgts",        ));                                           remap_matrix_var[:,:]     =np.ma.asarray([[1.0] for k in range(global_k)])
+    dst_grid_area_var       = nc.createVariable("dst_grid_area"      ,"f8",("dst_grid_size",               )); dst_grid_area_var.units='square radians'; dst_grid_area_var[:]      =area2
+    #dst_grid_area_var       = nc.createVariable("dst_grid_area"      ,"f8",("dst_grid_size",               )); dst_grid_area_var.units='square radians'; dst_grid_area_var[:]      =area3
+    src_grid_frac_var       = nc.createVariable("src_grid_frac"      ,"f8",("src_grid_size",               )); src_grid_frac_var.units='unitless'      ; src_grid_frac_var[:]      =[1.0]*len(grid_imask_2)
+    dst_grid_frac_var       = nc.createVariable("dst_grid_frac"      ,"f8",("dst_grid_size",               )); dst_grid_frac_var.units='unitless'      ; dst_grid_frac_var[:]      =[1.0]*len(grid_imask_2)
+    src_address_var         = nc.createVariable("src_address"        ,"i4",("num_links",                   ));                                           src_address_var[:]        =[n+1 for n in range(len(grid_imask_2))]
+    dst_address_var         = nc.createVariable("dst_address"        ,"i4",("num_links",                   ));                                           dst_address_var[:]        =[n+1 for n in range(len(grid_imask_2))]
+    remap_matrix_var        = nc.createVariable("remap_matrix"       ,"f8",("num_links","num_wgts",        ));                                           remap_matrix_var[:,:]     =np.ma.asarray([grid_imask_2])
     nc.close()
 
     print('        exchange -> bottom...')
