@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ $# -lt 3 ]; then
-	echo "Usage: `basename "$0"` <target-key> <release/debug> <fast/rebuild>"
+if [ $# -lt 4 ]; then
+	echo "Usage: `basename "$0"` <target-key> <release/debug> <fast/rebuild> <component>"
 	exit
 fi
 
@@ -25,7 +25,7 @@ else
 fi
 
 # component name is the string after the last / in the path
-component=${PWD##*/}
+component=$4 #${PWD##*/}
 
 # build up the tag that should be recorded 
 tag="$component `git show | head -n 1 | awk '{print $2}'`$dirt $fast `date +%Y-%m-%d_%H-%M-%S`"
