@@ -74,20 +74,21 @@ if [ -d ./postprocess ]; then
 	echo "## Sync postprocessing scripts to the target ##"
 	echo "###############################################"
 	./local_scripts/sync_postprocess.sh ${target} ${user_at_dest} ${dest_folder}
+	./local_scripts/tag_build.sh ${target_keyword} ${debug} "" "postprocess"
 	echo ""
 	echo ""
 fi
 
 echo "##        Gather info on last build          ##"
 echo "###############################################"
-./local_scripts/tag_build.sh ${target_keyword} ${debug} ""
+./local_scripts/tag_build.sh ${target_keyword} ${debug} "" "main"
 # this is name of the file where the tags are stored
 last_build_file="LAST_BUILD_${target_keyword}_${debug}"
 cat "${last_build_file}"
 echo ""
 echo "Transfer it to the target:"
-echo scp "${last_build_file}" ${user_at_dest}:${dest_folder}/LAST_BUILD_${debug}
-scp "${last_build_file}" ${user_at_dest}:${dest_folder}/LAST_BUILD_${debug}
+echo scp "${last_build_file}" ${user_at_dest}:${dest_folder}/
+scp "${last_build_file}" ${user_at_dest}:${dest_folder}/
 echo ""
 echo ""
 
