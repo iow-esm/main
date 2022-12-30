@@ -53,6 +53,21 @@ if [ $# -gt 1 ]; then
 	fi
 	echo ""
 	echo ""
+
+	echo "## Check if model output sould be synchronized to another target  ##"
+	echo "####################################################################"
+	next_arg="${args[${setups_arg}]}"
+	next_arg="$(echo -e ${next_arg} | tr -d '[:space:]')" # trim away any white spaces
+	if [ "${next_arg:0:8}" == 'sync_to=' ]; then
+		let setups_arg=setups_arg+1				#if yes, possible setup-update arguments will follow at index 2
+		sync_to="${next_arg:8}"
+		echo "The model output will be synchronized to ${sync_to}"
+	else
+		sync_to=""
+		echo "The model output will not be synchronized."
+	fi
+	echo ""
+	echo ""
 	
 	echo "##   Check if the setup will be updated      ##"
 	echo "###############################################"
@@ -91,6 +106,14 @@ echo scp "${last_build_file}" ${user_at_dest}:${dest_folder}/
 scp "${last_build_file}" ${user_at_dest}:${dest_folder}/
 echo ""
 echo ""
+
+if [ "${sync_to}" != "" ]; then
+	echo "##      Start synchronization of output      ##"
+	echo "###############################################"
+	./sync_from_one_target_to_another.sh "${target_keyword}" "${sync_to}"
+	echo ""
+	echo ""
+fi
 
 echo "##         Start the run on target           ##"
 echo "###############################################"

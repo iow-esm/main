@@ -50,15 +50,17 @@ class NewWindowButton(tk.Button):
                 
 class CheckButton(tk.Checkbutton):
     def __init__(self, text, variable, master=None):
-        #if master is not None:
-        #    bg = master["background"]
-        #else:
-        bg = IowColors.grey1,
+        if master is not None:
+            bg = master["background"]
+            fg = 'black'
+        else:
+            bg = IowColors.grey1
+            fg = 'white'
         tk.Checkbutton.__init__(self,
             master=master,
             text=text,
             var=variable,
-            fg = "white",
+            fg = fg,
             bg = bg,
             #activebackground = bg,
             #activeforeground = "white",
