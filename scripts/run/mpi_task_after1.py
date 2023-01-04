@@ -1,9 +1,7 @@
 # This script is executed by every MPI process.
 # It checks if the model succeeded. Otherwise it writes a "failed_<modelname>.txt" marker file to the work directory.
 
-import glob
 import os
-import shutil
 import time
 import sys
 
@@ -12,6 +10,11 @@ from model_handling import get_model_handler
 
 # wait five seconds to allow for write procedures to finish
 time.sleep(5.0)
+
+try:
+    run_name = str(sys.argv[1])
+except:
+    run_name = ""
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
@@ -26,14 +29,14 @@ IOW_ESM_ROOT = mydir[0:-12]
 # STEP 1: Read in global settings #
 ###################################
 from parse_global_settings import GlobalSettings
-global_settings = GlobalSettings(IOW_ESM_ROOT)
+global_settings = GlobalSettings(IOW_ESM_ROOT, run_name)
 
 ###############################################
 # STEP 2: Find out the parallelization layout #
 ###############################################
 sys.path.append(IOW_ESM_ROOT + "/scripts/prepare")
 from get_parallelization_layout import get_parallelization_layout
-layout = get_parallelization_layout(IOW_ESM_ROOT)
+layout = get_parallelization_layout(global_settings)
 
 #############################################################################
 # STEP 3: Find out my own thread number and which model I have been running #

@@ -83,7 +83,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
         timesteps = runseconds//coupling_time_step
 
         # STEP 3: copy flux_calculator.nml file and change timestep and number of time steps
-        os.system('cp '+IOW_ESM_ROOT+'/input/flux_calculator.nml '+full_directory+'/flux_calculator.nml')
+        os.system('cp '+self.global_settings.input_dir+'/flux_calculator.nml '+full_directory+'/flux_calculator.nml')
         
         change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
                          after='&input', before='/', start_of_line='timestep',
@@ -100,7 +100,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
         
         # STEP 4: Create an empty folder named "mappings" and place exchange grid files and mapping files there
         os.makedirs(full_directory+'/mappings') 
-        for mapping_dir in glob.glob(IOW_ESM_ROOT+'/input/*/mappings'):
+        for mapping_dir in glob.glob(self.global_settings.input_dir+'/*/mappings'):
             os.system('cp '+ mapping_dir +'/?_grid_exchangegrid.nc '+full_directory+'/mappings')
             os.system('cp '+ mapping_dir +'/remap_*.nc '+full_directory+'/mappings')
             os.system('cp '+ mapping_dir +'/regrid_*.nc '+full_directory+'/mappings')

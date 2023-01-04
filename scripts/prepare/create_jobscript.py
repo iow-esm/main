@@ -5,7 +5,10 @@ import os
 import shutil
 import sys
 
-run_name = str(sys.argv[1])
+try:
+    run_name = str(sys.argv[1])
+except:
+    run_name = ""
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
@@ -47,6 +50,10 @@ data = fin.read()
 data = data.replace('_CORES_', str(parallelization_layout['total_cores']))
 data = data.replace('_NODES_', str(parallelization_layout['total_nodes']))
 data = data.replace('_CORESPERNODE_', str(global_settings.cores_per_node))
+
+# add run name
+data = data.replace('run.py', 'run.py '+run_name)
+
 #close the input file
 fin.close()
 #open the input file in write mode

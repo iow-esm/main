@@ -1,21 +1,16 @@
 # This script will harvest the parallelization info from all models in the input directory.
 # The function will return this information in a dictionary.
-
-import math
-import os
-import re
 import sys
 
 import copy
 
-def get_parallelization_layout(global_settings):        # root directory of IOW ESM
-
-	sys.path.append(global_settings.root_dir + "/scripts/run")
-       
+def get_parallelization_layout(global_settings):       # root directory of IOW ESM
+    
+    sys.path.append(global_settings.root_dir+"/scripts/run")
+    
     # for model handlin
-    from model_handling import get_model_handlers, ModelTypes    
-
-    # get a list of all subdirectories in "input" folder -> these are the models
+    from model_handling import get_model_handlers, ModelTypes
+        # get a list of all subdirectories in "input" folder -> these are the models
     model_handlers = get_model_handlers(global_settings)
     models = list(model_handlers.keys())
 

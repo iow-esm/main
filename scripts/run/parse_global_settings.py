@@ -17,14 +17,18 @@ class GlobalSettings:
     :type global_settings:  str
     """
 
-    def __init__(self, root_dir, run_name):
+    def __init__(self, root_dir, run_name = ""):
 
         # memorize the root directory as a part of the global_settings
         self.root_dir = root_dir 
 
-        self.run_name = run_name
-
-        self.input_dir = self.root_dir + "/input/" + self.run_name
+        # if run is not empty we provide a specific input folder
+        if run_name != "":
+            self.run_name = run_name
+            self.input_dir = self.root_dir + "/input/" + self.run_name
+        # if it is empty there is only one input folder and the global_settings.py therein specifies the run name
+        else:
+            self.input_dir = self.root_dir + "/input"
         
         # create a local dictionary with content of the global_settings file
         ldict = {}
@@ -46,6 +50,18 @@ class GlobalSettings:
         # map dictionary entries to class members with the smae name
         for variable in ldict.keys():
             setattr(self, variable, ldict[variable]) 
+
+        try:
+            if self.workdir_base[0]=='/': 
+            # workdir_base gives absolute path, just use it
+                self.global_workdir_base = self.workdir_base + "/" + self.run_name
+            # workdir_base gives relative path to IOW_ESM_ROOT
+            else:
+                self.global_workdir_base = self.root_dir+'/'+self.workdir_base+'/'+self.run_name
+        except:
+        # workdir_base is not given use default
+            self.global_workdir_base = self.root_dir+'/work/'+self.run_name
+
         
         # TODO test if all non-optional variables are set
         

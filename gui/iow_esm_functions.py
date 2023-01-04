@@ -265,7 +265,7 @@ class IowEsmFunctions:
             
             self.execute_shell_cmd(cmd)
             
-        self.clear_setups()
+        #self.clear_setups()
         
         return True
             

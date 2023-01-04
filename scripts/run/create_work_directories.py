@@ -13,11 +13,8 @@ def create_work_directories(global_settings,            # global_settings
                             work_directory_root,     # /path/to/work/directory for all models
                             start_date,              # 'YYYYMMDD'
                             end_date,                # 'YYYYMMDD'
-                            model_handler,           # model handler which implements the model specific steps for creating the workdir
-                            global_workdir_base=''): # in case we create a local work directory, we still need the global one for sharing files
-    
-    # STEP 0: get local parameters from global settings
-    IOW_ESM_ROOT        = global_settings.root_dir              # root directory of IOW ESM
+                            model_handler):           # model handler which implements the model specific steps for creating the workdir
+
 
     # Define the copy or link function
     if global_settings.link_files_to_workdir:
@@ -131,11 +128,11 @@ def create_work_directories(global_settings,            # global_settings
     # We still copy them.
     # For the files areas.nc, grids.nc and masks.nc which are shared between models, create symbolic links to the parent directory
     # so they will be shared between all model components but not updated globally when changed
-    if global_workdir_base=='':
-        global_workdir_base = work_directory_root
-    os.symlink(global_workdir_base+'/areas.nc',work_dir+'/areas.nc')
-    os.symlink(global_workdir_base+'/grids.nc',work_dir+'/grids.nc')
-    os.symlink(global_workdir_base+'/masks.nc',work_dir+'/masks.nc')
+    #if global_workdir_base=='':
+    #    global_workdir_base = work_directory_root
+    #os.symlink(global_workdir_base+'/areas.nc',work_dir+'/areas.nc')
+    #os.symlink(global_workdir_base+'/grids.nc',work_dir+'/grids.nc')
+    #os.symlink(global_workdir_base+'/masks.nc',work_dir+'/masks.nc')
 
     model_handler.create_work_directory(work_directory_root, start_date, end_date)
                                            

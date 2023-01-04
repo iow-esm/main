@@ -115,11 +115,23 @@ if [ "${sync_to}" != "" ]; then
 	echo ""
 fi
 
-echo "##         Start the run on target           ##"
-echo "###############################################"
-./local_scripts/run_${target}.sh ${user_at_dest} ${dest_folder} ${prepare_before_run}
-echo ""
-echo ""
+if [ $# -gt 1 ]; then
+
+	for ((i = ${setups_arg}; i < $#; i++)); do 
+		echo "##         Start the run on target           ##"
+		echo "###############################################"
+		echo "Start run with setup ${args[i]}"
+		./local_scripts/run_${target}.sh ${user_at_dest} ${dest_folder} ${prepare_before_run} "${args[i]}"
+		echo ""
+		echo ""
+	done
+else
+	echo "##         Start the run on target           ##"
+	echo "###############################################"
+	./local_scripts/run_${target}.sh ${user_at_dest} ${dest_folder} ${prepare_before_run}
+	echo ""
+	echo ""
+fi
 
 echo ""
 echo "###############################################"

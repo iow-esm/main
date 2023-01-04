@@ -65,7 +65,7 @@ for model in bottom_models:
     print("Found bottom model " + model)
 
 for model in models:
-    old_mappings = global_settings.root_dir + "/input/" + model + "/mappings"
+    old_mappings = global_settings.input_dir+"/"+model+"/mappings"
     if os.path.isdir(old_mappings):
         print("Remove old mappings for model " + model + ".")
         os.system("rm -r " + old_mappings)

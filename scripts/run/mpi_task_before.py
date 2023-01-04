@@ -7,6 +7,11 @@ import sys
 
 import create_work_directories
 
+try:
+    run_name = str(sys.argv[1])
+except:
+    run_name = ""
+
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
 if (mydir[-12:] != '/scripts/run'):
@@ -23,14 +28,14 @@ time.sleep(5.0)
 # STEP 1: Read in global settings #
 ###################################
 from parse_global_settings import GlobalSettings
-global_settings = GlobalSettings(IOW_ESM_ROOT)
+global_settings = GlobalSettings(IOW_ESM_ROOT, run_name)
 
 ###############################################
 # STEP 2: Find out the parallelization layout #
 ###############################################
 sys.path.append(IOW_ESM_ROOT + "/scripts/prepare")
 from get_parallelization_layout import get_parallelization_layout
-layout = get_parallelization_layout(IOW_ESM_ROOT)
+layout = get_parallelization_layout(global_settings)
 
 ###########################################################################
 # STEP 3: Find out my own thread number and which model I will be running #
@@ -45,7 +50,6 @@ start_date = int(os.environ["IOW_ESM_START_DATE"])
 end_date = int(os.environ["IOW_ESM_END_DATE"])
 attempt = os.environ["IOW_ESM_ATTEMPT"]
 local_workdir_base = os.environ["IOW_ESM_LOCAL_WORKDIR_BASE"]
-global_workdir_base = os.environ["IOW_ESM_GLOBAL_WORKDIR_BASE"]
 
 # get all model handlers such that the flux calculator knows about the other models
 from model_handling import get_model_handlers
@@ -62,8 +66,8 @@ if firstinnode[my_id]:
                                                     local_workdir_base,    # /path/to/work/directory for all models
                                                     str(start_date),       # 'YYYYMMDD'
                                                     str(end_date),         # 'YYYYMMDD'
-                                                    model_handler,         # pass the model handler for this process
-                                                    global_workdir_base)   # we need the global path also because we put some files there
+                                                    model_handler)         # pass the model handler for this process
+                                                    
 
     # create an empty file "finished_creating_workdir.txt" that tells other tasks that they may start now
     f = open(local_workdir_base+'/'+my_model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+attempt+'.txt','w')
