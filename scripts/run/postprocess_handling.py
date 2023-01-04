@@ -94,8 +94,8 @@ def postprocess_handling(global_settings, models, initial_start_date, end_date):
                         print('Start postprocessing task ' + task + ' of model ' + model + ' not possible: Initial dates as list but final dates not!', flush=True)
                         continue
 
-                    if end_date in task_end_date:
-                        index = task_end_date.index(end_date)
+                    if str(end_date) in task_end_date:
+                        index = task_end_date.index(str(end_date))
                         print('Start postprocessing task ' + task + ' of model ' + model + ' with parameters: ', task_run_name, task_init_date[index], task_end_date[index], flush=True)
                         start_postprocessing(global_settings.root_dir, task_run_name, model, task_init_date, task_end_date, task = task)
                         continue
