@@ -76,6 +76,7 @@ class IowEsmGui:
             return
         
         self.current_destination = ""
+        self.current_sync_destination = ""
         self.current_build_conf = "release fast"
         
         if not self._check_last_build() or self.error_handler.check_for_error(*IowEsmErrors.build_origins_first_time):
@@ -630,15 +631,23 @@ class IowEsmGui:
         
         self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model:")
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
-        self.buttons["prepare_before_run"] = CheckButton("prepare before run", self.prepare_before_run, master=self.frames["run"])
+        self.buttons["prepare_before_run"] = CheckButton("Create mappings", self.prepare_before_run, master=self.frames["run"])
+        self.labels["sync_destinations"] = tk.Label(master=self.frames["run"], text="Synchronize to:", bg = self.frames["run"]["background"], fg = 'black')
+        self.menus["sync_destinations"] = DropdownMenu(master=self.frames["run"], entries=[""] + list(self.destinations.keys()), function=self.functions.set_sync_destination)
         self.buttons["postprocess"] = NewWindowButton("Postprocess", partial(postprocess_window.PostprocessWindow, self), master=self.frames["run"])
-
+        
         row = 0
         
         self.labels["run"].grid(row=row, sticky='w')
         row += 1
         
         self.buttons["prepare_before_run"].grid(row=row, sticky="ew")
+        row += 1
+
+        self.labels["sync_destinations"].grid(row=row, sticky="w")
+        row += 1
+
+        self.menus["sync_destinations"].grid(row=row, sticky="ew")
         row += 1
         
         self.buttons["run"].grid(row=row, sticky='ew')

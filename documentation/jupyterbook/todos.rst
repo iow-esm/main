@@ -2,12 +2,7 @@ TODOs
 =====
 .. todo::
 
-   ./background/coupling_concept.md:18 TODO
-
-
-.. todo::
-
-   ./background/coupling_concept.md:24 TODO
+   ./background/coupling_concept.md:61 TODO
 
 .. todo::
 
@@ -21,6 +16,10 @@ TODOs
 
 .. todo::
 
+   ./development/testing.md:3 TODO
+
+.. todo::
+
    ./getting_started/first_use.md:149 **TODO:** Explain strucutre of the setup folder (= root directoy)
 
 
@@ -31,6 +30,6 @@ TODOs
 
 .. todo::
 
-   ./usage/setting_up_global_settings.md:69 TODO: Add further description here...
+   ./usage/setting_up_global_settings.md:92 TODO: Add further description here...
 
 

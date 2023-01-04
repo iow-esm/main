@@ -19,6 +19,10 @@ from model_handling import get_model_handlers
 import hotstart_handling
 
 from parse_global_settings import GlobalSettings
+from model_handling_flux import FluxCalculatorModes
+from model_handling import ModelTypes
+
+import run_helpers
 
 run_name = str(sys.argv[1])
 
@@ -45,6 +49,10 @@ from get_parallelization_layout import get_parallelization_layout
 
 # read in global settings
 global_settings = GlobalSettings(IOW_ESM_ROOT, run_name)
+
+# remove finished marker
+if glob.glob(IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt"):
+    os.system("rm " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt")
 
 # get a list of all subdirectories in "input" folder -> these are the models
 model_handlers = get_model_handlers(global_settings)
@@ -93,6 +101,7 @@ for run in range(global_settings.runs_per_job):
             end_date = global_settings.final_date
         if int(start_date) >= int(global_settings.final_date):
             print('IOW_ESM job finished integration to final date '+global_settings.final_date)
+            os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt")
             sys.exit()
     
     
@@ -191,17 +200,18 @@ for run in range(global_settings.runs_per_job):
             shellscript.writelines('python3 mpi_task_before.py ' + run_name + '\n')
             shellscript.writelines('waited=0\n')                        # seconds counter for timeout
             shellscript.writelines('timeout=60\n')                      # timeout is set to 60 seconds
-            shellscript.writelines('until [ -f '+global_settings.local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ] || [ $waited -eq $timeout ]\n')
+            shellscript.writelines('until [ -f '+global_settings.local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ] || [ $waited -ge $timeout ]\n')
             shellscript.writelines('do\n')
             shellscript.writelines('     sleep 1\n')
             shellscript.writelines('     let "waited++"\n')
             shellscript.writelines('done\n')
-            shellscript.writelines('if [ $waited -eq $timeout ]; then\n') # if timeout has been reached, echo the error and stop the script
+            shellscript.writelines('if [ $waited -ge $timeout ]; then\n') # if timeout has been reached, echo the error and stop the script
             shellscript.writelines('    echo "Timeout while creating work directories for ' + model + ' has been reached. Abort."\n')
             shellscript.writelines('    exit\n')
             shellscript.writelines('fi\n')
             shellscript.writelines('cd '+global_settings.local_workdir_base+'/'+model+'\n')
         shellscript.writelines(global_settings.bash_get_rank+'\n') # e.g. "my_id=${PMI_RANK}"
+        #shellscript.writelines('module load vtune; exec vtune -collect hotspots -result-dir='+work_directory_root+'/'+model+' ./' + model_executable[i] + ' > logfile_${my_id}.txt 2>&1')
         shellscript.writelines('exec ./' + model_executable[i] + ' > logfile_${my_id}.txt 2>&1')
         shellscript.close()
         st = os.stat(file_name)                 # get current permissions
@@ -211,12 +221,15 @@ for run in range(global_settings.runs_per_job):
     ########################################################################
     # STEP 2f: DO THE WORK                                                 #
     ########################################################################
-    
+    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+        run_helpers.write_machinefile(global_settings, parallelization_layout)
+        
     # WRITE mpirun APPLICATION FILE FOR THE MPMD JOB (specify how many tasks of which model are started)
     file_name = 'mpmd_file'
     if os.path.islink(file_name):
         os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
-    mpmd_file = open(file_name, 'w')
+    mpmd_file = open(file_name, 'w') 
+
     for i,model in enumerate(models):
         mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'.sh\n')
     mpmd_file.close() 
@@ -225,6 +238,8 @@ for run in range(global_settings.runs_per_job):
     full_mpi_run_command = global_settings.mpi_run_command.replace('_CORES_',str(parallelization_layout['total_cores']))
     full_mpi_run_command = full_mpi_run_command.replace('_NODES_',str(parallelization_layout['total_nodes']))
     full_mpi_run_command = full_mpi_run_command.replace('_CORESPERNODE_',str(global_settings.cores_per_node))
+    if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+        full_mpi_run_command += ' '+global_settings.use_mpi_machinefile
     print('  starting model task with command: '+full_mpi_run_command, flush=True)
     os.system(full_mpi_run_command)
     print('  ... model task finished.', flush=True)
@@ -256,13 +271,15 @@ for run in range(global_settings.runs_per_job):
         st = os.stat(file_name)                 # get current permissions
         os.chmod(file_name, st.st_mode | 0o777) # add a+rwx permission
 
-        mpmd_file = open('mpmd_file', 'w')
+        mpmd_file = open('mpmd_file', 'w') 
         mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(parallelization_layout['total_threads'])+' ./run_after1.sh\n')
         mpmd_file.close()
 
         full_mpi_run_command = global_settings.mpi_run_command.replace('_CORES_',str(parallelization_layout['total_cores']))
         full_mpi_run_command = full_mpi_run_command.replace('_NODES_',str(parallelization_layout['total_nodes']))
         full_mpi_run_command = full_mpi_run_command.replace('_CORESPERNODE_',str(global_settings.cores_per_node))
+        if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
+            full_mpi_run_command += ' '+global_settings.use_mpi_machinefile
         print('  starting after1 task ...', flush=True)
         os.system(full_mpi_run_command)
         print('  ... after1 task finished.', flush=True)
@@ -358,6 +375,10 @@ if int(start_date) < int(global_settings.final_date):
 # STEP 4: JOB SUCCESSFULLY FINISHED - START PROCESSSING (IF WANTED)                     #
 #########################################################################################                                             
 postprocess_handling.postprocess_handling(global_settings, models, initial_start_date, end_date)
+
+# if this run has successfully finished, mark it
+if int(start_date) >= int(global_settings.final_date):
+    os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt")
 
 
 

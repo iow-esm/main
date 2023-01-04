@@ -64,6 +64,12 @@ if bottom_models == []:
 for model in bottom_models:
     print("Found bottom model " + model)
 
+for model in models:
+    old_mappings = global_settings.root_dir + "/input/" + model + "/mappings"
+    if os.path.isdir(old_mappings):
+        print("Remove old mappings for model " + model + ".")
+        os.system("rm -r " + old_mappings)
+
 #########################################################################################################
 # STEP 1b: For each of them convert the model grid(s) to SCRIP format                                   #
 #########################################################################################################
@@ -205,3 +211,7 @@ grid_create_maskfile_CCLM.grid_create_maskfile_CCLM(IOW_ESM_ROOT,        # root 
                                                     atmos_model, "v_grid")  # name of atmospheric model instance, which grid                                                        
 print('done.')
 
+from model_handling_flux import FluxCalculatorModes
+# if the flux calculator should be parallized, execute the script right here (can be also started manually)
+if global_settings.flux_calculator_mode != FluxCalculatorModes.single_core:
+    exec(open("parallelize_mappings.py").read())

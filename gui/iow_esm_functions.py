@@ -114,6 +114,17 @@ class IowEsmFunctions:
             return
         
         self.gui.print(" " + self.gui.current_destination + " (" + self.gui.destinations[self.gui.current_destination] + ")" )
+
+    def set_sync_destination(self, dst):
+        self.gui.current_sync_destination = dst
+
+        self.gui.print("Current synchronization destination: ")
+        
+        if dst == "":
+            self.gui.print(" None")
+            return
+        
+        self.gui.print(" " + self.gui.current_sync_destination + " (" + self.gui.destinations[self.gui.current_sync_destination] + ")" )        
         
     def build_origin(self, ori):
         if self.gui.current_destination == "":
@@ -279,6 +290,11 @@ class IowEsmFunctions:
         
         if self.gui.prepare_before_run.get() != 0:
             cmd += " prepare-before-run"
+
+        self.gui.print("abc "+self.gui.current_sync_destination)
+
+        if self.gui.current_sync_destination != "":
+            cmd += " sync_to=" + self.gui.current_sync_destination
         
         for setup in self.gui.current_setups:
             cmd = cmd + " " + setup

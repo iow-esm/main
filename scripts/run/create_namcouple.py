@@ -20,7 +20,7 @@ def create_namcouple(global_settings,        # global_settings
     print('  create temporary ' + work_dir)
     os.makedirs(work_dir)
     
-    model_handler = model_handling_flux.ModelHandler(global_settings, 'flux_calculator')                   
+    model_handler = model_handling_flux.ModelHandler(global_settings, 'flux_calculator')   # we don't need the other model handlers here -> keyword argument model_handlers={} (= default)               
     model_handler.create_work_directory(work_directory_root,str(start_date),str(end_date))
     
     # Start flux_calculator excutable with switch --generate_namcouple before starting the model

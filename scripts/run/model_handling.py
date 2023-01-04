@@ -27,6 +27,10 @@ class ModelTypes:
     """Components, tools that are not coupled, as e.g. the int2lm tool.
     """
     
+class GridTypes:
+    t_grid = "t_grid"
+    u_grid = "u_grid"
+    v_grid = "v_grid"
 
 def get_model_handler(global_settings, model):
     """Method to get a single model handler.
@@ -94,14 +98,15 @@ def get_model_handlers(global_settings):
             found_atmos = True
                # if there are other models and fluxcalcualtor should be included we perform a coupled run
             if (len(models) > 1) and (global_settings.flux_calculator_mode != "none"):
-                coupled = True     
-        
+                coupled = True
+
     # we need flux_calculator as additional model if we run a coupled simulation
-    if global_settings.flux_calculator_mode=='single_core_per_bottom_model' and coupled:
+    import model_handling_flux    
+    if global_settings.flux_calculator_mode != model_handling_flux.FluxCalculatorModes.none and coupled:
         model = 'flux_calculator'
         models = models + [model] 
-        model_handling_module = importlib.import_module("model_handling_" + model[0:4])
-        model_handlers[model] = model_handling_module.ModelHandler(global_settings, model)
+        # add flux calculator instance and pass the model handlers of the other models as argument
+        model_handlers[model] = model_handling_flux.ModelHandler(global_settings, model, model_handlers)
 
     return model_handlers
      
@@ -125,14 +130,11 @@ class ModelHandlerBase:
     """
     
     # base constructor must be called in constructor of inheriting class
-    def __init__(self, model_type, global_settings, my_directory): 
+    def __init__(self, model_type, global_settings, my_directory, grids = [GridTypes.t_grid]): 
         self.global_settings = global_settings              # global settings object
         self.my_directory = my_directory                    # name of model's input folder
         self.model_type = model_type                        # one of the ModelTypes
-        
-        # TODO: this should become a list with available grids, e.g. 
-        # self.grids = ["t_grid", "u_grid", "v_grid"] or
-        # self.grids = ["t_grid"]
+        self.grids = grids                                  # one of the available grids
         
     def create_work_directory(self, work_directory_root, start_date, end_date):
         """Method to perform model-specific steps for creating the work directory.

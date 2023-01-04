@@ -123,19 +123,25 @@ class ModelHandler(model_handling.ModelHandlerBase):
         # STEP 2: MOVE OUTPUT
         os.system('mv '+workdir+'/out* '+outputdir+'/.')
         
-        os.system('mv '+workdir+'/AS*.nc '+outputdir+'/.')
-        os.system('mv '+workdir+'/AR*.nc '+outputdir+'/.')
+        # if we run with verbos flux calculator the exchanged fields are stored in files AS*.nc and AR*.nc
+        # if files are present we keep them        
+        if glob.glob(workdir+'/AS*.nc') != []:
+            os.system('mv '+workdir+'/AS*.nc '+outputdir+'/.')
+        if glob.glob(workdir+'/AR*.nc') != []:
+            os.system('mv '+workdir+'/AR*.nc '+outputdir+'/.')
         
+        # store run information (commit ID's of built components, global_settings,...)
         if os.path.isfile(workdir + '/RUN_INFO'):
-            files_to_keep = ["INPUT_ASS", "INPUT_DIA", "INPUT_DYN", "INPUT_INI", "INPUT_IO", "INPUT_OASIS", "INPUT_ORG", "INPUT_PHY"]
-            for file in files_to_keep:
-                os.system('(echo \"*** ' + file + '\"; cat ' + workdir+'/'+file+'; echo) >> '+workdir+'/RUN_INFO')
             os.system('mv '+workdir+'/RUN_INFO '+outputdir+'/.')
+
+        # keep the important input files
+        files_to_keep = ["INPUT_ASS", "INPUT_DIA", "INPUT_DYN", "INPUT_INI", "INPUT_IO", "INPUT_OASIS", "INPUT_ORG", "INPUT_PHY"]
+        for file in files_to_keep:         
+            os.system('mv '+workdir+'/'+file+' '+outputdir+'/.')   
 
         # STEP 3: MOVE HOTSTART
         hotstartfile = workdir+'/lrfd'+str(end_date)+'00o'           # CCLM hotstart file
         os.system('mv '+hotstartfile+' '+hotstartdir+'/.')
-        os.system('mv '+workdir+'/restart* '+hotstartdir+'/.')  # OASIS hotstart file
     
     def grid_convert_to_SCRIP(self):
     

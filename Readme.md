@@ -17,11 +17,84 @@ Further information is available at https://sven-karsten.github.io/iow_esm/intro
 
 # Versions
 
-## 1.01.00 (in preparation)
+## 1.03.00 (latest release)
 
 | date        | author(s)   | link      |
 |---          |---          |---        |
-| 2022-04-01  | SK          | XXX       | 
+| 2022-12-22  | SK          | [1.03.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.03.00)       | 
+
+<details>
+
+### changes
+* substiantial changes in postprocessing component, see Readme.md therein
+* breaking changes in MOM5 component, see Readme.md therein
+* new features in the flux_calculator component, see Readme.md therein
+* some smaller corrections in other parts
+
+### dependencies
+* bash, git, (python for GUI) 
+  
+### known issues
+* none
+
+### tested with
+* intensively tested on both HLRN machines
+  * using example setups available under:
+    (coupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+              MOM5_Baltic-CCLM_Eurocordex/example_3nm_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                CCLM_Eurocordex/example_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                MOM5_Baltic/example_3nm/1.00.00 
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                I2LM_Eurocordex/example_0.22deg/1.00.00                              
+  * can be built and run on Haumea but output is not intensively tested
+  
+</details>
+
+## 1.02.00
+
+| date        | author(s)   | link      |
+|---          |---          |---        |
+| 2022-05-31  | SK          | [1.02.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.02.00)       | 
+
+<details>
+
+### changes
+* flux calculator can now run in parallel
+  * see documentation/jupyterbook/usage/parallelize_flux_calculator.md for details
+* factored out machine-dependent settings from global settings
+  * machine settings are now implemented in machine_settings_*
+  * one of these files is chosen by keyword "machine" global settings
+  * these settings can be overwritten by explicitly putting the variables in global settings
+
+### dependencies
+* bash, git, (python for GUI) 
+  
+### known issues
+* none
+
+### tested with
+* intensively tested on both HLRN machines
+  * using example setups available under:
+    (coupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+              MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                CCLM_Eurocordex/example_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                MOM5_Baltic/example_8nm/1.00.00 
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                I2LM_Eurocordex/example_0.22deg/1.00.00                              
+  * can be built and run on Haumea but output is not intensively tested
+  
+</details>
+
+
+## 1.01.00 
+
+| date        | author(s)   | link      |
+|---          |---          |---        |
+| 2022-04-27  | SK          | [1.01.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.01.00)        | 
 
 <details>
 
@@ -64,7 +137,7 @@ Further information is available at https://sven-karsten.github.io/iow_esm/intro
 </details>
 
 
-## 1.00.00 (latest release)
+## 1.00.00 
 
 | date        | author(s)   | link      |
 |---          |---          |---        |

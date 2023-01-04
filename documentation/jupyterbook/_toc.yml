@@ -13,6 +13,8 @@ parts:
   - file: development/extend_documentation.md
   - file: development/new_destinations.md
   - file: development/new_model.md
+  - file: development/release_new_version.md
+  - file: development/testing.md
 - caption: usage
   chapters:
   - file: usage/advanced_use.md
@@ -20,6 +22,7 @@ parts:
   - file: usage/automatic_postprocessing.ipynb
   - file: usage/create_forcings_for_CCLM.md
   - file: usage/create_postprocess_task.ipynb
+  - file: usage/parallelize_flux_calculator.md
   - file: usage/setting_up_global_settings.md
   - file: usage/setting_up_jobscript.md
 - caption: scripts

@@ -45,7 +45,11 @@ awk -v local="$local" -v ori="$1" '{
 	}
 	
 	print "if [ -d "local"/"dir"/.git ]; then"
-	print " echo \""dir" is already a git repository. Just pull from "remote"\""
+	print " cd "local"/"dir
+	print " if ! git pull "remote" && git checkout "version"; then"
+	print "  rm -rf "local"/"dir
+	print " fi"
+	print " cd -"
 	print "else"
 	print " mkdir -p "local"/"dir
 	print " if ! git clone "branch" "remote" "local"/"dir"; then"

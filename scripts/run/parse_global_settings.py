@@ -29,6 +29,19 @@ class GlobalSettings:
         # create a local dictionary with content of the global_settings file
         ldict = {}
         exec(open(self.input_dir + "/global_settings.py").read(), globals(), ldict)
+
+        # check if machine is specified
+        try:
+            self.machine = ldict["machine"]
+        except:
+            self.machine = None
+
+        # if machine is specified get variables and store them as embers with the same name
+        if self.machine is not None:
+            machine_ldict = {}
+            exec(open(self.root_dir + "/scripts/run/machine_settings_" + self.machine + ".py").read(), globals(), machine_ldict)
+            for variable in machine_ldict.keys():
+                setattr(self, variable, machine_ldict[variable]) 
         
         # map dictionary entries to class members with the smae name
         for variable in ldict.keys():
