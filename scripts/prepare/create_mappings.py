@@ -10,7 +10,10 @@ import grid_create_uv_t_regridding
 
 import grid_create_maskfile_CCLM
 
-run_name = str(sys.argv[1])
+try:
+    input_name = str(sys.argv[1])
+except:
+    input_name = ""
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
@@ -32,7 +35,7 @@ from parse_global_settings import GlobalSettings
 from model_handling import get_model_handlers, ModelTypes
 
 # parse the global settings
-global_settings = GlobalSettings(IOW_ESM_ROOT, run_name)
+global_settings = GlobalSettings(IOW_ESM_ROOT, input_name)
 
 # get the model handlers
 model_handlers = get_model_handlers(global_settings)
@@ -90,17 +93,17 @@ for model in bottom_models:
     #   1. atmospheric grids
     #   2. all available bootom grids
     print('creating t_grid mappings:  '+model+' <-> '+atmos_model)
-    grid_create_exchangegrid_MOM5.grid_create_exchangegrid_MOM5(IOW_ESM_ROOT,        # root directory of IOW ESM
+    grid_create_exchangegrid_MOM5.grid_create_exchangegrid_MOM5(global_settings.input_dir,        # root directory of IOW ESM
                                                                 atmos_model,  # name of atmospheric model instance
                                                                 model,               # name of bottom model instance 
                                                                 't_grid')            # 't_grid' or 'u_grid' or 'v_grid'
     print('creating u_grid mappings:  '+model+' <-> '+atmos_model)
-    grid_create_exchangegrid_MOM5.grid_create_exchangegrid_MOM5(IOW_ESM_ROOT,        # root directory of IOW ESM
+    grid_create_exchangegrid_MOM5.grid_create_exchangegrid_MOM5(global_settings.input_dir,        # root directory of IOW ESM
                                                                 atmos_model,  # name of atmospheric model instance
                                                                 model,               # name of bottom model instance 
                                                                 'u_grid')            # 't_grid' or 'u_grid' or 'v_grid'
     print('creating v_grid mappings:  '+model+' <-> '+atmos_model)
-    grid_create_exchangegrid_MOM5.grid_create_exchangegrid_MOM5(IOW_ESM_ROOT,        # root directory of IOW ESM
+    grid_create_exchangegrid_MOM5.grid_create_exchangegrid_MOM5(global_settings.input_dir,        # root directory of IOW ESM
                                                                 atmos_model,  # name of atmospheric model instance
                                                                 model,               # name of bottom model instance 
                                                                 'v_grid')            # 't_grid' or 'u_grid' or 'v_grid'
@@ -112,11 +115,11 @@ for model in bottom_models:
 for model in bottom_models:
         
     print('creating regridding matrices between u-grid and t-grid:  '+model+' <-> '+atmos_model)
-    grid_create_uv_t_regridding.grid_create_uv_t_regridding(IOW_ESM_ROOT,        # root directory of IOW ESM
+    grid_create_uv_t_regridding.grid_create_uv_t_regridding(global_settings.input_dir,        # root directory of IOW ESM
                                                      model,               # name of bottom model instance 
                                                      'u_grid')            # 'u_grid' or 'v_grid'
     print('creating regridding matrices between v-grid and t-grid:  '+model+' <-> '+atmos_model)
-    grid_create_uv_t_regridding.grid_create_uv_t_regridding(IOW_ESM_ROOT,        # root directory of IOW ESM
+    grid_create_uv_t_regridding.grid_create_uv_t_regridding(global_settings.input_dir,        # root directory of IOW ESM
                                                      model,               # name of bottom model instance 
                                                      'v_grid')            # 'u_grid' or 'v_grid'
 
@@ -203,15 +206,16 @@ for model in bottom_models:
 ##########################################################################################################################
 
 print('write maskfile for atmos model, stating which cells are coupled...  ')
-grid_create_maskfile_CCLM.grid_create_maskfile_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
+grid_create_maskfile_CCLM.grid_create_maskfile_CCLM(global_settings.input_dir,        # root directory of IOW ESM
                                                     atmos_model, "t_grid")  # name of atmospheric model instance, which grid
-grid_create_maskfile_CCLM.grid_create_maskfile_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
+grid_create_maskfile_CCLM.grid_create_maskfile_CCLM(global_settings.input_dir,        # root directory of IOW ESM
                                                     atmos_model, "u_grid")  # name of atmospheric model instance, which grid   
-grid_create_maskfile_CCLM.grid_create_maskfile_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
+grid_create_maskfile_CCLM.grid_create_maskfile_CCLM(global_settings.input_dir,        # root directory of IOW ESM
                                                     atmos_model, "v_grid")  # name of atmospheric model instance, which grid                                                        
 print('done.')
 
+import subprocess
 from model_handling_flux import FluxCalculatorModes
 # if the flux calculator should be parallized, execute the script right here (can be also started manually)
 if global_settings.flux_calculator_mode != FluxCalculatorModes.single_core:
-    exec(open("parallelize_mappings.py").read())
+    subprocess.call([sys.executable, 'parallelize_mappings.py', input_name])

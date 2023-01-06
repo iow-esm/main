@@ -6,9 +6,9 @@ import shutil
 import sys
 
 try:
-    run_name = str(sys.argv[1])
+    input_name = str(sys.argv[1])
 except:
-    run_name = ""
+    input_name = ""
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
@@ -23,14 +23,14 @@ IOW_ESM_ROOT = mydir[0:-16]
 # read global settings
 sys.path.append(IOW_ESM_ROOT + "/scripts/run")
 from parse_global_settings import GlobalSettings
-global_settings = GlobalSettings(IOW_ESM_ROOT, run_name)
+global_settings = GlobalSettings(IOW_ESM_ROOT, input_name)
 
 # call get_parallelization_layout
 from get_parallelization_layout import get_parallelization_layout
 parallelization_layout = get_parallelization_layout(global_settings)
 
 # copy template file
-file_name = IOW_ESM_ROOT+'/scripts/run/jobscript_' + run_name
+file_name = IOW_ESM_ROOT+'/scripts/run/jobscript_' + input_name
 if os.path.islink(file_name):
     os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
 
@@ -52,7 +52,7 @@ data = data.replace('_NODES_', str(parallelization_layout['total_nodes']))
 data = data.replace('_CORESPERNODE_', str(global_settings.cores_per_node))
 
 # add run name
-data = data.replace('run.py', 'run.py '+run_name)
+data = data.replace('run.py', 'run.py '+input_name)
 
 #close the input file
 fin.close()

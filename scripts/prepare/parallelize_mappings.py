@@ -7,6 +7,11 @@ import glob
 
 import parallelize_mappings_helpers
 
+try:
+    input_name = str(sys.argv[1])
+except:
+    input_name = ""
+
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
 if (mydir[-16:] != '/scripts/prepare'):
@@ -27,7 +32,7 @@ from parse_global_settings import GlobalSettings
 from model_handling import get_model_handlers, ModelTypes, GridTypes
 
 # parse the global settings
-global_settings = GlobalSettings(IOW_ESM_ROOT)
+global_settings = GlobalSettings(IOW_ESM_ROOT, input_name)
 
 # get the model handlers
 model_handlers = get_model_handlers(global_settings)
@@ -62,7 +67,7 @@ for model in bottom_models:
 
 #TODO don't restore backup when everything works as expected
 for model in bottom_models + [atmos_model]:
-    model_dir = global_settings.root_dir + "/input/" + model + "/mappings"
+    model_dir = global_settings.input_dir + "/" + model + "/mappings"
 
     #TODO don't do backup when everything works as expected
     if os.path.isdir(model_dir + "/serial"):
@@ -78,7 +83,7 @@ for model in bottom_models + [atmos_model]:
 # do the conversion of model grids to the SCRIP format
 for model in bottom_models:
 
-    work_dir = global_settings.root_dir + "/input/" + model + "/mappings/parallel"
+    work_dir = global_settings.input_dir + "/" + model + "/mappings/parallel"
     if os.path.isdir(work_dir):
        os.system('rm -rf '+work_dir)
     # create it
@@ -124,14 +129,14 @@ for model in bottom_models:
 
 # combine updated grid, remapping and regridding files
 print("Combining updated exchage grids from bottom models " + str(bottom_models) + " to common exchange grid for atmos model " + atmos_model + "...")
-atmos_work_dir = global_settings.root_dir + "/input/" + atmos_model + "/mappings/parallel"
+atmos_work_dir = global_settings.input_dir + "/" + atmos_model + "/mappings/parallel"
 if os.path.isdir(atmos_work_dir):
     os.system('rm -rf '+atmos_work_dir)
 os.makedirs(atmos_work_dir)
 
 # currently there is only one exchange grid so just copy it from the bottom model to the atmos model
 for model in bottom_models:
-    bottom_work_dir = global_settings.root_dir + "/input/" + model + "/mappings/parallel"
+    bottom_work_dir = global_settings.input_dir + "/" + model + "/mappings/parallel"
     for grid in model_handlers[model].grids:
         os.system("cp " + bottom_work_dir + "/" + grid + "_exchangegrid.nc " + atmos_work_dir + "/")
     # copy regridding as well
@@ -158,7 +163,7 @@ for grid in all_grids:
 # overwrite old files with work
 for model in bottom_models + [atmos_model]:
     print("Overwrite old files with new files...")
-    model_dir = global_settings.root_dir + "/input/" + model + "/mappings"
+    model_dir = global_settings.input_dir + "/" + model + "/mappings"
     work_dir = model_dir + "/parallel"
 
     #TODO don't do backup when everything works as expected
