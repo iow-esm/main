@@ -154,14 +154,23 @@ class MultipleChoice(tk.Menubutton):
 
         self.choices = {}
 
-        self.bind("<Button-1>", lambda event : self.left_click())
+        self.bind("<Button-1>", lambda event : self.click(create=True))
+        self.bind("<Button-3>", lambda event : self.click(create=False))
 
         self.alive = False    
-        self.menu_obj = None   
+        self.menu_obj = None  
         self.entries = entries
         self.update_entries = update_entries
 
-    def left_click(self):
+        # initialize everything
+        self.click(create=True)
+
+    def click(self, create=True):
+
+        if not create:
+            self.menu_obj.delete(0,tk.END)
+            self.alive = False
+            return
 
         if self.update_entries is not None:
             if self.update_entries(self):
@@ -185,17 +194,11 @@ class MultipleChoice(tk.Menubutton):
             self.config(menu=self.menu_obj)
             self.alive = True
 
-        else:
-            self.menu_obj.delete(0,tk.END)
-            self.alive = False
-
     def get_current_choices(self):
         result = []
         for choice in self.choices.keys():
             if self.choices[choice].get():
                 result.append(choice)
         return result
-        
-        
 
 
