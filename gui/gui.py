@@ -212,11 +212,11 @@ class IowEsmGui:
         
         
     def _build_frame_greeting(self):
-        self.frames["greeting"] = Frame(master=self.window, bg=IowColors.blue4)
+        self.frames["greeting"] = Frame(master=self.window, bg=IowColors.blue4, tip_text = r"https://git.io-warnemuende.de/iow_esm/main")
         
         self.iow_logo = tk.PhotoImage(file=root_dir + '/gui/iow_logo_small.png')
         
-        self.buttons["greeting"] = tk.Button(master = self.frames["greeting"], image = self.iow_logo, bg = IowColors.blue4, command = partial(webbrowser.open_new, r"https://git.io-warnemuende.de/iow_esm/main"))
+        self.buttons["greeting"] = FunctionButton(master = self.frames["greeting"], text=None, image = self.iow_logo, bg = IowColors.blue4, command = partial(webbrowser.open_new, r"https://git.io-warnemuende.de/iow_esm/main"))
         self.buttons["greeting"].grid(sticky='w')
         
         self.frames["greeting"].grid(row=self.row, sticky='nsew')
@@ -394,7 +394,8 @@ class IowEsmGui:
         # create objects of the frame
         self.labels["destinations"] = FrameTitleLabel(master=self.frames["destinations"], text="Destinations:")
         
-        self.menus["destinations"] = DropdownMenu(master=self.frames["destinations"], entries=[""] + list(self.destinations.keys()), function=self.functions.set_destination)
+        self.menus["destinations"] = DropdownMenu(master=self.frames["destinations"], entries=[""] + list(self.destinations.keys()), function=self.functions.set_destination,
+                                                tip_text="Choose one of the target configured in your DESTINATIONS file.")
         
         self.buttons["edit_destinations"] = NewWindowButton("Edit", self.functions.edit_destinations, master=self.frames["destinations"])
         
@@ -656,7 +657,8 @@ class IowEsmGui:
             obj.entries = self.available_inputs
             return True
 
-        self.menus["inputs"] = MultipleChoice(master=self.frames["run"], entries=self.available_inputs, text="Run input folders...", update_entries=update_available_inputs)#Combobox(self.available_inputs, master=self.frames["run"], update_function=self.update_function)
+        self.menus["inputs"] = MultipleChoice(master=self.frames["run"], entries=self.available_inputs, text="Choose input folders...", update_entries=update_available_inputs, 
+        tip_text="You can choose multiple input folder or a single one.")
 
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
         self.buttons["prepare_before_run"] = CheckButton("Create mappings", self.prepare_before_run, master=self.frames["run"])

@@ -10,14 +10,21 @@ from tkinter import ttk
 
 
 class FunctionButton(tk.Button):
-    def __init__(self, text, command, master=None):
+    def __init__(self, text, command, master=None, image=None, bg=None, fg=None, tip_text=None):
+        if bg is None:
+            bg=IowColors.blue1
+        if fg is None:
+            fg="white"
         tk.Button.__init__(self,
             master=master,
             text=text,
-            bg=IowColors.blue1,
-            fg="white",
-            command=command   
+            bg=bg,
+            fg=fg,
+            command=command,
+            image = image  
         )
+        if tip_text is not None:
+            CreateToolTip(self, text)
         
 class CancelButton(tk.Button):
     def __init__(self, text, command, master=None):
@@ -70,7 +77,7 @@ class CheckButton(tk.Checkbutton):
         )
         
 class FrameTitleLabel(tk.Label):
-    def __init__(self, text, master=None, bg=""):
+    def __init__(self, text, master=None, bg="", tip_text=None):
         
         if master is not None and bg == "":
             bg=master["background"]
@@ -82,18 +89,24 @@ class FrameTitleLabel(tk.Label):
             fg = 'black'
         )
         self.config(font=("TkDefaultFont", 20))
+
+        if tip_text is not None:
+            CreateToolTip(self, tip_text)
         
         
 class Frame(tk.Frame):
-    def __init__(self, master=None, bg=IowColors.blue1):
+    def __init__(self, master=None, bg=IowColors.blue1, tip_text=None):
         tk.Frame.__init__(self,
             master=master,
             bg = bg,
         )
 
+        if tip_text is not None:
+            CreateToolTip(self, tip_text)
+
  
 class DropdownMenu(tk.OptionMenu):
-    def __init__(self, master=None, entries=[], function=None, bg = None, fg = None, default_entry = None):
+    def __init__(self, master=None, entries=[], function=None, bg = None, fg = None, default_entry = None, tip_text = None):
         self.variable = tk.StringVar(master)
                 
         tk.OptionMenu.__init__(self,
@@ -125,32 +138,17 @@ class DropdownMenu(tk.OptionMenu):
          
         self.variable.trace("w", callback)
 
-class Combobox(ttk.Combobox):
-    def __init__(self, elements, master=None, update_function=None):
-        self.elements = elements
-        ttk.Combobox.__init__(self,
-                        master,
-                        state="readonly",
-                        values=elements,
-                        postcommand=update_function
-                        )
-counter = 0
-class dummy(tk.Menu):
-    def __init__(self, **kwargs):   
-        global counter
-        tk.Menu.__init__(self, **kwargs) 
-        counter += 1
-        self.counter = counter    
+        if tip_text is not None:
+            CreateToolTip(self, tip_text)
 
           
 class MultipleChoice(tk.Menubutton):
-    def __init__(self, master=None, entries=[], text="Multiple choice", update_entries=None):
-        if master is not None:
-            bg = master["background"]
-        else:
-            bg = None    
+    def __init__(self, master=None, entries=[], text="Multiple choice", update_entries=None, tip_text=None):
 
-        tk.Menubutton.__init__(self, master=master, text=text, bg=bg, borderwidth=1, relief="raised")
+        bg = IowColors.blue4
+        fg = "black"
+
+        tk.Menubutton.__init__(self, master=master, text=text, bg=bg, fg=fg, borderwidth=1, relief="raised")
 
         self.choices = {}
 
@@ -164,6 +162,9 @@ class MultipleChoice(tk.Menubutton):
 
         # initialize everything
         self.click(create=True)
+
+        if tip_text is not None:
+            CreateToolTip(self, tip_text+" (Click right to close the menu.)")
 
     def click(self, create=True):
 
@@ -201,4 +202,56 @@ class MultipleChoice(tk.Menubutton):
                 result.append(choice)
         return result
 
+import datetime
+import time
 
+class ToolTip(object):
+
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.tipwindow = None
+
+        self.text = text
+        self.tipwindow = tk.Toplevel(self.widget)
+        self.label = tk.Label(self.tipwindow, text=self.text, justify=tk.LEFT,
+                      background=IowColors.blue1, relief=tk.SOLID, borderwidth=1,
+                      font=("tahoma", "8", "normal"), fg="white")
+        self.label.pack(ipadx=1) 
+
+        self.tipwindow.withdraw()
+
+        self.inside = False
+
+    def showtip(self):
+        self.inside = True
+        self.tipwindow.after(1000, self._show)
+
+    def _show(self):
+        if not self.inside:
+            return
+
+        # update coordinates of parent widget
+        x, y, cx, cy = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx() + 57
+        y = y + cy + self.widget.winfo_rooty() +27
+        
+        self.tipwindow.wm_overrideredirect(1)
+        self.tipwindow.wm_geometry("+%d+%d" % (x, y))
+       
+        self.tipwindow.deiconify()
+        self.tipwindow.attributes('-topmost', 1)
+        self.tipwindow.attributes('-topmost', 0)
+
+    def hidetip(self):
+        self.inside = False
+        self.tipwindow.withdraw()
+
+
+def CreateToolTip(widget, text):
+    toolTip = ToolTip(widget, text)
+    def enter(event):
+        toolTip.showtip()
+    def leave(event):
+        toolTip.hidetip()
+    widget.bind('<Enter>', enter)
+    widget.bind('<Leave>', leave)
