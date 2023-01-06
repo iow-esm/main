@@ -4,7 +4,6 @@
 from datetime import datetime
 import glob
 import os
-import shutil
 import sys
 import time
 
@@ -158,9 +157,6 @@ for run in range(global_settings.runs_per_job):
 
     if generate_namcouple:
         create_namcouple.create_namcouple(global_settings, start_date, end_date)       
-
-    sys.exit()
-
 
     ########################################################################
     # STEP 2e: PREPARE THE INDIVIDUAL WORK DIRECTORIES                     #

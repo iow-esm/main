@@ -62,6 +62,9 @@ class GlobalSettings:
         # workdir_base is not given use default
             self.global_workdir_base = self.root_dir+'/work/'+self.run_name
 
+        if self.local_workdir_base != '':
+            self.local_workdir_base += "/"+self.run_name    
+
         
         # TODO test if all non-optional variables are set
         

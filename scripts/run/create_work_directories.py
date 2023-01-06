@@ -128,11 +128,9 @@ def create_work_directories(global_settings,            # global_settings
     # We still copy them.
     # For the files areas.nc, grids.nc and masks.nc which are shared between models, create symbolic links to the parent directory
     # so they will be shared between all model components but not updated globally when changed
-    #if global_workdir_base=='':
-    #    global_workdir_base = work_directory_root
-    #os.symlink(global_workdir_base+'/areas.nc',work_dir+'/areas.nc')
-    #os.symlink(global_workdir_base+'/grids.nc',work_dir+'/grids.nc')
-    #os.symlink(global_workdir_base+'/masks.nc',work_dir+'/masks.nc')
+    os.symlink(global_settings.global_workdir_base+'/areas.nc',work_dir+'/areas.nc')
+    os.symlink(global_settings.global_workdir_base+'/grids.nc',work_dir+'/grids.nc')
+    os.symlink(global_settings.global_workdir_base+'/masks.nc',work_dir+'/masks.nc')
 
     model_handler.create_work_directory(work_directory_root, start_date, end_date)
                                            

@@ -48,7 +48,7 @@ def create_namcouple(global_settings,        # global_settings
           ' but that does not exist..')
     
     print('  remove temporary ' + work_dir)
-    #os.system('rm -rf ' + work_dir)
+    os.system('rm -rf ' + work_dir)
     
     print('... generating namcouple via flux_calculator done.')
     return
