@@ -193,7 +193,7 @@ for run in range(global_settings.runs_per_job):
         sys.exit()
        
     try:
-        resubmit_command = global_settings.resubmit_command.replace("jobscript", "jobscript_"+global_settings.run_name)
+        resubmit_command = global_settings.resubmit_command.replace("jobscript", "jobscript_"+global_settings.input_name)
     except:
         resubmit_command = None
        

@@ -112,7 +112,7 @@ if [ "${sync_to}" != "" ]; then
 	echo ""
 fi
 
-if [ $# -gt 1 ]; then
+if [ $inputs_arg -lt $# ]; then
 	for ((i = ${inputs_arg}; i < $#; i++)); do 
 		echo "##         Start the run on target           ##"
 		echo "###############################################"
