@@ -89,6 +89,8 @@ class IowEsmGui:
             return
         
         self.current_setups = []
+
+        self.available_inputs = []
         
         if not self._check_setups():
             self._build_window_edit_setups()
@@ -501,6 +503,8 @@ class IowEsmGui:
 
         ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
         self.row += 1
+
+
         
     def _build_window_setups_advanced(self):
         self.windows["setups_advanced"] = tk.Toplevel(self.window)
@@ -543,7 +547,11 @@ class IowEsmGui:
     def _build_frame_setups(self, first_time):
         
         # create build frame
-        self.frames["setups"] = Frame(master=self.window, bg = IowColors.blue4)
+        if  first_time:
+            self.frames["setups"] = Frame(master=self.window, bg = IowColors.blue4)
+        else:
+            self.frames["setups"] = Frame(master=self.windows["setups"], bg = IowColors.blue4)
+            
         
         # title label
         self.labels["setups"] = FrameTitleLabel(master=self.frames["setups"], text="Setups:")
@@ -624,12 +632,32 @@ class IowEsmGui:
         
         ttk.Separator(self.window, orient=tk.HORIZONTAL).grid(row=self.row, sticky='ew')
         self.row += 1
+
+    def _build_window_setups(self):
+        self.windows["setups"] = tk.Toplevel(self.window)
+        
+        self._build_frame_setups(False)
+        
+        self.windows["setups"].geometry('+%d+%d' % (1.1*self.window.winfo_width() + self.x_offset, 1.1*self.windows["monitor"].winfo_height()))
+
+    def update_function(self):
+        print("abc")
+        self.menus["inputs"]["values"] = self.available_inputs
             
     def _build_frame_run(self):
         
         self.frames["run"] = Frame(master=self.window, bg = IowColors.blue4)
         
         self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model:")
+        
+        def update_available_inputs(obj):
+            if set(obj.entries) == set(self.available_inputs):
+                return False
+            obj.entries = self.available_inputs
+            return True
+
+        self.menus["inputs"] = MultipleChoice(master=self.frames["run"], entries=self.available_inputs, text="Run input folders...", update_entries=update_available_inputs)#Combobox(self.available_inputs, master=self.frames["run"], update_function=self.update_function)
+
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
         self.buttons["prepare_before_run"] = CheckButton("Create mappings", self.prepare_before_run, master=self.frames["run"])
         self.labels["sync_destinations"] = tk.Label(master=self.frames["run"], text="Synchronize to:", bg = self.frames["run"]["background"], fg = 'black')
@@ -648,6 +676,9 @@ class IowEsmGui:
         row += 1
 
         self.menus["sync_destinations"].grid(row=row, sticky="ew")
+        row += 1
+
+        self.menus["inputs"].grid(row=row, sticky="ew")
         row += 1
         
         self.buttons["run"].grid(row=row, sticky='ew')
@@ -672,12 +703,15 @@ class IowEsmGui:
         
         self._build_frame_build(False)
         
-        self._build_frame_setups(False)
+        self.buttons["setups"] = NewWindowButton("Deploy setups", self._build_window_setups, self.window)
+        self.buttons["setups"].grid(row=self.row, sticky='ew')
+        self.row += 1
         
         self._build_frame_run()
         
         self.buttons["cancel"] = CancelButton("Cancel", self.functions.cancel_shell_cmd, master=self.window)
         self.buttons["cancel"].grid(row=self.row, sticky='ew')
+        self.row += 1
         
 
 

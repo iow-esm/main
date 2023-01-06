@@ -103,6 +103,28 @@ class IowEsmFunctions:
             return
         
         self.eh.remove_from_log(*IowEsmErrors.clone_origins)
+
+    def check_for_available_inputs(self):
+        file_content = ""
+        user_at_host, path = self.gui.destinations[self.gui.current_destination].split(":")
+        cmd = "ssh " + user_at_host + " \"if [ -d " + path +  "/input ]; then ls " + path + "/input; fi\""
+        self.gui.print("Check for available inputs...")
+        sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        file_content = sp.stdout.read().decode("utf-8") 
+
+        if file_content == "":
+            self.gui.print("Found: None")
+            self.gui.print("You should deploy a setup first, if you want to run the model.")
+            self.gui.available_inputs = []
+            return
+
+        if "global_settings.py" in file_content:
+            self.gui.available_inputs = ["input"]
+        else:
+            self.gui.available_inputs = file_content.split("\n")
+            self.gui.available_inputs.remove("")
+        
+        self.gui.print("Found: "+str(self.gui.available_inputs))
         
     def set_destination(self, dst):
         self.gui.current_destination = dst
@@ -114,6 +136,7 @@ class IowEsmFunctions:
             return
         
         self.gui.print(" " + self.gui.current_destination + " (" + self.gui.destinations[self.gui.current_destination] + ")" )
+        self.check_for_available_inputs()
 
     def set_sync_destination(self, dst):
         self.gui.current_sync_destination = dst
