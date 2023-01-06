@@ -12,9 +12,9 @@ from model_handling import get_model_handler
 time.sleep(5.0)
 
 try:
-    run_name = str(sys.argv[1])
+    input_name = str(sys.argv[1])
 except:
-    run_name = ""
+    input_name = ""
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
@@ -29,7 +29,7 @@ IOW_ESM_ROOT = mydir[0:-12]
 # STEP 1: Read in global settings #
 ###################################
 from parse_global_settings import GlobalSettings
-global_settings = GlobalSettings(IOW_ESM_ROOT, run_name)
+global_settings = GlobalSettings(IOW_ESM_ROOT, input_name)
 
 ###############################################
 # STEP 2: Find out the parallelization layout #

@@ -16,7 +16,7 @@ def write_machinefile(global_settings, parallelization_layout):
             threads_of_model[model] = [i]
 
     # write a machine file
-    file_name = "machine_file_"+global_settings.run_name
+    file_name = "machine_file_"+global_settings.input_name
 
     with open(file_name, "w") as file:
         # find out which model has how many threads on which node
@@ -43,13 +43,13 @@ def write_mpmd_file(global_settings, model_handlers, parallelization_layout):
     model_threads = parallelization_layout['model_threads']
 
     # WRITE mpirun APPLICATION FILE FOR THE MPMD JOB (specify how many tasks of which model are started)
-    file_name = 'mpmd_file_'+global_settings.run_name
+    file_name = 'mpmd_file_'+global_settings.input_name
     if os.path.islink(file_name):
         os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
     mpmd_file = open(file_name, 'w') 
 
     for i,model in enumerate(models):
-        mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'_'+global_settings.run_name+'.sh\n')
+        mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(model_threads[i])+' ./run_'+model+'_'+global_settings.input_name+'.sh\n')
     mpmd_file.close() 
 
 def write_run_scripts(global_settings, model_handlers, parallelization_layout, attempt, start_date, end_date):
@@ -58,7 +58,7 @@ def write_run_scripts(global_settings, model_handlers, parallelization_layout, a
     model_executable = parallelization_layout['model_executable']
 
     for i,model in enumerate(models):
-        file_name = 'run_'+model+'_'+global_settings.run_name+'.sh'
+        file_name = 'run_'+model+'_'+global_settings.input_name+'.sh'
         if os.path.islink(file_name):
             os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
         shellscript = open(file_name, 'w')
@@ -76,7 +76,7 @@ def write_run_scripts(global_settings, model_handlers, parallelization_layout, a
             shellscript.writelines('export IOW_ESM_ATTEMPT='+str(attempt)+'\n')
             shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base+ '/' +'\n')
             shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+global_settings.global_workdir_base+'\n')
-            shellscript.writelines('python3 mpi_task_before.py ' + global_settings.run_name + '\n')
+            shellscript.writelines('python3 mpi_task_before.py ' + global_settings.input_name + '\n')
             shellscript.writelines('waited=0\n')                        # seconds counter for timeout
             shellscript.writelines('timeout=60\n')                      # timeout is set to 60 seconds
             shellscript.writelines('until [ -f '+global_settings.local_workdir_base+'/'+model+'/finished_creating_workdir_'+str(start_date)+'_attempt'+str(attempt)+'.txt ] || [ $waited -ge $timeout ]\n')
@@ -97,8 +97,8 @@ def write_run_scripts(global_settings, model_handlers, parallelization_layout, a
         os.chmod(file_name, st.st_mode | 0o777) # add a+rwx permission
 
 def start_mpi_jobs(global_settings):
-    mpmd_file_name = 'mpmd_file_'+global_settings.run_name
-    machine_file_name = "machine_file_"+global_settings.run_name
+    mpmd_file_name = 'mpmd_file_'+global_settings.input_name
+    machine_file_name = "machine_file_"+global_settings.input_name
     full_mpi_run_command = global_settings.mpi_run_command.replace("mpmd_file", mpmd_file_name)
     if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
         full_mpi_run_command += ' '+global_settings.use_mpi_machinefile.replace("machine_file", machine_file_name)
@@ -120,7 +120,7 @@ def write_run_after_scripts(global_settings, model_handlers, parallelization_lay
                 failfile.close()
     else:
         # CHECK IF THE RUN FAILED LOCALLY AND COPY LOCAL WORKDIRS TO THE GLOBAL ONE
-        file_name = 'run_after1_'+global_settings.run_name+'.sh'
+        file_name = 'run_after1_'+global_settings.input_name+'.sh'
         if os.path.islink(file_name):
             os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
         shellscript = open(file_name, 'w')
@@ -128,19 +128,19 @@ def write_run_after_scripts(global_settings, model_handlers, parallelization_lay
         shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+global_settings.global_workdir_base+'\n')
         shellscript.writelines('export IOW_ESM_END_DATE='+str(end_date)+'\n')
         shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
-        shellscript.writelines('python3 mpi_task_after1.py ' + global_settings.run_name + '\n')
+        shellscript.writelines('python3 mpi_task_after1.py ' + global_settings.input_name + '\n')
         shellscript.close()
         st = os.stat(file_name)                 # get current permissions
         os.chmod(file_name, st.st_mode | 0o777) # add a+rwx permission
 
-        mpmd_file_name = 'mpmd_file_'+global_settings.run_name
+        mpmd_file_name = 'mpmd_file_'+global_settings.input_name
         mpmd_file = open(mpmd_file_name, 'w') 
         mpmd_file.writelines(global_settings.mpi_n_flag+' '+str(parallelization_layout['total_threads'])+' ./'+file_name+'\n')
         mpmd_file.close()
 
         full_mpi_run_command = global_settings.mpi_run_command.replace("mpmd_file", mpmd_file_name)
 
-        machine_file_name = "machine_file_"+global_settings.run_name
+        machine_file_name = "machine_file_"+global_settings.input_name
         if global_settings.flux_calculator_mode == FluxCalculatorModes.on_bottom_cores:
             full_mpi_run_command += ' '+global_settings.use_mpi_machinefile.replace("machine_file", machine_file_name)
         print('  starting after1 task ...', flush=True)

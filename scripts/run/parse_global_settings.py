@@ -17,15 +17,17 @@ class GlobalSettings:
     :type global_settings:  str
     """
 
-    def __init__(self, root_dir, run_name = ""):
+    def __init__(self, root_dir, input_name = ""):
 
         # memorize the root directory as a part of the global_settings
         self.root_dir = root_dir 
 
-        # if run is not empty we provide a specific input folder
-        if run_name != "":
-            self.run_name = run_name
-            self.input_dir = self.root_dir + "/input/" + self.run_name
+        self.input_name = input_name
+
+        # if input_name is not empty we provide a specific input folder
+        if self.input_name != "":
+            self.run_name = input_name
+            self.input_dir = self.root_dir + "/input/" + self.input_name
         # if it is empty there is only one input folder and the global_settings.py therein specifies the run name
         else:
             self.input_dir = self.root_dir + "/input"
@@ -49,6 +51,16 @@ class GlobalSettings:
         
         # map dictionary entries to class members with the smae name
         for variable in ldict.keys():
+
+            # check if run_name is specified although name should be given by input folder
+            if variable == "run_name":
+                try:
+                    self.run_name
+                    print("Run name is already psecified by input folder name. Setting in global_settings.py has no effect!")
+                    continue
+                except:
+                    pass
+
             setattr(self, variable, ldict[variable]) 
 
         try:

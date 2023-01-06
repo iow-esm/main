@@ -21,9 +21,9 @@ from parse_global_settings import GlobalSettings
 import run_helpers
 
 try:
-    run_name = str(sys.argv[1])
+    input_name = str(sys.argv[1])
 except:
-    run_name = ""
+    input_name = ""
 
 ##################################
 # STEP 0: Get the root directory #
@@ -47,7 +47,7 @@ from get_parallelization_layout import get_parallelization_layout
 ################################################################################################################################
 
 # read in global settings
-global_settings = GlobalSettings(IOW_ESM_ROOT, run_name)
+global_settings = GlobalSettings(IOW_ESM_ROOT, input_name)
 
 # remove finished marker
 if glob.glob(IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt"):

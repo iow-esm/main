@@ -112,15 +112,23 @@ if [ "${sync_to}" != "" ]; then
 	echo ""
 fi
 
-for ((i = ${inputs_arg}; i < $#; i++)); do 
+if [ $# -gt 1 ]; then
+	for ((i = ${inputs_arg}; i < $#; i++)); do 
+		echo "##         Start the run on target           ##"
+		echo "###############################################"
+		echo "Start run with input folder ${args[i]}"
+		./local_scripts/run_${target}.sh ${user_at_dest} ${dest_folder} ${prepare_before_run} "${args[i]}"
+		echo ""
+		echo ""
+	done
+else
 	echo "##         Start the run on target           ##"
 	echo "###############################################"
-	echo "Start run with input folder ${args[i]}"
-	./local_scripts/run_${target}.sh ${user_at_dest} ${dest_folder} ${prepare_before_run} "${args[i]}"
+	echo "Start run with input folder"
+	./local_scripts/run_${target}.sh ${user_at_dest} ${dest_folder} ${prepare_before_run}
 	echo ""
 	echo ""
-done
-
+fi
 
 echo ""
 echo "###############################################"

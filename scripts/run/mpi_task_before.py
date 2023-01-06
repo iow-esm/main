@@ -8,9 +8,9 @@ import sys
 import create_work_directories
 
 try:
-    run_name = str(sys.argv[1])
+    input_name = str(sys.argv[1])
 except:
-    run_name = ""
+    input_name = ""
 
 # get current folder and check if it is scripts/run
 mydir = os.getcwd()
@@ -28,7 +28,7 @@ time.sleep(5.0)
 # STEP 1: Read in global settings #
 ###################################
 from parse_global_settings import GlobalSettings
-global_settings = GlobalSettings(IOW_ESM_ROOT, run_name)
+global_settings = GlobalSettings(IOW_ESM_ROOT, input_name)
 
 ###############################################
 # STEP 2: Find out the parallelization layout #
