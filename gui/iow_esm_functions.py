@@ -133,10 +133,13 @@ class IowEsmFunctions:
         
         if dst == "":
             self.gui.print(" None")
+            self.gui.menus["inputs"].click(create=True)
             return
         
         self.gui.print(" " + self.gui.current_destination + " (" + self.gui.destinations[self.gui.current_destination] + ")" )
         self.check_for_available_inputs()
+
+        self.gui.menus["inputs"].click(create=True)
 
     def set_sync_destination(self, dst):
         self.gui.current_sync_destination = dst
@@ -314,13 +317,24 @@ class IowEsmFunctions:
         if self.gui.prepare_before_run.get() != 0:
             cmd += " prepare-before-run"
 
-        self.gui.print("abc "+self.gui.current_sync_destination)
-
         if self.gui.current_sync_destination != "":
             cmd += " sync_to=" + self.gui.current_sync_destination
+
+        current_inputs = self.gui.menus["inputs"].get_current_choices()
+
+        if len(current_inputs) < 1:
+            self.gui.print("No input folder selected or available. Abort.")
+            return False
+
+        if "input" in current_inputs and len(current_inputs) > 1:
+            self.gui.print("Input folder name \"input\" is reserved and cannot be used with other input folder together. Abort.")
+            return False
+
+        if "input" in current_inputs:
+            current_inputs = [] # if only input is available, this is the old default and this corresponds to no arguments
         
-        for setup in self.gui.current_setups:
-            cmd = cmd + " " + setup
+        for inp in current_inputs:
+            cmd = cmd + " " + inp
             
         self.execute_shell_cmd(cmd, blocking = False)
         
