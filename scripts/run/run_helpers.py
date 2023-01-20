@@ -66,6 +66,7 @@ def write_run_scripts(global_settings, model_handlers, parallelization_layout, a
         if (global_settings.local_workdir_base==''):
             # workdir is global, so create the directories here
             create_work_directories.create_work_directories(global_settings,          # global_settings object
+                                                global_settings.global_workdir_base,  # work directory root for all models
                                                 str(start_date),       # 'YYYYMMDD'
                                                 str(end_date),         # 'YYYYMMDD'                                       
                                                 model_handlers[model]) # create workdir for all models
