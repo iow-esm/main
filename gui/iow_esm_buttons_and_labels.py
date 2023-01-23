@@ -201,9 +201,9 @@ class MultipleChoice(tk.Menubutton):
             if self.choices[choice].get():
                 result.append(choice)
         return result
-
-import datetime
-import time
+    
+    def clear_choices(self):
+        self.choices = {}
 
 class ToolTip(object):
 

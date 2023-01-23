@@ -105,6 +105,7 @@ class IowEsmFunctions:
         self.eh.remove_from_log(*IowEsmErrors.clone_origins)
 
     def check_for_available_inputs(self):
+        
         file_content = ""
         user_at_host, path = self.gui.destinations[self.gui.current_destination].split(":")
         cmd = "ssh " + user_at_host + " \"if [ -d " + path +  "/input ]; then ls " + path + "/input; fi\""
@@ -137,8 +138,12 @@ class IowEsmFunctions:
             return
         
         self.gui.print(" " + self.gui.current_destination + " (" + self.gui.destinations[self.gui.current_destination] + ")" )
+
+        # check for available inputs at the destination target
         self.check_for_available_inputs()
 
+        # update inputs menu
+        self.gui.menus["inputs"].clear_choices()
         self.gui.menus["inputs"].click(create=True)
 
     def set_sync_destination(self, dst):
