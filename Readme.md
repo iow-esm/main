@@ -21,7 +21,7 @@ Further information is available at https://sven-karsten.github.io/iow_esm/intro
 
 | date        | author(s)   | link      |
 |---          |---          |---        |
-| 2022-12-22  | SK          | [1.04.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.04.00)       | 
+| 2023-01-24  | SK          | [1.04.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.04.00)       | 
 
 <details>
 
