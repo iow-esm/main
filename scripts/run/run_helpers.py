@@ -75,7 +75,7 @@ def write_run_scripts(global_settings, model_handlers, parallelization_layout, a
             shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
             shellscript.writelines('export IOW_ESM_END_DATE='+str(end_date)+'\n')
             shellscript.writelines('export IOW_ESM_ATTEMPT='+str(attempt)+'\n')
-            shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base+ '/' +'\n')
+            shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base+'\n')
             shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+global_settings.global_workdir_base+'\n')
             shellscript.writelines('python3 mpi_task_before.py ' + global_settings.input_name + '\n')
             shellscript.writelines('waited=0\n')                        # seconds counter for timeout
@@ -125,7 +125,7 @@ def write_run_after_scripts(global_settings, model_handlers, parallelization_lay
         if os.path.islink(file_name):
             os.system("cp --remove-destination `realpath " + file_name + "` " + file_name)
         shellscript = open(file_name, 'w')
-        shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base + '\n')
+        shellscript.writelines('export IOW_ESM_LOCAL_WORKDIR_BASE='+global_settings.local_workdir_base+'\n')
         shellscript.writelines('export IOW_ESM_GLOBAL_WORKDIR_BASE='+global_settings.global_workdir_base+'\n')
         shellscript.writelines('export IOW_ESM_END_DATE='+str(end_date)+'\n')
         shellscript.writelines('export IOW_ESM_START_DATE='+str(start_date)+'\n')
