@@ -6,16 +6,16 @@ import os
 import netCDF4
 import numpy as np
 
-def grid_create_maskfile_CCLM(IOW_ESM_ROOT,        # root directory of IOW ESM
+def grid_create_maskfile_CCLM(input_dir,        # root directory of IOW ESM
                               my_directory,        # name of this model instance
                               which_grid = "t_grid"): # mask file for which grid?      
 
     # STEP 1: CHECK IF MAPPING FILE (FROM EXCHANGEGRID TO CCLM) EXISTS
-    inputfile  = IOW_ESM_ROOT+'/input/'+my_directory+'/mappings/remap_' + which_grid + '_exchangegrid_to_'+my_directory+'.nc'
+    inputfile  = input_dir+'/'+my_directory+'/mappings/remap_' + which_grid + '_exchangegrid_to_'+my_directory+'.nc'
     if which_grid == "t_grid":
-        outputfile = IOW_ESM_ROOT+'/input/'+my_directory+'/mappings/maskfile.nc'
+        outputfile = input_dir+'/'+my_directory+'/mappings/maskfile.nc'
     else:
-        outputfile = IOW_ESM_ROOT+'/input/'+my_directory+'/mappings/maskfile_' + which_grid + '.nc'
+        outputfile = input_dir+'/'+my_directory+'/mappings/maskfile_' + which_grid + '.nc'
         
     if not (os.path.isfile(inputfile)):
         print('ERROR in grid_convert_CCLM_to_SCRIP: File '+inputfile+' not found.')

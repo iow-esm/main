@@ -7,7 +7,7 @@ import glob
 def get_exchange_grid_task_vector(global_settings, model, model_tasks, grid, work_dir):
 
     # get source addresses of model grid cells that correspond to exchage grid cells
-    remap_file = global_settings.root_dir + "/input/" + model + "/mappings/remap_" + grid + "_" + model + "_to_exchangegrid.nc"
+    remap_file = global_settings.input_dir + "/" + model + "/mappings/remap_" + grid + "_" + model + "_to_exchangegrid.nc"
 
     if not (os.path.isfile(remap_file)):
         print("There is no file " + remap_file + ". Cannot get exchange grid task vector.")
@@ -39,7 +39,7 @@ def get_exchange_grid_task_vector(global_settings, model, model_tasks, grid, wor
 def add_exchange_grid_task_vector(global_settings, model, eg_tasks, grid, work_dir):
 
     eg_file = work_dir + "/" + grid + "_" + "exchangegrid.nc"
-    os.system("cp " +  global_settings.root_dir + "/input/" + model + "/mappings/" + grid + "_" + "exchangegrid.nc " + eg_file)
+    os.system("cp " +  global_settings.input_dir + "/" + model + "/mappings/" + grid + "_" + "exchangegrid.nc " + eg_file)
 
     nc = Dataset(eg_file,"a")
     task_var = nc.createVariable("task","i4",("grid_size",)); task_var[:]=eg_tasks
@@ -61,7 +61,7 @@ def get_halo_cells(global_settings, model, grid, work_dir):
         halo_cells[task] = []
 
     # find out to which grid this grid is regridded
-    regrid_files = glob.glob(global_settings.root_dir + "/input/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_*.nc")
+    regrid_files = glob.glob(global_settings.input_dir + "/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_*.nc")
 
     dst_grids = []
     for file in regrid_files:
@@ -76,7 +76,7 @@ def get_halo_cells(global_settings, model, grid, work_dir):
         nc.close()
 
         # get regridding file
-        regrid_file = global_settings.root_dir + "/input/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_" + dst_grid + ".nc"
+        regrid_file = global_settings.input_dir + "/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_" + dst_grid + ".nc"
         
         nc = Dataset(regrid_file,"r")
         num_links = nc.variables['num_links'][:]    # links for mapping from t grid to other grid
@@ -236,7 +236,7 @@ def update_remapping_from_model_to_exchange(global_settings, model, grid, work_d
     nc.close()
 
     # read in current remapping
-    remap_file = global_settings.root_dir + "/input/" + model + "/mappings/remap_" + grid + "_" + model + "_to_exchangegrid.nc"
+    remap_file = global_settings.input_dir + "/" + model + "/mappings/remap_" + grid + "_" + model + "_to_exchangegrid.nc"
 
     nc = Dataset(remap_file,"r")
     num_wgts = nc.variables['num_wgts'][:]
@@ -319,7 +319,7 @@ def update_remapping_from_exchange_to_model(global_settings, model, grid, work_d
     nc.close()
 
     # read in current remapping
-    remap_file = global_settings.root_dir + "/input/" + model + "/mappings/remap_" + grid + "_exchangegrid_to_" + model + ".nc"
+    remap_file = global_settings.input_dir + "/" + model + "/mappings/remap_" + grid + "_exchangegrid_to_" + model + ".nc"
 
     nc = Dataset(remap_file,"r")
     num_wgts = nc.variables['num_wgts'][:]
@@ -450,7 +450,7 @@ def update_regridding(global_settings, model, grid, work_dir):
     nc.close()
 
     # find out to which grid this grid is regridded
-    regrid_files = glob.glob(global_settings.root_dir + "/input/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_*.nc")
+    regrid_files = glob.glob(global_settings.input_dir + "/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_*.nc")
 
     dst_grids = []
     for file in regrid_files:
@@ -467,8 +467,8 @@ def update_regridding(global_settings, model, grid, work_dir):
         nc.close()
 
         # get current regridding file
-        regrid_file = global_settings.root_dir + "/input/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_" + dst_grid + ".nc"
-        #os.system("cp " +  global_settings.root_dir + "/input/" + model + "/mappings/" + regrid_file + " " + work_dir + "/" + regrid_file)
+        regrid_file = global_settings.input_dir + "/" + model + "/mappings/regrid_" + grid + "_" + model + "_to_" + dst_grid + ".nc"
+        #os.system("cp " +  global_settings.input_dir + "/" + model + "/mappings/" + regrid_file + " " + work_dir + "/" + regrid_file)
         
         nc = Dataset(regrid_file,"r")
         num_links = nc.variables['num_links'][:]
@@ -558,7 +558,7 @@ def visualize_domain_decomposition(global_settings, model, grid, model_tasks, eg
         return x_sorted, y_sorted
     
     # grid of ocean model
-    nc_file = global_settings.root_dir + "/input/" + model + "/mappings/" + grid + ".nc"
+    nc_file = global_settings.input_dir + "/" + model + "/mappings/" + grid + ".nc"
     nc = Dataset(nc_file, 'r')
     grid_corner_lat = nc.variables['grid_corner_lat'][:][:]
     grid_corner_lon = nc.variables['grid_corner_lon'][:][:]
@@ -618,7 +618,7 @@ def visualize_domain_decomposition(global_settings, model, grid, model_tasks, eg
 
     # exchange grid domain decomposition
 
-    nc_file = global_settings.root_dir + "/input/" + model + "/mappings/" + grid + "_exchangegrid.nc"
+    nc_file = global_settings.input_dir + "/" + model + "/mappings/" + grid + "_exchangegrid.nc"
     nc = Dataset(nc_file, 'r')
     grid_corner_lat = nc.variables['grid_corner_lat'][:][:]
     grid_corner_lon = nc.variables['grid_corner_lon'][:][:]

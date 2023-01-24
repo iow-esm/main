@@ -9,25 +9,23 @@ import shutil
 import model_handling_flux
 
 def create_namcouple(global_settings,        # global_settings
-                       work_directory_root, # /path/to/work/directory for all models
                        start_date,          # 'YYYYMMDD'
                        end_date):            # 'YYYYMMDD' 
 
     print('Generating namcouple via flux_calculator...')
-    
-    work_dir = work_directory_root+'/flux_calculator'
-    
+
+    work_dir = global_settings.global_workdir_base+"/flux_calculator"
     print('  create temporary ' + work_dir)
     os.makedirs(work_dir)
     
     model_handler = model_handling_flux.ModelHandler(global_settings, 'flux_calculator')   # we don't need the other model handlers here -> keyword argument model_handlers={} (= default)               
-    model_handler.create_work_directory(work_directory_root,str(start_date),str(end_date))
+    model_handler.create_work_directory(global_settings.global_workdir_base, str(start_date),str(end_date))
     
     # Start flux_calculator excutable with switch --generate_namcouple before starting the model
     shellscript_name = './create_namcouple.sh'
     shellscript = open(shellscript_name, 'w')
     shellscript.writelines('#!/bin/bash\n')
-    shellscript.writelines('cd '+work_directory_root+'/flux_calculator\n')
+    shellscript.writelines('cd '+global_settings.global_workdir_base+'/flux_calculator\n')
     shellscript.writelines('exec ./flux_calculator --generate_namcouple > logfile_namcouple_generation.txt 2>&1')
     shellscript.close()
     st = os.stat(shellscript_name)                 # get current permissions
@@ -38,7 +36,7 @@ def create_namcouple(global_settings,        # global_settings
     os.system(mpi_command + " " + global_settings.mpi_n_flag + " 1 " + shellscript_name)
     print('  ... creating namcouple finished ', flush=True)
     
-    destfile = global_settings.root_dir+'/input/namcouple'
+    destfile = global_settings.input_dir+'/namcouple'
     sourcefile = work_dir+'/namcouple'
     
     print('  copy ' + sourcefile + ' to ' + destfile, flush=True)

@@ -212,11 +212,10 @@ class ModelHandler(model_handling.ModelHandlerBase):
             
         ################## main function #####################
         
-        IOW_ESM_ROOT = self.global_settings.root_dir        # root directory of IOW ESM
         my_directory = self.my_directory       # name of this model instance
     
          # STEP 1: CREATE EMPTY "mappings" SUBDIRECTORY
-        full_directory = IOW_ESM_ROOT+'/input/'+my_directory
+        full_directory = self.global_settings.input_dir+'/'+my_directory
         if (os.path.isdir(full_directory+'/mappings')):
             os.system('rm -r '+full_directory+'/mappings')
         os.system('mkdir '+full_directory+'/mappings')
@@ -357,13 +356,12 @@ class ModelHandler(model_handling.ModelHandlerBase):
         
     def get_num_threads(self):
         # CCLM model - parallelization is described in INPUT_ORG, e.g. nprocx= 8, nprocy= 24
-        
-        IOW_ESM_ROOT        = self.global_settings.root_dir              # root directory of IOW ESM
         model               = self.my_directory             # name of model's input folder
         
-        inputfile = IOW_ESM_ROOT+'/input/'+model+'/INPUT_ORG'
+        inputfile = self.global_settings.input_dir+'/'+model+'/INPUT_ORG'
         mythreads_x = 0
         mythreads_y = 0
+        mythreads = 0
         if not os.path.isfile(inputfile):
             print('Could not determine parallelization layout because the following file was missing: '+inputfile)
         else :

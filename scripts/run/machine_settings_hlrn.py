@@ -53,3 +53,6 @@ def get_node_list():
             node_list.append(machine+str(node))
 
     return node_list
+
+# command to resubmit new job when final date is not yet reached, is executed in scripts/run
+resubmit_command = "sbatch jobscript"

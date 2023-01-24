@@ -155,11 +155,10 @@ class ModelHandler(model_handling.ModelHandlerBase):
         os.system('mv '+workdir+'/RESTART/* '+hotstartdir+'/.')  # MOM hotstart files
     
     def grid_convert_to_SCRIP(self):
-        IOW_ESM_ROOT = self.global_settings.root_dir        # root directory of IOW ESM
         my_directory = self.my_directory       # name of this model instance
     
         # STEP 1: CREATE EMPTY "mappings" SUBDIRECTORY
-        full_directory = IOW_ESM_ROOT+'/input/'+my_directory
+        full_directory = self.global_settings.input_dir+'/'+my_directory
         if (os.path.isdir(full_directory+'/mappings')):
             os.system('rm -r '+full_directory+'/mappings')
         os.system('mkdir '+full_directory+'/mappings')
@@ -304,11 +303,9 @@ class ModelHandler(model_handling.ModelHandlerBase):
         # "layout = 14,10"  e.g. means 14x10 rectangles exist, but a few of them may be masked out
         # "mask_table = 'INPUT/mask_table'" (optional) means we will find this file there
         # it contains the number of masked (=inactive) rectangles in the first line
-        
-        IOW_ESM_ROOT        = self.global_settings.root_dir              # root directory of IOW ESM
         model               = self.my_directory             # name of model's input folder
         
-        inputfile = IOW_ESM_ROOT+'/input/'+model+'/input.nml'
+        inputfile = self.global_settings.input_dir+'/'+model+'/input.nml'
         mythreads_x = 0
         mythreads_y = 0
         mythreads_masked = 0
@@ -334,7 +331,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
                 match = re.search("mask_table\s*=\s*'([^']*)'", line) # search for anything between single quotes behind 'mask_table=', 
                                                                       # but allow spaces
                 if match:
-                    maskfile = IOW_ESM_ROOT+'/input/'+model+'/'+match.group(1)
+                    maskfile = self.global_settings.input_dir+'/'+model+'/'+match.group(1)
                     # memorize the mask file for getting the domain decomposition
                     self.maskfile = maskfile
                     if not os.path.isfile(maskfile):
@@ -355,8 +352,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
     def get_domain_decomposition(self):
 
         # get the correct paths
-        IOW_ESM_ROOT = self.global_settings.root_dir              # root directory of IOW ESM
-        full_directory = IOW_ESM_ROOT+'/input/' + self.my_directory
+        full_directory = self.global_settings.input_dir+'/' + self.my_directory
 
         # check if grid_spec.nc exists
         grid_spec_file = full_directory +'/INPUT/grid_spec.nc'

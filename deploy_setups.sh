@@ -23,6 +23,9 @@ setup_origin="`awk -v setup="$setup" '{if($1==setup){print $2}}' ${setups_file_n
 if [ -z "${setup_origin}" ]; then
 	echo "Unknown setup. Please use a setup from the ${setups_file_name}."
 	exit
+elif [ "${setup_origin}" == "#" ]; then
+	echo "Unknown setup. Please use a setup from the ${setups_file_name}."
+	exit
 else
 	echo "Setup: ${setup_origin}"
 fi
@@ -54,8 +57,10 @@ else
 		
 	else
 		# if setup is located on the machine we can leave symbolic links as is
-		echo ssh -t "${user_at_setup_origin}" \"cp -r ${setup_origin_folder}/* ${dest_folder}/.\"
-		ssh -t "${user_at_setup_origin}" "cp -r ${setup_origin_folder}/* ${dest_folder}/."
+		#echo ssh -t "${user_at_setup_origin}" \"cp -r ${setup_origin_folder}/* ${dest_folder}/.\"
+		#ssh -t "${user_at_setup_origin}" "cp -r ${setup_origin_folder}/* ${dest_folder}/."
+		echo ssh -t "${user_at_setup_origin}" \"rsync -r -i -u -t -l ${setup_origin_folder}/* ${dest_folder}/.\"
+		ssh -t "${user_at_setup_origin}" "rsync -r -i -u -t -l ${setup_origin_folder}/* ${dest_folder}/."
 	fi
 	
 	# some preparation scripts require write premissions

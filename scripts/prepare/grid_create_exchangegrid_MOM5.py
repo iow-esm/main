@@ -9,7 +9,7 @@ import numpy as np
 from mapping_helper_functions import get_polys_and_boxes, sub_polybox, get_intersections, polygon_area 
 
 
-def grid_create_exchangegrid_MOM5(IOW_ESM_ROOT,        # root directory of IOW ESM
+def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
                                   atmos_model,         # name of atmospheric model instance
                                   bottom_model,        # name of bottom model instance (MOM5 model)
                                   which_grid):         # 't_grid' or 'u_grid' or 'v_grid'
@@ -17,19 +17,19 @@ def grid_create_exchangegrid_MOM5(IOW_ESM_ROOT,        # root directory of IOW E
     ###########################################################
     # STEP 1: DEFINE FILENAMES AND GRID NAMES FOR SCRIP FILES #
     ###########################################################
-    scrip_file_1 = IOW_ESM_ROOT+'/input/'+atmos_model +'/mappings/t_grid.nc'         # since CCLM uses a rotated grid, we have to remap momentum to the t-grid.
-    scrip_file_2 = IOW_ESM_ROOT+'/input/'+bottom_model+'/mappings/'+which_grid+'.nc'
+    scrip_file_1 = input_dir+'/'+atmos_model +'/mappings/t_grid.nc'         # since CCLM uses a rotated grid, we have to remap momentum to the t-grid.
+    scrip_file_2 = input_dir+'/'+bottom_model+'/mappings/'+which_grid+'.nc'
 
-    bottom_to_atmos_file    = IOW_ESM_ROOT+'/input/'+bottom_model+'/mappings/remap_'+which_grid+'_'+bottom_model+'_to_'+atmos_model +'.nc'
-    atmos_to_bottom_file    = IOW_ESM_ROOT+'/input/'+atmos_model +'/mappings/remap_'+which_grid+'_'+atmos_model +'_to_'+bottom_model+'.nc'
+    bottom_to_atmos_file    = input_dir+'/'+bottom_model+'/mappings/remap_'+which_grid+'_'+bottom_model+'_to_'+atmos_model +'.nc'
+    atmos_to_bottom_file    = input_dir+'/'+atmos_model +'/mappings/remap_'+which_grid+'_'+atmos_model +'_to_'+bottom_model+'.nc'
 
-    exchange_grid_file      = IOW_ESM_ROOT+'/input/'+bottom_model+'/mappings/'+which_grid+'_exchangegrid.nc'
+    exchange_grid_file      = input_dir+'/'+bottom_model+'/mappings/'+which_grid+'_exchangegrid.nc'
 
-    bottom_to_exchange_file = IOW_ESM_ROOT+'/input/'+bottom_model+'/mappings/remap_'+which_grid+'_'+bottom_model+'_to_exchangegrid.nc'
-    exchange_to_bottom_file = IOW_ESM_ROOT+'/input/'+bottom_model+'/mappings/remap_'+which_grid+'_exchangegrid_to_'+bottom_model+'.nc'
-    exchange_to_atmos_file  = IOW_ESM_ROOT+'/input/'+bottom_model+'/mappings/remap_'+which_grid+'_exchangegrid_to_'+atmos_model+'.nc'
+    bottom_to_exchange_file = input_dir+'/'+bottom_model+'/mappings/remap_'+which_grid+'_'+bottom_model+'_to_exchangegrid.nc'
+    exchange_to_bottom_file = input_dir+'/'+bottom_model+'/mappings/remap_'+which_grid+'_exchangegrid_to_'+bottom_model+'.nc'
+    exchange_to_atmos_file  = input_dir+'/'+bottom_model+'/mappings/remap_'+which_grid+'_exchangegrid_to_'+atmos_model+'.nc'
    
-    atmos_to_exchange_file  = IOW_ESM_ROOT+'/input/'+atmos_model +'/mappings/remap_to_exchangegrid_for_'+bottom_model+'_'+which_grid+'.nc'
+    atmos_to_exchange_file  = input_dir+'/'+atmos_model +'/mappings/remap_to_exchangegrid_for_'+bottom_model+'_'+which_grid+'.nc'
 
     atmos_grid_title        = atmos_model+'_tgrid'
     bottom_grid_title       = bottom_model+'_'+which_grid
