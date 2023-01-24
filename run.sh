@@ -107,7 +107,7 @@ echo ""
 if [ "${sync_to}" != "" ]; then
 	echo "##      Start synchronization of output      ##"
 	echo "###############################################"
-	./sync_from_one_target_to_another.sh "${target_keyword}" "${sync_to}"
+	./sync.sh "${target_keyword}" "${sync_to}"
 	echo ""
 	echo ""
 fi
