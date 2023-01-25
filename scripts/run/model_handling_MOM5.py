@@ -86,7 +86,7 @@ class ModelHandler(model_handling.ModelHandlerBase):
         # STEP 4: Copy hotstart files if a corresponding folder exists
         if (start_date != init_date):
             hotstart_folder = IOW_ESM_ROOT + '/hotstart/' + run_name + '/' + my_directory + '/' + start_date
-            os.system('cp '+hotstart_folder+'/*.res.nc '+full_directory+'/INPUT/')    # copy MOM5 hotstart files
+            os.system('cp '+hotstart_folder+'/*.res.nc* '+full_directory+'/INPUT/')    # copy MOM5 hotstart files
             os.system('cp '+hotstart_folder+'/coupler.res '+full_directory+'/INPUT/') # copy MOM5 file stating present date
         # otherwise use initial data in INIT folder for a cold start
         else:
