@@ -220,6 +220,7 @@ for run in range(global_settings.runs_per_job):
             # if this was the final attempt, we stop here
             if global_settings.attempt_handler.next_attempt is None:
                 print('All attempts exhausted. IOW_ESM job finally failed integration from '+str(start_date)+' to '+str(end_date))
+                os.system("rm "+global_settings.attempt_handler_obj_file) # remove attempt handler state to enable restart
                 sys.exit()
                 
             print('Go on with next attempt.', flush=True)
