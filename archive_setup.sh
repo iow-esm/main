@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ ! $# -eq 3 ]; then
 	echo "Usage: `basename "$0"` <target-key> <base-setup-key> <archive-setup-key>"
 	exit

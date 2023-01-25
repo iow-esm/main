@@ -1,3 +1,5 @@
+#!/bin/bash
+
 target=$1
 debug=${2:-"release"}
 fast=${3:-"fast"}

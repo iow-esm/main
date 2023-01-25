@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ $# -eq 0 ]; then
 	echo "Usage: `basename "$0"` <target-key> [<update_from_local_setup>]"
 	echo "<target-key> is one key that is contained in your ./DESTINATIONS file."

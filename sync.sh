@@ -1,3 +1,5 @@
+#!/bin/bash
+
 src=$1
 dst=$2
 timeout=${3:-5}

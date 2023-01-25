@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ ! $# -eq 2 ]; then
 	echo "Usage: `basename "$0"` <target-key> <setup-key>"
 	exit
