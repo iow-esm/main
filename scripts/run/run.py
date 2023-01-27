@@ -49,6 +49,8 @@ from get_parallelization_layout import get_parallelization_layout
 # read in global settings
 global_settings = GlobalSettings(IOW_ESM_ROOT, input_name)
 
+#os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_started.txt")
+
 # remove finished marker
 if glob.glob(IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt"):
     os.system("rm " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt")
@@ -101,8 +103,10 @@ for run in range(global_settings.runs_per_job):
         if int(start_date) >= int(global_settings.final_date):
             print('IOW_ESM job finished integration to final date '+global_settings.final_date)
             os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt")
+            os.system("rm "+IOW_ESM_ROOT + "/" + global_settings.run_name + "_running.txt")
             sys.exit()
     
+    os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_running.txt")
     
     ########################################################################
     # STEP 2b: ATTEMPT HANDLING: PREPARATION                               #
@@ -121,6 +125,8 @@ for run in range(global_settings.runs_per_job):
         if attempt is None:
             print("All attempts are exhausted. Abort.")
             print("To start from scratch, please remove " + global_settings.attempt_handler_obj_file + ".")
+            os.system("rm "+IOW_ESM_ROOT + "/" + global_settings.run_name + "_running.txt")
+            os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_failed.txt")
             sys.exit()
             
         # do the customer's preparation here
@@ -190,6 +196,8 @@ for run in range(global_settings.runs_per_job):
     # if we have no attempt handling and the model crashed we can only stop the entire job
     if crashed and (global_settings.attempt_handler is None):
         print('IOW_ESM job finally failed integration from '+str(start_date)+' to '+str(end_date))
+        os.system("rm "+IOW_ESM_ROOT + "/" + global_settings.run_name + "_running.txt")
+        os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_failed.txt")
         sys.exit()
        
     try:
@@ -221,6 +229,8 @@ for run in range(global_settings.runs_per_job):
             if global_settings.attempt_handler.next_attempt is None:
                 print('All attempts exhausted. IOW_ESM job finally failed integration from '+str(start_date)+' to '+str(end_date))
                 os.system("rm "+global_settings.attempt_handler_obj_file) # remove attempt handler state to enable restart
+                os.system("rm "+IOW_ESM_ROOT + "/" + global_settings.run_name + "_running.txt")
+                os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_failed.txt")
                 sys.exit()
                 
             print('Go on with next attempt.', flush=True)
@@ -230,6 +240,7 @@ for run in range(global_settings.runs_per_job):
             # if the attempt failed we throw away the work and start a new job
             if resubmit_command is None:
                 print('No command for resubmitting specified in global_settings.py. Abort.')
+                os.system("rm "+IOW_ESM_ROOT + "/" + global_settings.run_name + "_running.txt")
                 sys.exit()
             
             print('Run failed. Try again with command '+resubmit_command+'.', flush=True)
@@ -239,6 +250,8 @@ for run in range(global_settings.runs_per_job):
         # if the crashed attempt was not evaluated to false, we stop here
         if crashed:
             print('Error: Attempt '+str(attempt)+' has crashed but has been successfully evaluated. Abort.', flush=True)
+            os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_failed.txt")
+            os.system("rm "+IOW_ESM_ROOT + "/" + global_settings.run_name + "_running.txt")
             sys.exit()
                 
     print('  attempt '+str(attempt)+' succeeded.', flush=True)
@@ -281,6 +294,7 @@ postprocess_handling.postprocess_handling(global_settings, models, initial_start
 # if this run has successfully finished, mark it
 if int(start_date) >= int(global_settings.final_date):
     os.system("touch " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt")
+    os.system("rm "+IOW_ESM_ROOT + "/" + global_settings.run_name + "_running.txt")
 
 
 
