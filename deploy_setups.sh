@@ -68,6 +68,8 @@ else
 	# some preparation scripts require write premissions
 	echo ssh -t "${user_at_dest}" \"chmod u+w -R ${dest_folder}\"
 	ssh -t "${user_at_dest}" "chmod u+w -R ${dest_folder}"
+
+	ssh -t "${user_at_dest}" "cd ${dest_folder}; find . -type f -exec touch {} +"
 	
 	echo "Update from setup ${setup_origin} to ${dest} at " `date +%Y-%m-%d_%H-%M-%S` >> ${last_deploy_name}
 fi
