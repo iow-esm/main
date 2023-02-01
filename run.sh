@@ -106,20 +106,13 @@ scp "${last_build_file}" ${user_at_dest}:${dest_folder}/
 echo ""
 echo ""
 
-if [ "${sync_to}" != "" ]; then
-	echo "##      Start synchronization of output      ##"
-	echo "###############################################"
-	./sync.sh "${target_keyword}" "${sync_to}"
-	echo ""
-	echo ""
-fi
-
 if [ $inputs_arg -lt $# ]; then
 	for ((i = ${inputs_arg}; i < $#; i++)); do 
 		echo "##         Start the run on target           ##"
 		echo "###############################################"
 		echo "Start run with input folder ${args[i]}"
 		./local_scripts/run_${target}.sh ${user_at_dest} ${dest_folder} ${prepare_before_run} "${args[i]}"
+		ssh -t ${user_at_dest} "touch ${dest_folder}/${args[i]}_started.txt"
 		echo ""
 		echo ""
 	done
@@ -128,6 +121,15 @@ else
 	echo "###############################################"
 	echo "Start run with input folder"
 	./local_scripts/run_${target}.sh ${user_at_dest} ${dest_folder} ${prepare_before_run}
+	ssh -t ${user_at_dest} "touch ${dest_folder}/started.txt"
+	echo ""
+	echo ""
+fi
+
+if [ "${sync_to}" != "" ]; then
+	echo "##      Start synchronization of output      ##"
+	echo "###############################################"
+	./sync.sh "${target_keyword}" "${sync_to}"
 	echo ""
 	echo ""
 fi
