@@ -55,6 +55,10 @@ global_settings = GlobalSettings(IOW_ESM_ROOT, input_name)
 if glob.glob(IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt"):
     os.system("rm " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_finished.txt")
 
+# we seemingly want to start from scratch, so remove failed marker
+if glob.glob(IOW_ESM_ROOT + "/" + global_settings.run_name + "_failed.txt"):
+    os.system("rm " + IOW_ESM_ROOT + "/" + global_settings.run_name + "_failed.txt")
+
 # get a list of all subdirectories in "input" folder -> these are the models
 model_handlers = get_model_handlers(global_settings)
 models = model_handlers.keys()
