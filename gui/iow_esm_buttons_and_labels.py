@@ -143,10 +143,17 @@ class DropdownMenu(tk.OptionMenu):
 
           
 class MultipleChoice(tk.Menubutton):
-    def __init__(self, master=None, entries=[], text="Multiple choice", update_entries=None, tip_text=None):
+    def __init__(self, master=None, entries=[], text="Multiple choice", update_entries=None, bg=None, fg=None, tip_text=None):
 
-        bg = IowColors.blue4
-        fg = "black"
+        if bg is None:
+            bg = IowColors.blue4
+        else:
+            bg = bg
+
+        if fg is None:
+            fg = "black"
+        else:
+            fg = fg
 
         tk.Menubutton.__init__(self, master=master, text=text, bg=bg, fg=fg, borderwidth=1, relief="raised")
 
