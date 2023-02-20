@@ -91,6 +91,9 @@ class ModelHandler(model_handling.ModelHandlerBase):
         change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
                          after='&input', before='/', start_of_line='num_timesteps',
                          new_value = '='+str(timesteps))
+        change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
+                         after='&bias', before='/', start_of_line='init_date',
+                         new_value = '='+str(my_initdate))        
         # TODO when several bottom models are supported, here should be a check for which model we adapt the num_tasks_per_model
         mythreads = self.get_my_threads()
         for i, model in enumerate(mythreads.keys()):
