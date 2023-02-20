@@ -17,7 +17,72 @@ Further information is available at https://sven-karsten.github.io/iow_esm/intro
 
 # Versions
 
-## 1.02.00 (latest release)
+## 1.04.00 (in preparation)
+
+| date        | author(s)   | link      |
+|---          |---          |---        |
+| 2023-01-24  | SK          | [1.04.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.04.00)       | 
+
+<details>
+
+### changes
+* several instqances of the IOW ESM can now run the same root folder
+  * this can be done by creating subfolders in the `input` folder
+  * the names of these input folder are then used as `run_name`
+* output can be automatically archived and compressed (additinally monthly means are provided for fast access)
+* output can automatically synchronized to a target while the model is running
+
+### dependencies
+* bash, git, (python for GUI) 
+  
+### known issues
+* none
+
+### tested with
+* intensively tested on both HLRN machines
+  * using example setups available under:
+    (coupled, uncoupled MOM5, uncoupled CCLM, int2lm) /scratch/usr/mviowmod/IOW_ESM/setups/example/1.00.00                         
+  * can be built and run on Haumea but output is not intensively tested
+
+</details>
+
+
+## 1.03.00 (latest release)
+
+| date        | author(s)   | link      |
+|---          |---          |---        |
+| 2022-12-22  | SK          | [1.03.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.03.00)       | 
+
+<details>
+
+### changes
+* substiantial changes in postprocessing component, see Readme.md therein
+* breaking changes in MOM5 component, see Readme.md therein
+* new features in the flux_calculator component, see Readme.md therein
+* some smaller corrections in other parts
+
+### dependencies
+* bash, git, (python for GUI) 
+  
+### known issues
+* none
+
+### tested with
+* intensively tested on both HLRN machines
+  * using example setups available under:
+    (coupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+              MOM5_Baltic-CCLM_Eurocordex/example_3nm_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                CCLM_Eurocordex/example_0.22deg/1.00.00
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                MOM5_Baltic/example_3nm/1.00.00 
+    (uncoupled) /scratch/usr/mviowmod/IOW_ESM/setups/
+                I2LM_Eurocordex/example_0.22deg/1.00.00                              
+  * can be built and run on Haumea but output is not intensively tested
+  
+</details>
+
+## 1.02.00
 
 | date        | author(s)   | link      |
 |---          |---          |---        |
@@ -354,9 +419,10 @@ Be sure that the remote computer knows your targets and can copy files to them.
 #### Available setups
 
 ##### HLRN in Göttingen
-You can find an example setup for a MOM5 for the Baltic sea coupled to a CCLM model for the Eurocordex domain under `/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00`.
+You can find an example setup for a MOM5 (3 nm horizontal resolution) for the Baltic sea coupled to a CCLM model for the Eurocordex domain (0.22° horizontal resolution) under `/scratch/usr/mviowmod/IOW_ESM/setups/example/1.00.00`.
+Here are also examples for uncoupled runs.
 The corresponding line in the `SETUPS` file could then look like
-`coupled_example user@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/MOM5_Baltic-CCLM_Eurocordex/example_8nm_0.22deg/1.00.00`,
+`example user@glogin:/scratch/usr/mviowmod/IOW_ESM/setups/example/1.00.00`,
 where `user` should be replaced by your user name on the HLRN in Göttingen.
 It might be also necessary to add the full domain to the hostname, depending on your ssh configuration.
 Other example setups (also for uncoupled runs) can be found in `SETUPS.example` in this directory.
@@ -369,11 +435,11 @@ Other example setups (also for uncoupled runs) can be found in `SETUPS.example` 
 After creating the file `SETUPS` you can run in the root directory
 
 ``` bash
-./deploy_setup.sh hlrng coupled_example
+./deploy_setup.sh hlrng example
 ``` 
 
 Before running the model you should have a look at the deployed folders on your target.
-Especially you should go to the `input` folder and open the file `global_settings.py`.
+Especially you should go to the folder `input/coupled` and open the file `global_settings.py`.
 Please enter your name and email here.
 Moreover you should have a look at the file `jobscript_*`. 
 Here you may adjust the account which you will use for running the model.
@@ -385,15 +451,24 @@ More details on the preparation of the `input` folder is given in the file `docu
 If everything is set up on your remote computer of choice, you can run the model for the first time by executing this in the root directory:
 
 ``` bash
-./run.sh hlrng
+./run.sh hlrng prepare-before-run coupled
 ``` 
 
 The first argument of the run script is always the target keyword as specified in your `DESTINATIONS` file.
 By executing the run script all files from `scripts` directory will be transferred to the target.
 
-After the scripts are transferred the model is started on the target.
+The second argument stands for creating necessary mappinng files that are used for the coupling, see `documentation/developers_documentation.pdf`.
+If these mapping files already exist or you want to start an uncoupled run, this argument can be left out 
 
-If you use one of the setups from the `SETUPS.example` file, there is no need for further preparation of the coupled model.
-However for the general case there is the possibility to run preparation scripts that set up the exchange grid 
-and remapping files for the coupler, see `documentation/developers_documentation.pdf`. 
-Note that for an uncoupled run there is no need for the preparation.
+The third argument corresponds to the name of input subfolder that you want to run.
+If you want to run from several input folders, you can list all of them here.
+If you just have a single input folder witout subfolders, this argument can be left out.
+
+In general the run command can look like
+
+``` bash
+./run.sh <destination1> prepare-before-run sync_to=<destination2> input1 input2 input3 ...
+``` 
+where destination1 corresponds to the run target machine and destination2 to a target, where you want to transfer the output to.
+
+After all the scripts are transferred from your local computer to the target machine, the model is started on the target.

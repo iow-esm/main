@@ -5,9 +5,9 @@ def get_run_information(IOW_ESM_ROOT, debug_mode = False):
     info_files_description = {}
     
     if debug_mode:
-        info_files_description[IOW_ESM_ROOT + "/LAST_BUILD_debug"] = "*** Model built in debug mode with" 
+        info_files_description[IOW_ESM_ROOT + "/LAST_BUILD_*_debug"] = "*** Model built in debug mode with" 
     else:
-        info_files_description[IOW_ESM_ROOT + "/LAST_BUILD_release"] = "*** Model built in release mode with"
+        info_files_description[IOW_ESM_ROOT + "/LAST_BUILD_*_release"] = "*** Model built in release mode with"
         
     info_files_description[IOW_ESM_ROOT + "/LAST_DEPLOYED_SETUPS"]  = "*** Last deployed setups"
     info_files_description[IOW_ESM_ROOT + "/SETUP_INFO"] = "*** Setup info"

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ ! $# -eq 2 ]; then
 	echo "Usage: `basename "$0"` <target-key> <setup-key>"
 	exit
@@ -21,6 +23,9 @@ fi
 setup_origin="`awk -v setup="$setup" '{if($1==setup){print $2}}' ${setups_file_name}`"
 
 if [ -z "${setup_origin}" ]; then
+	echo "Unknown setup. Please use a setup from the ${setups_file_name}."
+	exit
+elif [ "${setup_origin}" == "#" ]; then
 	echo "Unknown setup. Please use a setup from the ${setups_file_name}."
 	exit
 else
@@ -54,13 +59,17 @@ else
 		
 	else
 		# if setup is located on the machine we can leave symbolic links as is
-		echo ssh -t "${user_at_setup_origin}" \"cp -r ${setup_origin_folder}/* ${dest_folder}/.\"
-		ssh -t "${user_at_setup_origin}" "cp -r ${setup_origin_folder}/* ${dest_folder}/."
+		#echo ssh -t "${user_at_setup_origin}" \"cp -r ${setup_origin_folder}/* ${dest_folder}/.\"
+		#ssh -t "${user_at_setup_origin}" "cp -r ${setup_origin_folder}/* ${dest_folder}/."
+		echo ssh -t "${user_at_setup_origin}" \"rsync -r -i -u -t -l ${setup_origin_folder}/* ${dest_folder}/.\"
+		ssh -t "${user_at_setup_origin}" "rsync -r -i -u -t -l ${setup_origin_folder}/* ${dest_folder}/."
 	fi
 	
 	# some preparation scripts require write premissions
 	echo ssh -t "${user_at_dest}" \"chmod u+w -R ${dest_folder}\"
 	ssh -t "${user_at_dest}" "chmod u+w -R ${dest_folder}"
+
+	ssh -t "${user_at_dest}" "cd ${dest_folder}; find . -type f -exec touch {} +"
 	
 	echo "Update from setup ${setup_origin} to ${dest} at " `date +%Y-%m-%d_%H-%M-%S` >> ${last_deploy_name}
 fi

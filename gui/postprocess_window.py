@@ -28,6 +28,7 @@ class PostprocessWindow():
         self.row = 0
         
         self.current_destination = self.master.current_destination
+        self.available_outputs = self.master.available_inputs
         
         self.current_outdirs = {}
         self.current_from_dates = {}
@@ -39,7 +40,7 @@ class PostprocessWindow():
         self.model_domains = {}
         self.dependencies = {}
         
-        self.get_global_settings()
+
         
         self.build_destinations_frame()
         
@@ -62,7 +63,38 @@ class PostprocessWindow():
         else:
             self.window.geometry('+%d+%d' % (self.master.x_offset + 1.01*self.master.window.winfo_width(), 
                              self.master.y_offset))
+
+        self.check_for_available_outputs()
+        self.get_global_settings()
+
+        for post in posts:
+            if post in oris:
+                self.menus["current_outdir_" + post].update_entries(self.menus["current_outdir_" + post]) 
+                self.entries["current_from_date_" + post].insert(0, self.init_date)
+                self.entries["current_to_date_" + post].insert(0, self.final_date)
         
+
+        
+    def check_for_available_outputs(self):
+        
+        file_content = ""
+        user_at_host, path = self.master.destinations[self.current_destination].split(":")
+        cmd = "ssh " + user_at_host + " \"if [ -d " + path +  "/output ]; then ls " + path + "/output; fi\""
+        self.master.print("Check for available outputs...")
+        sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        file_content = sp.stdout.read().decode("utf-8") 
+
+        if file_content == "":
+            self.master.print("Found: None")
+            self.master.print("You should run the model first, before you can postprocess the output.")
+            self.available_outputs = []
+            return
+        
+        self.available_outputs = file_content.split("\n")
+        self.available_outputs.remove("")
+        
+        self.master.print("Found: "+str(self.available_outputs))
+
 
     def set_destination(self, dst):
         self.current_destination = dst
@@ -74,6 +106,8 @@ class PostprocessWindow():
             return
         
         self.master.print(" " + self.current_destination + " (" + self.master.destinations[self.current_destination] + ")" )
+
+        self.check_for_available_outputs()
         
     def build_destinations_frame(self):
         
@@ -119,12 +153,14 @@ class PostprocessWindow():
         self.labels["current_to_date_" + model] = tk.Label(text = "to (YYYYMMDD)", master=self.frames[model], bg = self.frames[model]["background"])
 
         
-        self.entries["current_outdir_" + model] = tk.Entry(master=self.frames[model])
-        
-        try:
-            self.entries["current_outdir_" + model].insert(0, self.run_name + "/" + model +"_" + self.model_domains[model])
-        except:
-            self.entries["current_outdir_" + model].insert(0, "")
+        def update_available_outputs(obj):
+            if set(obj.entries) == set(self.available_outputs):
+                return False
+            obj.entries = self.available_outputs
+            return True
+
+        self.menus["current_outdir_" + model] = MultipleChoice(master=self.frames[model], entries=self.available_outputs, text="Choose outputs...", update_entries=update_available_outputs, 
+                                bg = self.frames[model]["background"], fg="black", tip_text="You can choose multiple input folder or a single one.")
         
         self.entries["current_from_date_" + model] = tk.Entry(master=self.frames[model])
         self.entries["current_from_date_" + model].insert(0, self.init_date)
@@ -170,7 +206,7 @@ class PostprocessWindow():
         self.labels["current_to_date_" + model].grid(row=row, column=2)
         row += 1
         
-        self.entries["current_outdir_" + model].grid(row=row, column=0)
+        self.menus["current_outdir_" + model].grid(row=row, column=0)
         self.entries["current_from_date_" + model].grid(row=row, column=1)
         self.entries["current_to_date_" + model].grid(row=row, column=2)
         row += 1
@@ -194,12 +230,15 @@ class PostprocessWindow():
             self.master.print("Destination not set.")
             return False
         
+        self.current_outdirs[model] = self.menus["current_outdir_" + model].get_current_choices()
+
+        for i, outdir in enumerate(self.current_outdirs[model]):
+            self.current_outdirs[model][i] += "/"+model+"_"+self.model_domains[model]
         
-        self.current_outdirs[model] = self.entries["current_outdir_" + model].get()
-        
-        if self.current_outdirs[model] == "":
+        if self.current_outdirs[model] == []:
             self.master.print("Output directory not set.")
             return False
+        
         
         self.current_from_dates[model] = self.entries["current_from_date_" + model].get()
         self.current_to_dates[model] = self.entries["current_to_date_" + model].get()
@@ -208,46 +247,53 @@ class PostprocessWindow():
             self.master.print("Time range is not set correctly. Define either both limits or none (all is processed)")    
             return False
         
-        cmd = "./postprocess.sh " + self.current_destination + " " + model + "/" + task + " "
-        cmd  += self.current_outdirs[model]
+        for outdir in self.current_outdirs[model]:
+
+            cmd = "./postprocess.sh " + self.current_destination + " " + model + "/" + task + " "
+            cmd  += outdir
+                
+            if  self.current_from_dates[model] != "" and self.current_to_dates[model] != "":
+                cmd += " " + self.current_from_dates[model] + " " + self.current_to_dates[model]
             
-        if  self.current_from_dates[model] != "" and self.current_to_dates[model] != "":
-            cmd += " " + self.current_from_dates[model] + " " + self.current_to_dates[model]
-        
-        self.master.functions.execute_shell_cmd(cmd)
+            self.master.functions.execute_shell_cmd(cmd, blocking = False)
         
         return True
     
     def get_global_settings(self):
         if self.current_destination == "":
             return False
-    
-        file_content = ""
+        
+        self.master.print("Checking destination for more information...")
         
         user_at_host, path = self.master.destinations[self.current_destination].split(":")
-        cmd = "ssh " + user_at_host + " \\\"if [ -f " + path +  "/input/global_settings.py ]; then cat " + path + "/input/global_settings.py | grep 'run_name\\\|init_date\\\|final_date'; fi; \\\""
-        file_content = self.master.functions.execute_shell_cmd(cmd, printing = False)
-                
-        ldict = {"run_name" : "", "init_date" : "", "final_date" : "", "model_domains" : {}, "dependencies" : {}}
+
+        ldict = {"model_domains" : {}, "dependencies" : {}, "init_date" : -1, "final_date" : -1}
+
+
+        if self.available_outputs != []:
+
+            outdir = self.available_outputs[0]
         
-        try:
-            exec(file_content, globals(), ldict)
-            self.run_name = ldict["run_name"]
-            self.init_date = ldict["init_date"]
-            self.final_date = ldict["final_date"]
-        except:
-            pass
-        
-        file_content = ""
-        if self.run_name != "":
-            cmd = "ssh " + user_at_host + " ' echo model_domains = {}; for d in \`ls " + path + "/output/" + self.run_name + "\`; do model=\${d%_*}; dom=\${d#*_}; echo model_domains[\\\\\\\"\$model\\\\\\\"] = \\\\\\\"\$dom\\\\\\\"; done'"
+            file_content = ""
+            cmd = "ssh " + user_at_host + " ' echo model_domains = {}; for d in \`ls " + path + "/output/" + outdir + "\`; do model=\${d%_*}; dom=\${d#*_}; echo model_domains[\\\\\\\"\$model\\\\\\\"] = \\\\\\\"\$dom\\\\\\\"; done'"
             file_content = self.master.functions.execute_shell_cmd(cmd, printing = False)
-        
-        try:
-            exec(file_content, globals(), ldict)
-            self.model_domains = ldict["model_domains"]
-        except:
-            pass
+            
+            try:
+                exec(file_content, globals(), ldict)
+                self.model_domains = ldict["model_domains"]
+            except:
+                pass
+
+            for model in self.model_domains.keys():
+                try:
+                    cmd = "ssh "+user_at_host+" 'cd "+path+"/output/"+outdir+"/"+model+"_"+self.model_domains[model]+";  a=(\`ls -d *\`); echo init_date, final_date=\\\\\\\"\${a[0]}\\\\\\\", \\\\\\\"\${a[-1]}\\\\\\\"'"
+                    file_content = self.master.functions.execute_shell_cmd(cmd, printing = False)
+                    exec(file_content, globals(), ldict)
+                    self.init_date = str(ldict["init_date"])
+                    self.final_date = str(ldict["final_date"])
+                except:
+                    self.init_date = ""
+                    self.final_date = ""
         
         cmd = "ssh " + user_at_host + " 'for c in " + path + "/postprocess/*/*/config.py; do echo \$c \`cat \$c | grep \"dependencies\"\`; done\'"
         file_content = self.master.functions.execute_shell_cmd(cmd, printing = False)
@@ -277,4 +323,4 @@ class PostprocessWindow():
             pass
 
                 
-                
+        self.master.print("...done.")

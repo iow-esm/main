@@ -103,6 +103,29 @@ class IowEsmFunctions:
             return
         
         self.eh.remove_from_log(*IowEsmErrors.clone_origins)
+
+    def check_for_available_inputs(self):
+        
+        file_content = ""
+        user_at_host, path = self.gui.destinations[self.gui.current_destination].split(":")
+        cmd = "ssh " + user_at_host + " \"if [ -d " + path +  "/input ]; then ls " + path + "/input; fi\""
+        self.gui.print("Check for available inputs...")
+        sp = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        file_content = sp.stdout.read().decode("utf-8") 
+
+        if file_content == "":
+            self.gui.print("Found: None")
+            self.gui.print("You should deploy a setup first, if you want to run the model.")
+            self.gui.available_inputs = []
+            return
+
+        if "global_settings.py" in file_content:
+            self.gui.available_inputs = ["input"]
+        else:
+            self.gui.available_inputs = file_content.split("\n")
+            self.gui.available_inputs.remove("")
+        
+        self.gui.print("Found: "+str(self.gui.available_inputs))
         
     def set_destination(self, dst):
         self.gui.current_destination = dst
@@ -111,9 +134,28 @@ class IowEsmFunctions:
         
         if dst == "":
             self.gui.print(" None")
+            self.gui.menus["inputs"].click(create=True)
             return
         
         self.gui.print(" " + self.gui.current_destination + " (" + self.gui.destinations[self.gui.current_destination] + ")" )
+
+        # check for available inputs at the destination target
+        self.check_for_available_inputs()
+
+        # update inputs menu
+        self.gui.menus["inputs"].clear_choices()
+        self.gui.menus["inputs"].click(create=True)
+
+    def set_sync_destination(self, dst):
+        self.gui.current_sync_destination = dst
+
+        self.gui.print("Current synchronization destination: ")
+        
+        if dst == "":
+            self.gui.print(" None")
+            return
+        
+        self.gui.print(" " + self.gui.current_sync_destination + " (" + self.gui.destinations[self.gui.current_sync_destination] + ")" )        
         
     def build_origin(self, ori):
         if self.gui.current_destination == "":
@@ -254,7 +296,7 @@ class IowEsmFunctions:
             
             self.execute_shell_cmd(cmd)
             
-        self.clear_setups()
+        #self.clear_setups()
         
         return True
             
@@ -279,9 +321,25 @@ class IowEsmFunctions:
         
         if self.gui.prepare_before_run.get() != 0:
             cmd += " prepare-before-run"
+
+        if self.gui.current_sync_destination != "":
+            cmd += " sync_to=" + self.gui.current_sync_destination
+
+        current_inputs = self.gui.menus["inputs"].get_current_choices()
+
+        if len(current_inputs) < 1:
+            self.gui.print("No input folder selected or available. Abort.")
+            return False
+
+        if "input" in current_inputs and len(current_inputs) > 1:
+            self.gui.print("Input folder name \"input\" is reserved and cannot be used with other input folder together. Abort.")
+            return False
+
+        if "input" in current_inputs:
+            current_inputs = [] # if only input is available, this is the old default and this corresponds to no arguments
         
-        for setup in self.gui.current_setups:
-            cmd = cmd + " " + setup
+        for inp in current_inputs:
+            cmd = cmd + " " + inp
             
         self.execute_shell_cmd(cmd, blocking = False)
         
