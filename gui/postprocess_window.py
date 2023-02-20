@@ -255,7 +255,7 @@ class PostprocessWindow():
             if  self.current_from_dates[model] != "" and self.current_to_dates[model] != "":
                 cmd += " " + self.current_from_dates[model] + " " + self.current_to_dates[model]
             
-            self.master.functions.execute_shell_cmd(cmd)
+            self.master.functions.execute_shell_cmd(cmd, blocking = False)
         
         return True
     
