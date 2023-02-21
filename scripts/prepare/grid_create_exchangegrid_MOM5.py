@@ -204,9 +204,14 @@ def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
     src_grid_center_lat = grid_center_lat1    
 
     # original exchange grid
-    #src_mask = [1]*global_k
-    #src_index = list(range(global_k))
-    #src_area = area3
+    src_mask = np.array([1]*global_k)
+    src_index = list(range(global_k))
+    src_area = area3
+    src_corners = max(corners[0:global_k])
+    src_grid_corner_lon =  np.ma.asarray([[poly_x[k][0:max(corners[0:global_k])]] for k in range(global_k)])
+    src_grid_corner_lat = np.ma.asarray([[poly_y[k][0:max(corners[0:global_k])]] for k in range(global_k)])
+    src_grid_center_lon = np.array([np.mean([poly_x[k][0:(corners[k]-1)]]) for k in range(global_k)])
+    src_grid_center_lat = np.array([np.mean([poly_y[k][0:(corners[k]-1)]]) for k in range(global_k)])
 
     exchange_grid_src_index = []
     for i, mask in enumerate(src_mask):
@@ -219,11 +224,8 @@ def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
         exchange_grid_src_index_inv[src] = i
 
     exchange_index = [exchange_grid_src_index_inv[src_index[i]] for i in range(global_k)]
-    print(exchange_index)
+    #print(exchange_index)
     exchange_index = np.array(exchange_index)
-
-    # convert to numpy array
-    exchange_grid_src_index = np.array(exchange_grid_src_index)
 
     #### TESTING: if exchange grid and bottom coincide then we use onlymasked values 
     exchange_grid_points = int(np.sum(src_mask))
@@ -234,9 +236,6 @@ def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
     exchange_grid_imask     = [1]*exchange_grid_points
     exchange_grid_dims     = [exchange_grid_points]
     exchange_grid_corners = src_corners
-    
-    # original exchange grid
-    #exchange_grid_corners = max(corners[0:global_k]) 
 
     #### replace exchange rib by bottom model grid
     exchange_grid_area = np.array(src_area)[src_mask == 1]
@@ -277,6 +276,10 @@ def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
     dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad(grid_center_lat1)
     src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad(grid_center_lon2)
     dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(grid_center_lon1)
+    src_grid_corner_lat_var = nc.createVariable("src_grid_corner_lat","f8",("src_grid_size", "src_grid_corners")); src_grid_corner_lat_var.units='radians' ; src_grid_corner_lat_var[:]=np.deg2rad(grid_corner_lat2)
+    dst_grid_corner_lat_var = nc.createVariable("dst_grid_corner_lat","f8",("dst_grid_size", "dst_grid_corners")); dst_grid_corner_lat_var.units='radians' ; dst_grid_corner_lat_var[:]=np.deg2rad(grid_corner_lat1)
+    src_grid_corner_lon_var = nc.createVariable("src_grid_corner_lon","f8",("src_grid_size", "src_grid_corners")); src_grid_corner_lon_var.units='radians' ; src_grid_corner_lon_var[:]=np.deg2rad(grid_corner_lon2)
+    dst_grid_corner_lon_var = nc.createVariable("dst_grid_corner_lon","f8",("dst_grid_size", "dst_grid_corners")); dst_grid_corner_lon_var.units='radians' ; dst_grid_corner_lon_var[:]=np.deg2rad(grid_corner_lon1)
     src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =grid_imask_2
     dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =grid_imask_1
     src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =area2
@@ -309,7 +312,11 @@ def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
     src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]=np.deg2rad(grid_center_lat1)
     dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad(grid_center_lat2)
     src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad(grid_center_lon1)
-    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(grid_center_lon2)
+    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(grid_center_lon2) 
+    src_grid_corner_lat_var = nc.createVariable("src_grid_corner_lat","f8",("src_grid_size", "src_grid_corners")); src_grid_corner_lat_var.units='radians' ; src_grid_corner_lat_var[:]=np.deg2rad(grid_corner_lat1)
+    dst_grid_corner_lat_var = nc.createVariable("dst_grid_corner_lat","f8",("dst_grid_size", "dst_grid_corners")); dst_grid_corner_lat_var.units='radians' ; dst_grid_corner_lat_var[:]=np.deg2rad(grid_corner_lat2)       
+    src_grid_corner_lon_var = nc.createVariable("src_grid_corner_lon","f8",("src_grid_size", "src_grid_corners")); src_grid_corner_lon_var.units='radians' ; src_grid_corner_lon_var[:]=np.deg2rad(grid_corner_lon1)
+    dst_grid_corner_lon_var = nc.createVariable("dst_grid_corner_lon","f8",("dst_grid_size", "dst_grid_corners")); dst_grid_corner_lon_var.units='radians' ; dst_grid_corner_lon_var[:]=np.deg2rad(grid_corner_lon2)
     src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =grid_imask_1
     dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =grid_imask_2
     src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =area1
@@ -327,7 +334,7 @@ def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
     nc = netCDF4.Dataset(exchange_grid_file,"w")
     nc.title = exchangegrid_title
     nc.createDimension("grid_size"   ,exchange_grid_points  ); grid_size_var    = nc.createVariable("grid_size"   ,"i4",("grid_size"   ,)); grid_size_var[:]    = [n+1 for n in range(exchange_grid_points)]
-    nc.createDimension("grid_corners",4); grid_corners_var = nc.createVariable("grid_corners","i4",("grid_corners",)); grid_corners_var[:] = [n+1 for n in range(exchange_grid_corners)]
+    nc.createDimension("grid_corners",exchange_grid_corners); grid_corners_var = nc.createVariable("grid_corners","i4",("grid_corners",)); grid_corners_var[:] = [n+1 for n in range(exchange_grid_corners)]
     nc.createDimension("grid_rank"   ,1   ); grid_rank_var    = nc.createVariable("grid_rank"   ,"i4",("grid_rank"   ,)); grid_rank_var[:]    = [len(exchange_grid_dims)]
     grid_dims_var       = nc.createVariable("grid_dims"      ,"i4",("grid_rank",               )); grid_dims_var.missval=np.int32(-1) ; grid_dims_var[:]      =exchange_grid_dims
     grid_center_lat_var = nc.createVariable("grid_center_lat","f8",("grid_size",               )); grid_center_lat_var.units="degrees"; grid_center_lat_var[:]=exchange_grid_center_lat
@@ -363,7 +370,11 @@ def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
     src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]=np.deg2rad(grid_center_lat1)
     dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad(exchange_grid_center_lat)
     src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad(grid_center_lon1)
-    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(exchange_grid_center_lon)
+    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(exchange_grid_center_lon)     
+    src_grid_corner_lat_var = nc.createVariable("src_grid_corner_lat","f8",("src_grid_size", "src_grid_corners"               )); src_grid_corner_lat_var.units='radians' ; src_grid_corner_lat_var[:]=np.deg2rad(grid_corner_lat1)
+    dst_grid_corner_lat_var = nc.createVariable("dst_grid_corner_lat","f8",("dst_grid_size", "dst_grid_corners"               )); dst_grid_corner_lat_var.units='radians' ; dst_grid_corner_lat_var[:]=np.deg2rad(exchange_grid_corner_lat)       
+    src_grid_corner_lon_var = nc.createVariable("src_grid_corner_lon","f8",("src_grid_size", "src_grid_corners"               )); src_grid_corner_lon_var.units='radians' ; src_grid_corner_lon_var[:]=np.deg2rad(grid_corner_lon1)
+    dst_grid_corner_lon_var = nc.createVariable("dst_grid_corner_lon","f8",("dst_grid_size", "dst_grid_corners"              )); dst_grid_corner_lon_var.units='radians' ; dst_grid_corner_lon_var[:]=np.deg2rad(exchange_grid_corner_lon)
     src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =grid_imask_1
     dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =exchange_grid_imask
     src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =area1
@@ -396,7 +407,11 @@ def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
     src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]=np.deg2rad(exchange_grid_center_lat)
     dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad(grid_center_lat1)
     src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad(exchange_grid_center_lon)
-    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(grid_center_lon1)
+    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(grid_center_lon1)     
+    src_grid_corner_lat_var = nc.createVariable("src_grid_corner_lat","f8",("src_grid_size", "src_grid_corners"               )); src_grid_corner_lat_var.units='radians' ; src_grid_corner_lat_var[:]=np.deg2rad(exchange_grid_corner_lat)
+    dst_grid_corner_lat_var = nc.createVariable("dst_grid_corner_lat","f8",("dst_grid_size", "dst_grid_corners"              )); dst_grid_corner_lat_var.units='radians' ; dst_grid_corner_lat_var[:]=np.deg2rad(grid_corner_lat1)  
+    src_grid_corner_lon_var = nc.createVariable("src_grid_corner_lon","f8",("src_grid_size", "src_grid_corners"               )); src_grid_corner_lon_var.units='radians' ; src_grid_corner_lon_var[:]=np.deg2rad(exchange_grid_corner_lon)
+    dst_grid_corner_lon_var = nc.createVariable("dst_grid_corner_lon","f8",("dst_grid_size", "dst_grid_corners"              )); dst_grid_corner_lon_var.units='radians' ; dst_grid_corner_lon_var[:]=np.deg2rad(grid_corner_lon1)
     src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =exchange_grid_imask
     dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =grid_imask_1
     src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =exchange_grid_area
@@ -429,7 +444,11 @@ def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
     src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]=np.deg2rad(grid_center_lat2)
     dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad(exchange_grid_center_lat)
     src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad(grid_center_lon2)
-    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(exchange_grid_center_lon)
+    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(exchange_grid_center_lon)  
+    src_grid_corner_lat_var = nc.createVariable("src_grid_corner_lat","f8",("src_grid_size", "src_grid_corners"             )); src_grid_corner_lat_var.units='radians' ; src_grid_corner_lat_var[:]=np.deg2rad(grid_corner_lat2)
+    dst_grid_corner_lat_var = nc.createVariable("dst_grid_corner_lat","f8",("dst_grid_size", "dst_grid_corners"             )); dst_grid_corner_lat_var.units='radians' ; dst_grid_corner_lat_var[:]=np.deg2rad(exchange_grid_corner_lat)  
+    src_grid_corner_lon_var = nc.createVariable("src_grid_corner_lon","f8",("src_grid_size", "src_grid_corners"              )); src_grid_corner_lon_var.units='radians' ; src_grid_corner_lon_var[:]=np.deg2rad(grid_corner_lon2)
+    dst_grid_corner_lon_var = nc.createVariable("dst_grid_corner_lon","f8",("dst_grid_size", "dst_grid_corners"              )); dst_grid_corner_lon_var.units='radians' ; dst_grid_corner_lon_var[:]=np.deg2rad(exchange_grid_corner_lon)
     src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =grid_imask_2
     dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =exchange_grid_imask
     src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =area2
@@ -462,7 +481,11 @@ def grid_create_exchangegrid_MOM5(input_dir,        # root directory of IOW ESM
     src_grid_center_lat_var = nc.createVariable("src_grid_center_lat","f8",("src_grid_size",               )); src_grid_center_lat_var.units='radians' ; src_grid_center_lat_var[:]=np.deg2rad(exchange_grid_center_lat)
     dst_grid_center_lat_var = nc.createVariable("dst_grid_center_lat","f8",("dst_grid_size",               )); dst_grid_center_lat_var.units='radians' ; dst_grid_center_lat_var[:]=np.deg2rad(grid_center_lat2)
     src_grid_center_lon_var = nc.createVariable("src_grid_center_lon","f8",("src_grid_size",               )); src_grid_center_lon_var.units='radians' ; src_grid_center_lon_var[:]=np.deg2rad(exchange_grid_center_lon)
-    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(grid_center_lon2)
+    dst_grid_center_lon_var = nc.createVariable("dst_grid_center_lon","f8",("dst_grid_size",               )); dst_grid_center_lon_var.units='radians' ; dst_grid_center_lon_var[:]=np.deg2rad(grid_center_lon2)      
+    src_grid_corner_lat_var = nc.createVariable("src_grid_corner_lat","f8",("src_grid_size", "src_grid_corners"              )); src_grid_corner_lat_var.units='radians' ; src_grid_corner_lat_var[:]=np.deg2rad(exchange_grid_corner_lat)
+    dst_grid_corner_lat_var = nc.createVariable("dst_grid_corner_lat","f8",("dst_grid_size", "dst_grid_corners"               )); dst_grid_corner_lat_var.units='radians' ; dst_grid_corner_lat_var[:]=np.deg2rad(grid_corner_lat2)  
+    src_grid_corner_lon_var = nc.createVariable("src_grid_corner_lon","f8",("src_grid_size", "src_grid_corners"              )); src_grid_corner_lon_var.units='radians' ; src_grid_corner_lon_var[:]=np.deg2rad(exchange_grid_corner_lon)
+    dst_grid_corner_lon_var = nc.createVariable("dst_grid_corner_lon","f8",("dst_grid_size", "dst_grid_corners"              )); dst_grid_corner_lon_var.units='radians' ; dst_grid_corner_lon_var[:]=np.deg2rad(grid_corner_lon2)
     src_grid_imask_var      = nc.createVariable("src_grid_imask"     ,"i4",("src_grid_size",               )); src_grid_imask_var.units='unitless'     ; src_grid_imask_var[:]     =exchange_grid_imask
     dst_grid_imask_var      = nc.createVariable("dst_grid_imask"     ,"i4",("dst_grid_size",               )); dst_grid_imask_var.units='unitless'     ; dst_grid_imask_var[:]     =grid_imask_2
     src_grid_area_var       = nc.createVariable("src_grid_area"      ,"f8",("src_grid_size",               )); src_grid_area_var.units='square radians'; src_grid_area_var[:]      =exchange_grid_area
