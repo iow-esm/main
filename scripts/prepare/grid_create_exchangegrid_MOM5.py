@@ -2,11 +2,9 @@
 # and inside a "mappings" folder in the atmospheric model's input folder.
 # The function is called from create_mappings.py 
 
-import os
-import netCDF4
+
 import numpy as np
 
-from mapping_helper_functions import get_polys_and_boxes, sub_polybox, get_intersections, polygon_area
 from grids import Grid, GridManager
 
 
