@@ -16,7 +16,9 @@ def get_exchange_grid_task_vector(global_settings, model, model_tasks, grid, wor
     nc = Dataset(remap_file,"r")
     src_address = nc.variables['src_address'][:]    # model grid cell indices
     dst_address = nc.variables['dst_address'][:]    # exchange grid cell indices
+    dst_grid_size = nc.variables['dst_grid_size'][:]
     num_links = nc.variables['num_links'][:]        # running index for links (is currently identical to dst_address)
+    
     nc.close()
 
     #print(src_address)
@@ -29,7 +31,7 @@ def get_exchange_grid_task_vector(global_settings, model, model_tasks, grid, wor
             src_address_dict[src_address[link]] = [dst_address[link]]
 
     # map model tasks onto exchange grid tasks
-    eg_tasks = [-1]*len(dst_address)
+    eg_tasks = [-1]*len(dst_grid_size)
     for link in num_links-1:
         for j in src_address_dict[src_address[link]]:
             eg_tasks[j-1] = model_tasks[src_address[link]-1]
