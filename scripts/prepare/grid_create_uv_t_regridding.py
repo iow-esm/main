@@ -14,27 +14,27 @@ from grids import Grid, GridManager
 import netCDF4
 
 
-def grid_create_uv_t_regridding(input_dir,        # root directory of IOW ESM
+def grid_create_uv_t_regridding(global_settings,        # root directory of IOW ESM
                                 bottom_model,        # name of bottom model instance (MOM5 model)
                                 which_grid):         # 'u_grid' or 'v_grid'
 
     ########################################################################
     # STEP 1: DEFINE FILENAMES AND GRID NAMES FOR BOTTOM MODEL SCRIP FILES #
     ########################################################################
-    scrip_file_1       = input_dir+'/'+bottom_model+'/mappings/t_grid.nc'         
-    scrip_file_2       = input_dir+'/'+bottom_model+'/mappings/'+which_grid+'.nc'
+    scrip_file_1       = global_settings.input_dir+'/'+bottom_model+'/mappings/t_grid.nc'         
+    scrip_file_2       = global_settings.input_dir+'/'+bottom_model+'/mappings/'+which_grid+'.nc'
 
-    t_to_u_file_orig   = input_dir+'/'+bottom_model+'/mappings/regrid_original_t_grid_'+bottom_model+'_to_'+which_grid+'.nc'
-    u_to_t_file_orig   = input_dir+'/'+bottom_model+'/mappings/regrid_original_'+which_grid+'_'+bottom_model+'_to_t_grid.nc'
+    t_to_u_file_orig   = global_settings.input_dir+'/'+bottom_model+'/mappings/regrid_original_t_grid_'+bottom_model+'_to_'+which_grid+'.nc'
+    u_to_t_file_orig   = global_settings.input_dir+'/'+bottom_model+'/mappings/regrid_original_'+which_grid+'_'+bottom_model+'_to_t_grid.nc'
 
-    t_to_exchange_file = input_dir+'/'+bottom_model+'/mappings/remap_t_grid_'+bottom_model+'_to_exchangegrid.nc'
-    exchange_to_t_file = input_dir+'/'+bottom_model+'/mappings/remap_t_grid_exchangegrid_to_'+bottom_model+'.nc'
+    t_to_exchange_file = global_settings.input_dir+'/'+bottom_model+'/mappings/remap_t_grid_'+bottom_model+'_to_exchangegrid.nc'
+    exchange_to_t_file = global_settings.input_dir+'/'+bottom_model+'/mappings/remap_t_grid_exchangegrid_to_'+bottom_model+'.nc'
     
-    u_to_exchange_file = input_dir+'/'+bottom_model+'/mappings/remap_'+which_grid+'_'+bottom_model+'_to_exchangegrid.nc'
-    exchange_to_u_file = input_dir+'/'+bottom_model+'/mappings/remap_'+which_grid+'_exchangegrid_to_'+bottom_model+'.nc'
+    u_to_exchange_file = global_settings.input_dir+'/'+bottom_model+'/mappings/remap_'+which_grid+'_'+bottom_model+'_to_exchangegrid.nc'
+    exchange_to_u_file = global_settings.input_dir+'/'+bottom_model+'/mappings/remap_'+which_grid+'_exchangegrid_to_'+bottom_model+'.nc'
     
-    t_to_u_file        = input_dir+'/'+bottom_model+'/mappings/regrid_t_grid_'+bottom_model+'_to_'+which_grid+'.nc'
-    u_to_t_file        = input_dir+'/'+bottom_model+'/mappings/regrid_'+which_grid+'_'+bottom_model+'_to_t_grid.nc'
+    t_to_u_file        = global_settings.input_dir+'/'+bottom_model+'/mappings/regrid_t_grid_'+bottom_model+'_to_'+which_grid+'.nc'
+    u_to_t_file        = global_settings.input_dir+'/'+bottom_model+'/mappings/regrid_'+which_grid+'_'+bottom_model+'_to_t_grid.nc'
 
     bottom_grid_title       = bottom_model+'_'+which_grid
     bottom_t_grid_title     = bottom_model+'_t_grid'
