@@ -45,8 +45,8 @@ def grid_create_exchangegrid(global_settings,        # root directory of IOW ESM
     ####################################################
     print('    reading in model grids...')
 
-    atmos_grid = Grid(from_grid=scrip_file_1, title=atmos_grid_title, grid_corners=4)
-    bottom_grid = Grid(from_grid=scrip_file_2, title=bottom_grid_title, grid_corners=4) # TODO: corners should be stored in scrip file
+    atmos_grid = Grid(from_grid=scrip_file_1, title=atmos_grid_title)
+    bottom_grid = Grid(from_grid=scrip_file_2, title=bottom_grid_title)
 
     #######################################################
     # STEP 3: CALCULATE POLYGONS AND THEIR BOUNDING BOXES #

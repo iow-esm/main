@@ -46,8 +46,8 @@ def grid_create_uv_t_regridding(global_settings,        # root directory of IOW 
     ####################################################
     print('    reading in model grids...')
 
-    t_grid = Grid(from_grid=scrip_file_1, title=bottom_t_grid_title, grid_corners=4)
-    other_grid = Grid(from_grid=scrip_file_2, title=bottom_grid_title, grid_corners=4) # TODO: corners should be stored in scrip file
+    t_grid = Grid(from_grid=scrip_file_1, title=bottom_t_grid_title)
+    other_grid = Grid(from_grid=scrip_file_2, title=bottom_grid_title)
 
     print('    contrstructing relevant grids from '+t_grid.title+' and '+other_grid.title+'...')
 

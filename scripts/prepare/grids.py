@@ -48,12 +48,14 @@ class Grid:
 
     def read(self, file_name):
         nc = netCDF4.Dataset(file_name, 'r')
+        self.grid_imask     = nc.variables['grid_imask'][:]
+        self.grid_dims      = nc.variables['grid_dims'][:]
+        self.grid_corners = nc.variables['grid_corners'][:]       
+        self.grid_corners = len(self.grid_corners) 
         self.grid_corner_lon = nc.variables['grid_corner_lon'][:,:]
         self.grid_corner_lat = nc.variables['grid_corner_lat'][:,:]
         self.grid_center_lon = nc.variables['grid_center_lon'][:]
         self.grid_center_lat = nc.variables['grid_center_lat'][:]
-        self.grid_imask     = nc.variables['grid_imask'][:]
-        self.grid_dims      = nc.variables['grid_dims'][:]
         nc.close()
 
 
