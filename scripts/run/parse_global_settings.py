@@ -81,6 +81,12 @@ class GlobalSettings:
         # TODO test if all non-optional variables are set
         
         # TODO set optional arguments to their default here
+
+        try:
+            self.exchange_grid_type
+            #allowed values are "atmos", "bottom", "intersection" (default, equivalent to value None or not set)                                                                
+        except:
+            self.exchange_grid_type = "intersection"
         
         # check if attempt handler has been set in global_settings
         try: 

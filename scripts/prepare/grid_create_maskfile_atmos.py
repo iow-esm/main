@@ -6,7 +6,7 @@ import os
 import netCDF4
 import numpy as np
 
-def grid_create_maskfile_CCLM(input_dir,        # root directory of IOW ESM
+def grid_create_maskfile_atmos(input_dir,        # root directory of IOW ESM
                               my_directory,        # name of this model instance
                               which_grid = "t_grid"): # mask file for which grid?      
 
