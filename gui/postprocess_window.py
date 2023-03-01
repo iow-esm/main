@@ -8,6 +8,7 @@ from iow_esm_globals import *
 from iow_esm_buttons_and_labels import *
 from check_dependencies import get_dependency_ordered_groups
 import tkinter.ttk as ttk
+import time
 
 class PostprocessWindow():
     
@@ -255,7 +256,10 @@ class PostprocessWindow():
             if  self.current_from_dates[model] != "" and self.current_to_dates[model] != "":
                 cmd += " " + self.current_from_dates[model] + " " + self.current_to_dates[model]
             
-            self.master.functions.execute_shell_cmd(cmd, blocking = False)
+            self.master.functions.execute_shell_cmd(cmd, blocking = True)
+
+            #while not self.master.functions.cmd_finished.wait():
+            #    self.master.window.update_idletasks()
         
         return True
     

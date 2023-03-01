@@ -27,6 +27,7 @@ class IowEsmFunctions:
             
         self.shell_cmd_thread = Thread()
         self.cancel_cmd = Event()
+        self.cmd_finished = Event()
         self.output = ""
         
     def start_execute_shell_cmd(self, cmd, printing, stop_event):
@@ -46,13 +47,21 @@ class IowEsmFunctions:
                 os.killpg(os.getpgid(p.pid), signal.SIGTERM)
                 self.gui.print("...canceled")
                 stop_event.clear()
+                self.mark_cmd_finished()
                 return
             
         if printing:
             self.gui.print("...done")
             
         self.output = str(p.stdout.read().decode("utf-8"))
+
+        self.mark_cmd_finished()
+        
         return 
+    
+    def mark_cmd_finished(self):
+        self.cmd_finished.set()
+        self.cmd_finished.clear()
         
     def execute_shell_cmd(self, cmd, printing = True, blocking = True):
         
@@ -61,6 +70,7 @@ class IowEsmFunctions:
         
         if blocking:
             self.start_execute_shell_cmd(cmd, printing, self.cancel_cmd)
+            self.mark_cmd_finished()
             return self.output
         
         if self.shell_cmd_thread.is_alive():
@@ -78,6 +88,7 @@ class IowEsmFunctions:
             self.gui.print("Warning: No command is running.")
             return 
         
+        self.gui.print("Canceling...")
         self.cancel_cmd.set()
                 
     def clone_origins(self):
