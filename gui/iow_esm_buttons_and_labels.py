@@ -24,7 +24,7 @@ class FunctionButton(tk.Button):
             image = image  
         )
         if tip_text is not None:
-            CreateToolTip(self, text)
+            CreateToolTip(self, tip_text)
         
 class CancelButton(tk.Button):
     def __init__(self, text, command, master=None):
