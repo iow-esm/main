@@ -166,7 +166,11 @@ class IowEsmFunctions:
             self.gui.print(" None")
             return
         
-        self.gui.print(" " + self.gui.current_sync_destination + " (" + self.gui.destinations[self.gui.current_sync_destination] + ")" )        
+        self.gui.print(" " + self.gui.current_sync_destination + " (" + self.gui.destinations[self.gui.current_sync_destination] + ")" )  
+
+    def sync_now(self):
+        cmd = "./sync.sh "+self.gui.current_destination+" "+self.gui.current_sync_destination
+        self.execute_shell_cmd(cmd, blocking=False)      
         
     def build_origin(self, ori):
         if self.gui.current_destination == "":

@@ -650,20 +650,25 @@ class IowEsmGui:
         self.frames["run"] = Frame(master=self.window, bg = IowColors.blue4)
         
         self.labels["run"] = FrameTitleLabel(master=self.frames["run"], text="Run the model:")
+
+        self.buttons["prepare_before_run"] = CheckButton("Create mappings", self.prepare_before_run, master=self.frames["run"])
+        self.labels["sync_destinations"] = tk.Label(master=self.frames["run"], text="Synchronize to:", bg = self.frames["run"]["background"], fg = 'black')
+        self.menus["sync_destinations"] = DropdownMenu(master=self.frames["run"], entries=[""] + list(self.destinations.keys()), function=self.functions.set_sync_destination)
+        self.buttons["sync_now"] = FunctionButton("Synchronize now", self.functions.sync_now, master=self.frames["run"], tip_text="This will start a synchronization from the current run target to the current sync target.")
         
         def update_available_inputs(obj):
             if set(obj.entries) == set(self.available_inputs):
                 return False
             obj.entries = self.available_inputs
             return True
-
+        
+        self.labels["running"] = tk.Label(master=self.frames["run"], text="Run:", bg = self.frames["run"]["background"], fg = 'black')
         self.menus["inputs"] = MultipleChoice(master=self.frames["run"], entries=self.available_inputs, text="Choose input folders...", update_entries=update_available_inputs, 
         tip_text="You can choose multiple input folder or a single one.")
 
         self.buttons["run"] = FunctionButton("Run", self.functions.run, master=self.frames["run"])
-        self.buttons["prepare_before_run"] = CheckButton("Create mappings", self.prepare_before_run, master=self.frames["run"])
-        self.labels["sync_destinations"] = tk.Label(master=self.frames["run"], text="Synchronize to:", bg = self.frames["run"]["background"], fg = 'black')
-        self.menus["sync_destinations"] = DropdownMenu(master=self.frames["run"], entries=[""] + list(self.destinations.keys()), function=self.functions.set_sync_destination)
+
+        self.labels["postprocess"] = tk.Label(master=self.frames["run"], text="Postprocess:", bg = self.frames["run"]["background"], fg = 'black')
         self.buttons["postprocess"] = NewWindowButton("Postprocess", partial(postprocess_window.PostprocessWindow, self), master=self.frames["run"])
         
         row = 0
@@ -680,6 +685,12 @@ class IowEsmGui:
         self.menus["sync_destinations"].grid(row=row, sticky="ew")
         row += 1
 
+        self.buttons["sync_now"].grid(row=row, sticky="ew")
+        row += 1
+
+        self.labels["running"].grid(row=row, sticky="w")
+        row += 1
+
         self.menus["inputs"].grid(row=row, sticky="ew")
         row += 1
         
@@ -687,6 +698,9 @@ class IowEsmGui:
         row += 1
         
         if glob.glob(root_dir + "/postprocess") != []:
+            self.labels["postprocess"].grid(row=row, sticky="w")
+            row += 1
+            
             self.buttons["postprocess"].grid(row=row, sticky='ew')
             row += 1
             
