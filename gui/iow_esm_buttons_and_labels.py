@@ -196,7 +196,7 @@ class MultipleChoice(tk.Menubutton):
 
             for i, choice in enumerate(self.entries):
                 if choice not in self.choices.keys():
-                    self.choices[choice] = tk.IntVar(value=1)
+                    self.choices[choice] = tk.IntVar(value=0)
                 self.menu_obj.insert_checkbutton(i, label=choice, variable=self.choices[choice], 
                                         onvalue=1, offvalue=0, command=lambda: menu_click(self.menu_obj), background=self["background"])
             self.config(menu=self.menu_obj)
