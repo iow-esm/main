@@ -35,6 +35,8 @@ if [ -f ${last_build_file} ]; then
 	last_tag=`grep "^${component}" "${last_build_file}"`
 fi
 
+sleep 1
+
 # if not, we add it  
 if [ -z "${last_tag}" ]; then
 	echo $tag >> ${last_build_file}
