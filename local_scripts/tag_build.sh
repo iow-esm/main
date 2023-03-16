@@ -25,7 +25,7 @@ else
 fi
 
 # component name is the string after the last / in the path
-component=$4 #${PWD##*/}
+component="$4" #${PWD##*/}
 
 # build up the tag that should be recorded 
 tag="$component `git show | head -n 1 | awk '{print $2}'`$dirt $fast `date +%Y-%m-%d_%H-%M-%S`"
@@ -33,17 +33,13 @@ tag="$component `git show | head -n 1 | awk '{print $2}'`$dirt $fast `date +%Y-%
 # is this component already tagged?
 if [ -f ${last_build_file} ]; then
 	last_tag=`grep "^${component}" "${last_build_file}"`
-	chmod u+rw  "${last_build_file}"
 fi
 
 # if not, we add it  
 if [ -z "${last_tag}" ]; then
-	if [ -f ${last_build_file} ]; then
-		chmod u+rw "${last_build_file}"
-	fi
-	echo $tag >> ${last_build_file}
+	echo "$tag" >> "${last_build_file}"
 else # if yes, we replace the old tag with the new one
-	sed -i s/"${last_tag}"/"$tag"/g ${last_build_file}
+	sed -i s/"${last_tag}"/"$tag"/g "${last_build_file}"
 fi
 
 #exit
@@ -84,6 +80,6 @@ END{
 	{
 		print difference
 	}
-}' ${last_build_file} > tmp.file
+}' "${last_build_file}" > tmp.file
 
-mv tmp.file ${last_build_file}
+mv tmp.file "${last_build_file}"
