@@ -37,7 +37,14 @@ fi
 
 # if not, we add it  
 if [ -z "${last_tag}" ]; then
+	if ! echo "$tag" >> "${last_build_file}"; then
+		echo command returned some error
+		ls -lrth "${last_build_file}"
+		echo $USER
+		chmod u+rw "${last_build_file}"
+	fi
 	echo "$tag" >> "${last_build_file}"
+	
 else # if yes, we replace the old tag with the new one
 	sed -i s/"${last_tag}"/"$tag"/g "${last_build_file}"
 fi
