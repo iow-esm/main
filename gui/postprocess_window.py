@@ -18,6 +18,15 @@ class PostprocessWindow():
         
         self.window = tk.Toplevel(self.master.window)
         self.window.title('Postprocess')
+
+        if self.master.monitor:
+            self.window.geometry('+%d+%d' % (master.x_offset + 1.02*master.window.winfo_width() + master.windows["monitor"].winfo_width(), 
+                                             master.y_offset ))
+            #self.window.geometry('+%d+%d' % (self.master.x_offset + 1.01*self.master.window.winfo_width() + 1.01*self.master.windows["monitor"].winfo_width(), 
+            #                             self.master.y_offset))
+        else:
+            self.window.geometry('+%d+%d' % (self.master.x_offset + 1.01*self.master.window.winfo_width(), 
+                             self.master.y_offset))
         
         self.labels = {}
         self.buttons = {}
@@ -41,8 +50,6 @@ class PostprocessWindow():
         self.model_domains = {}
         self.dependencies = {}
         
-
-        
         self.build_destinations_frame()
         
         # get all directories in the postprocess directory
@@ -50,29 +57,22 @@ class PostprocessWindow():
         
         # get all available origins
         oris = [ori.split("/")[-1] for ori in self.master.origins]
+
+        self.check_for_available_outputs()
+        self.get_global_settings()
     
         # find origins with supported postprocessing and create a frame
         for post in posts:
             if post in oris:
                 self.build_postprocess_model_frame(post)
         
-        if self.master.monitor:
-            self.window.geometry('+%d+%d' % (master.x_offset + 1.01*master.window.winfo_width(), 
-                                             master.y_offset + 1.05*master.windows["monitor"].winfo_height()))
-            #self.window.geometry('+%d+%d' % (self.master.x_offset + 1.01*self.master.window.winfo_width() + 1.01*self.master.windows["monitor"].winfo_width(), 
-            #                             self.master.y_offset))
-        else:
-            self.window.geometry('+%d+%d' % (self.master.x_offset + 1.01*self.master.window.winfo_width(), 
-                             self.master.y_offset))
 
-        self.check_for_available_outputs()
-        self.get_global_settings()
 
         for post in posts:
             if post in oris:
                 self.menus["current_outdir_" + post].update_entries(self.menus["current_outdir_" + post]) 
-                self.entries["current_from_date_" + post].insert(0, self.init_date)
-                self.entries["current_to_date_" + post].insert(0, self.final_date)
+                #self.entries["current_from_date_" + post].insert(0, self.init_date)
+                #self.entries["current_to_date_" + post].insert(0, self.final_date)
         
 
         
