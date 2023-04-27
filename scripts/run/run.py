@@ -1,7 +1,7 @@
 # This script will run the model possibly several times within a job
 # Call this script from within your jobscript
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import glob
 import os
 import sys
@@ -293,7 +293,7 @@ if int(start_date) < int(global_settings.final_date):
 #########################################################################################
 # STEP 4: JOB SUCCESSFULLY FINISHED - START PROCESSSING (IF WANTED)                     #
 #########################################################################################                                             
-postprocess_handling.postprocess_handling(global_settings, models, initial_start_date, end_date)
+postprocess_handling.postprocess_handling(global_settings, models, initial_start_date, int(datetime.strftime(end_datetime-timedelta(days=1), '%Y%m%d'))) # subtract one day to avoid overlap with other processes
 
 # if this run has successfully finished, mark it
 if int(start_date) >= int(global_settings.final_date):
