@@ -83,7 +83,11 @@ class ModelHandler(model_handling.ModelHandlerBase):
         timesteps = runseconds//coupling_time_step
 
         # STEP 3: copy flux_calculator.nml file and change timestep and number of time steps
-        os.system('cp '+self.global_settings.input_dir+'/flux_calculator.nml '+full_directory+'/flux_calculator.nml')
+        if os.path.isfile(self.global_settings.input_dir+'/flux_calculator.nml'):
+            os.system('cp '+self.global_settings.input_dir+'/flux_calculator.nml '+full_directory+'/flux_calculator.nml')
+        # new: allow extra directory for flux calculator
+        if os.path.isdir(self.global_settings.input_dir+'/flux_calculator'):
+            os.system('cp -r '+self.global_settings.input_dir+'/flux_calculator/* '+full_directory+'/')
         
         change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
                          after='&input', before='/', start_of_line='timestep',
@@ -91,9 +95,11 @@ class ModelHandler(model_handling.ModelHandlerBase):
         change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
                          after='&input', before='/', start_of_line='num_timesteps',
                          new_value = '='+str(timesteps))
+        
+        # if corrections are intended, flux calculator needs the initial date to know the current month
         change_in_namelist.change_in_namelist(filename=full_directory+'/flux_calculator.nml',
-                         after='&bias', before='/', start_of_line='init_date',
-                         new_value = '='+str(my_initdate))        
+                         after='&correctionsctl', before='/', start_of_line='init_date',
+                         new_value = '='+str(init_date))        
         # TODO when several bottom models are supported, here should be a check for which model we adapt the num_tasks_per_model
         mythreads = self.get_my_threads()
         for i, model in enumerate(mythreads.keys()):
