@@ -76,7 +76,7 @@ def get_model_handlers(global_settings):
     """
     
     # get a list of input folders 
-    models = [d for d in os.listdir(global_settings.input_dir +'/') if (os.path.isdir(os.path.join(global_settings.input_dir +'/',d)) and (d[0] != '_'))]
+    models = [d for d in os.listdir(global_settings.input_dir +'/') if (os.path.isdir(os.path.join(global_settings.input_dir +'/',d)) and (d[0] != '_') and (d != 'flux_calculator'))]
     
     # assume uncoupled case first
     coupled = False
