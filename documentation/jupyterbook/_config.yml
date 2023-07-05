@@ -40,3 +40,5 @@ sphinx:
     autoapi_ignore : ['*run.*', '*create_jobscript*', '*create_mappings*', '*mpi_task*']
     autoapi_add_toctree_entry : true
     todo_include_todos : true
+    html_theme_options:
+      repository_provider: custom
