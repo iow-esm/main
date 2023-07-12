@@ -28,6 +28,7 @@ parts:
 - caption: background
   chapters:
   - file: background/coupling_concept.md
+  - file: background/details_on_fluxes.md
 """
 
 f.write(header)

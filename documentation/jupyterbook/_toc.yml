@@ -7,6 +7,7 @@ parts:
 - caption: background
   chapters:
   - file: background/coupling_concept.md
+  - file: background/details_on_fluxes.md
 - caption: development
   chapters:
   - file: development/design_concept.md
@@ -20,9 +21,13 @@ parts:
   - file: usage/advanced_use.md
   - file: usage/attempt_handling.md
   - file: usage/automatic_postprocessing.ipynb
+  - file: usage/automatic_synchronisation.md
   - file: usage/create_forcings_for_CCLM.md
   - file: usage/create_postprocess_task.ipynb
+  - file: usage/define_parallelization_layout.md
+  - file: usage/directory_structure.md
   - file: usage/parallelize_flux_calculator.md
+  - file: usage/prepare_input_folders.md
   - file: usage/setting_up_global_settings.md
   - file: usage/setting_up_jobscript.md
 - caption: scripts
