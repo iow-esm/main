@@ -25,6 +25,11 @@ TODOs
 
 .. todo::
 
+   ./usage/advanced_use.md:48 TODO: change this section to use of several input folders.
+
+
+.. todo::
+
    ./usage/create_forcings_for_CCLM.md:55 TODO: Explain where or how to get the climatology files.
 
 
