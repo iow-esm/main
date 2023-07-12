@@ -173,8 +173,14 @@ class CreateLockedFile:
         fcntl.flock(self.file.fileno(), fcntl.LOCK_UN)
         self.file.close()
 
+        self.file = None
+
         if self.delete:
             os.remove(self.file_name)
 
     def __del__(self):
+
+        if self.file is None:
+            return
+                
         self.unlock()
