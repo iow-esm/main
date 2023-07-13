@@ -3,7 +3,7 @@
 
 title: IOW Earth system model
 author: Sven Karsten
-logo: ../../gui/icon.png
+logo: ../gui/icon.png
 
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
@@ -36,7 +36,7 @@ sphinx:
   - 'autoapi.extension'
   - 'sphinx.ext.todo'
   config:
-    autoapi_dirs : ['../../scripts']
+    autoapi_dirs : ['../scripts']
     autoapi_ignore : ['*run.*', '*create_jobscript*', '*create_mappings*', '*mpi_task*']
     autoapi_add_toctree_entry : true
     todo_include_todos : true
