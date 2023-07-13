@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#module load miniconda3
+module load miniconda3
 # necessary steps for first time
 #conda create --name jupyterbook python=3.7
-#conda activate jupyterbook
+conda activate jupyterbook
 #pip install --target=${CONDA_PREFIX}/lib/python3.7/site-packages --upgrade jupyter-book importlib-metadata==4.13.0 sphinx-autoapi
 #export PATH=${PATH}:${CONDA_PREFIX}/lib/python3.7/site-packages/bin
 
@@ -14,7 +14,7 @@ rm -r _build/docs _build/.doctrees _build/jupyter_execute autoapi
 python get_todos.py
 
 # build _toc.yml
-python get_files.py
+#python get_files.py
 
 # build book
 jupyter-book build -v --keep-going --all .
