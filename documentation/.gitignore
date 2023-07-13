@@ -1,5 +1,2 @@
-*.aux
-*.log
-*.gz
-*.toc
-*.out
+_build/
+autoapi/
