@@ -12,12 +12,12 @@ parts:
   chapters:
   - file: development/design_concept.md
   - file: development/extend_documentation.md
-  - file: development/new_destinations.md
   - file: development/new_model.md
   - file: development/release_new_version.md
   - file: development/testing.md
 - caption: usage
   chapters:
+  - file: usage/add_new_target_machines.md
   - file: usage/advanced_use.md
   - file: usage/attempt_handling.md
   - file: usage/automatic_postprocessing.ipynb
