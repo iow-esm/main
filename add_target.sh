@@ -37,7 +37,8 @@ for t in `awk '{print $1}' AVAILABLE_TARGETS`; do
         exit
     fi
 done
-#echo ${target} >> AVAILABLE_TARGETS
+echo "" >> AVAILABLE_TARGETS
+echo "${target}" >> AVAILABLE_TARGETS
 echo "# done."
 echo "#################################################"
 echo ""
@@ -66,14 +67,14 @@ for b in ${buildables[@]}; do
             continue
         fi
 
-        #cp $c/${build_template} $c/build_${target}.sh
+        cp $c/${build_template} $c/build_${target}.sh
         echo "#   $c/build_${target}.sh"
 
         if [ ! -f $c/${start_build_template} ]; then
             continue
         fi     
 
-        #cp $c/${start_build_template} $c/start_build_${target}.sh
+        cp $c/${start_build_template} $c/start_build_${target}.sh
         echo "#   $c/start_build_${target}.sh"   
 
     done
@@ -104,7 +105,7 @@ if [ ${new_class} == true ]; then
     echo "# TODOs left for $USER: "
     echo "# - go to the following files and adapt them for your target \"${target}\""
     
-    #cp ${machine_settings_template} ./scripts/run/machine_settings_${target_class}.py
+    cp ${machine_settings_template} ./scripts/run/machine_settings_${target_class}.py
     echo "#   ./scripts/run/machine_settings_${target_class}.py"  
 fi
 
@@ -120,7 +121,7 @@ if [ -d "./postprocess" ]; then
     echo "# TODOs left for $USER: "
     echo "# - go to the following files and adapt them for your target \"${target}\""    
 
-    #cp ./postprocess/load_modules_target.template ./postprocess/load_modules_${target}.sh
+    cp ./postprocess/load_modules_target.template ./postprocess/load_modules_${target}.sh
     echo "#   ./postprocess/load_modules_${target}.sh"  
 
     echo "#"
