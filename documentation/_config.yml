@@ -31,6 +31,9 @@ html:
   use_issues_button: true
   use_repository_button: true
 
+bibtex_bibfiles: 
+  - "bibliography.bib"
+
 sphinx:
   extra_extensions:
   - 'autoapi.extension'
@@ -42,3 +45,6 @@ sphinx:
     todo_include_todos : true
     html_theme_options:
       repository_provider: custom
+    bibtex_reference_style: author_year
+
+    

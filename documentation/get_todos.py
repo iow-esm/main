@@ -2,6 +2,7 @@ import os
 import re
 
 todos = open('todos.rst', 'w')
+todos.write(".. _todos:\n\n")
 todos.write("TODOs\n")
 todos.write("=====\n")
 for path, subdirs, files in os.walk("."):

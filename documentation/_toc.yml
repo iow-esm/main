@@ -30,12 +30,12 @@ parts:
   - file: usage/prepare_input_folders.md
   - file: usage/setting_up_global_settings.md
   - file: usage/setting_up_jobscript.md
+- caption: postprocessing
+  chapters:
+  - file: postprocessing/overview.md
 - caption: scripts
   chapters:
   - file: autoapi/index.rst
-- caption: general
-  chapters:
-  - file: general/history.md
 - caption: todos
   chapters:
   - file: todos.rst
