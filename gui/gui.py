@@ -363,10 +363,11 @@ class IowEsmGui:
             text="Keyword", bg = self.frames["add_target"]["background"], fg = 'white'
         )
         self.labels["add_target_keyword"].grid(row=self.row, sticky = 'w', column=1)
+
         self.labels["add_target_class"] = tk.Label(master=self.frames["add_target"],
             text="Class", bg = self.frames["add_target"]["background"], fg = 'white'
         )
-        self.labels["add_target_keyword"].grid(row=self.row, sticky = 'w', column=2)
+        self.labels["add_target_class"].grid(row=self.row, sticky = 'w', column=2)
         self.row += 1
         
         self.labels["add_target"] = tk.Label(master=self.frames["add_target"],
