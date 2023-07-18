@@ -37,7 +37,7 @@ for t in `awk '{print $1}' AVAILABLE_TARGETS`; do
         exit
     fi
 done
-echo "" >> AVAILABLE_TARGETS
+
 echo "${target}" >> AVAILABLE_TARGETS
 echo "# done."
 echo "#################################################"
