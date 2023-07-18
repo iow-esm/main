@@ -75,6 +75,7 @@ for b in ${buildables[@]}; do
         fi     
 
         cp $c/${start_build_template} $c/start_build_${target}.sh
+        chmod u+x $c/start_build_${target}.sh
         echo "#   $c/start_build_${target}.sh"   
 
     done
@@ -122,6 +123,7 @@ echo "# TODOs left for $USER: "
 echo "# - go to the following files and adapt them for your target \"${target}\""
 
 cp ${run_script_template} ./local_scripts/run_${target}.sh
+chmod u+x ./local_scripts/run_${target}.sh
 echo "#   ./local_scripts/run_${target}.sh" 
 
 echo "#"
@@ -138,6 +140,7 @@ if [ -d "./postprocess" ]; then
     echo "# - go to the following files and adapt them for your target \"${target}\""    
 
     cp ./postprocess/load_modules_target.template ./postprocess/load_modules_${target}.sh
+    chmod u+x ./postprocess/load_modules_${target}.sh
     echo "#   ./postprocess/load_modules_${target}.sh"  
 
     echo "#"
