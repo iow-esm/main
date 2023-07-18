@@ -1,7 +1,21 @@
 (usage:add-new-target-machines)=
 # Add new target machines
 
-In order to add a new target machine the following steps have to be performed:
+In order to add a new target machine Two possible methods are available.
+
+First, one can execute a scripts as 
+
+``` bash
+./add_target.sh <target-keyword> [<target-class>]
+```
+
+where `target-keyword` is a unique identifier for the new target which should be different from thos listed in the `AVAILABLE_TARGETS` file.
+The `target-class` is an optional parameter which corresponds to a class of targets that share the same type of infrastructure, i.e. for instance the same queueing system.
+
+The script creates new build and run files that have to be adapted manually for the new target.
+The files are listed by the script's output.
+
+Alternatively, the following steps can be performed manually:
 
 1. Add a new keyword and the corresponding remote directory to your `DESTINATIONS` file.
 Let's call the new target keyword in this example `new-target`.
@@ -24,3 +38,8 @@ The existing `start_build_haumea.sh` is an example for using the queue, whereas 
 4. Add a machine settings python module `machine_settings_new_target.py` to the directory `scripts/run`.
 Here you have to specify how MPI and the queueing system are used on the new target.
 As a template you can use the examples `machine_settings_hlrn.py` (Intel-MPI + SLURM) and `machine_settings_haumea.py` (OpenMPI+SLURM).
+
+5. Add a run script `run_new-target.sh` under `local_scripts` that starts the run remotely on the target.
+
+6. `load_modules.py` in postprocess
+

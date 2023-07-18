@@ -113,10 +113,26 @@ echo "#"
 echo "#################################################"
 echo ""
 
+
+run_script_template="./local_scripts/run_target.template"
+echo "#################################################"
+echo "# 4. Create new run script    "
+
+echo "# TODOs left for $USER: "
+echo "# - go to the following files and adapt them for your target \"${target}\""
+
+cp ${run_script_template} ./local_scripts/run_${target}.sh
+echo "#   ./local_scripts/run_${target}.sh" 
+
+echo "#"
+echo "#################################################"
+echo ""
+
+
 if [ -d "./postprocess" ]; then
 
     echo "#################################################"
-    echo "# 4. Create new module loading scripts for postprocessing    "
+    echo "# 5. Create new module loading scripts for postprocessing    "
 
     echo "# TODOs left for $USER: "
     echo "# - go to the following files and adapt them for your target \"${target}\""    
