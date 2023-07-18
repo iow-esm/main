@@ -207,7 +207,7 @@ class IowEsmGui:
         self.row += 1
         
         self.buttons["store_" + dst_name] = FunctionButton("Store " + dst_name, partial(self.functions.store_file_from_tk_text, dst_name, self.texts["edit_" + dst_name]), master=master)
-        self.buttons["store_" + dst_name].grid(row=self.row)
+        self.buttons["store_" + dst_name].grid(row=self.row, sticky="ew")
         self.row += 1
         
         
@@ -349,6 +349,50 @@ class IowEsmGui:
                                               % (self.x_offset, 
                                                  1.2*self.window.winfo_height()))
         
+    def _build_window_add_target(self):
+        
+        self.windows["add_target"] = tk.Toplevel(self.window)
+        
+        self.frames["add_target"] = Frame(master=self.windows["add_target"], bg = IowColors.blue3)
+
+        self.print("Available targets are:")
+        with open('AVAILABLE_TARGETS', 'r') as file:
+            self.print(file.read())
+
+        self.labels["add_target_keyword"] = tk.Label(master=self.frames["add_target"],
+            text="Keyword", bg = self.frames["add_target"]["background"], fg = 'white'
+        )
+        self.labels["add_target_keyword"].grid(row=self.row, sticky = 'w', column=1)
+        self.labels["add_target_class"] = tk.Label(master=self.frames["add_target"],
+            text="Class", bg = self.frames["add_target"]["background"], fg = 'white'
+        )
+        self.labels["add_target_keyword"].grid(row=self.row, sticky = 'w', column=2)
+        self.row += 1
+        
+        self.labels["add_target"] = tk.Label(master=self.frames["add_target"],
+            text="Add a new target:", bg = self.frames["add_target"]["background"], fg = 'white'
+        )
+        self.labels["add_target"].grid(row=self.row, sticky = 'w')
+        
+
+        self.entries["add_target_keyword"] = tk.Entry(master=self.frames["add_target"])
+        self.entries["add_target_class"] = tk.Entry(master=self.frames["add_target"])
+
+        self.entries["add_target_keyword"].grid(row=self.row, column=1)
+        self.entries["add_target_class"].grid(row=self.row, column=2)
+        self.row += 1
+
+        self.buttons["add_target"] = FunctionButton("Add", self.functions.add_target, master=self.frames["add_target"])
+        self.buttons["add_target"].grid(row=self.row, columnspan=3, sticky='nsew')
+        
+        self.frames["add_target"].grid(row=self.row, sticky='nsew')
+        self.row += 1        
+
+        
+        self.windows["add_target"].geometry('+%d+%d' 
+                                              % (self.x_offset, 
+                                                 1.05*self.window.winfo_height()))        
+        
     def _build_window_edit_destinations(self):
         
         self.frames["edit_destinations"] = Frame(master=self.window, bg = IowColors.blue3)
@@ -363,6 +407,16 @@ class IowEsmGui:
         self.row += 1
         
         self._edit_file(root_dir + "/DESTINATIONS.example", root_dir + "/DESTINATIONS")
+
+        self.labels["edit_destinations.add_target"] = tk.Label(master=self.window, text="You can also add a new target:", bg = self.window["background"], fg = 'white')
+        
+        self.buttons["edit_destinations.add_target"] = NewWindowButton("Add new target", self._build_window_add_target, master=self.window)
+
+        self.labels["edit_destinations.add_target"].grid(row=self.row, sticky='w')
+        self.row += 1
+        
+        self.buttons["edit_destinations.add_target"].grid(row=self.row, sticky='ew')
+        self.row += 1
         
         self.print(IowEsmInfoTexts.edit_destinations)
         

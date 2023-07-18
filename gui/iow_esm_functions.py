@@ -157,6 +157,11 @@ class IowEsmFunctions:
         self.gui.menus["inputs"].clear_choices()
         self.gui.menus["inputs"].click(create=True)
 
+    def add_target(self):
+
+        cmd = "./add_target.sh " + self.gui.entries["add_target_keyword"].get() + " " + self.gui.entries["add_target_class"].get()
+        self.execute_shell_cmd(cmd, blocking=False)  
+
     def set_sync_destination(self, dst):
         self.gui.current_sync_destination = dst
 
