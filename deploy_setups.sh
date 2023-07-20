@@ -52,7 +52,7 @@ elif [ "${setup_origin::8}" == "https://" ] && [ "${setup_origin:0-6}" == "tar.g
 	file_name="${setup_origin##*/}"
 	echo ssh -t "${user_at_dest}" \"curl ${setup_origin} --output ${dest_folder}/$file_name\"
 	echo "Be patient! This might take a little time..."
-	#ssh -t "${user_at_dest}" "curl ${setup_origin} --output ${dest_folder}/$file_name"
+	ssh -t "${user_at_dest}" "curl ${setup_origin} --output ${dest_folder}/$file_name"
 
 	folder_name=${file_name::-7}
 	echo "Unpack setup in ${dest}."
