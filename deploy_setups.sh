@@ -45,6 +45,25 @@ if [ -z "$colon" ]; then
 	echo "Update from local setup "`whoami`@`hostname`":${setup_origin} to ${dest} at " `date +%Y-%m-%d_%H-%M-%S` >> ${last_deploy_name}
 	echo rsync -r -i -u ${setup_origin}/ ${dest}/.
 	rsync -r -i -u ${setup_origin}/ ${dest}/.
+
+elif [ "${setup_origin::8}" == "https://" ] && [ "${setup_origin:0-6}" == "tar.gz" ]; then
+
+	echo "Download setup from ${setup_origin}."
+	file_name="${setup_origin##*/}"
+	echo ssh -t "${user_at_dest}" \"curl ${setup_origin} --output ${dest_folder}/$file_name\"
+	echo "Be patient! This might take a little time..."
+	#ssh -t "${user_at_dest}" "curl ${setup_origin} --output ${dest_folder}/$file_name"
+
+	folder_name=${file_name::-7}
+	echo "Unpack setup in ${dest}."
+	echo ssh -t "${user_at_dest}" \"cd ${dest_folder}; tar -xvf ${file_name} \&\& rm ${file_name}\"
+	ssh -t "${user_at_dest}" "cd ${dest_folder}; tar -xvf ${file_name} && rm ${file_name}"
+
+	echo ssh -t "${user_at_dest}" \"rsync -avz ${dest_folder}/${folder_name}/* ${dest_folder}/ \&\& rm -r ${dest_folder}/${folder_name}\"
+	ssh -t "${user_at_dest}" "rsync -avz ${dest_folder}/${folder_name}/* ${dest_folder}/ && rm -r ${dest_folder}/${folder_name}"
+
+	echo "Update from external setup ${setup_origin} to ${dest} at " `date +%Y-%m-%d_%H-%M-%S` >> ${last_deploy_name}
+
 else
 	# everything before the colon: user@target
 	user_at_setup_origin="${setup_origin%:*}"
