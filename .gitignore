@@ -10,3 +10,5 @@ input/
 gui/__pycache__/
 gui.log
 tester/
+decrypt/
+encrypt/
