@@ -17,37 +17,50 @@ Further information is available at https://sven-karsten.github.io/iow_esm/intro
 
 # Versions
 
-## 1.04.00 (in preparation)
+## 1.04.00 (latest release)
 
 | date        | author(s)   | link      |
 |---          |---          |---        |
-| 2023-01-24  | SK          | [1.04.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.04.00)       | 
+| 2023-07-26  | SK          | [1.04.00](https://git.io-warnemuende.de/iow_esm/main/src/branch/1.04.00)       | 
 
 <details>
 
 ### changes
+* bias corrections can be applied to the `CCLM` and the `flux_calculator` components
+* albedo for shortwave radiation is applied in the `MOM5` component instead of the `flux_calculator`
 * several instqances of the IOW ESM can now run the same root folder
   * this can be done by creating subfolders in the `input` folder
   * the names of these input folder are then used as `run_name`
 * output can be automatically archived and compressed (additinally monthly means are provided for fast access)
 * output can automatically synchronized to a target while the model is running
+* added patching and merging tool for publishing non-open-source code (uses Linux tools `diff` and `patch`)
+* documentation is extended (but not yet complete)
+* added build script templates and the script `add_target.sh` script to add new computing targets to the framework
+* for all details see `Readme.md`'s of the components
 
 ### dependencies
 * bash, git, (python for GUI) 
+* uses `patch` 1.00.00
   
 ### known issues
-* none
+* in coupled mode, this version leads to too cold summer temperatures 
+  when evaluated from 1959-2019
+  * tested bias corrections can improve on that but investigation is not yet finished
 
 ### tested with
 * intensively tested on both HLRN machines
   * using example setups available under:
-    (coupled, uncoupled MOM5, uncoupled CCLM, int2lm) /scratch/usr/mviowmod/IOW_ESM/setups/example/1.00.00                         
+    (coupled, uncoupled MOM5, uncoupled CCLM, int2lm) /scratch/usr/mviowmod/IOW_ESM/setups/example/1.00.00   
+    (coupled) https://zenodo.org/record/8167743/files/1.00.00.tar.gz (https://doi.org/10.5281/zenodo.8167743)                       
   * can be built and run on Haumea but output is not intensively tested
 
 </details>
 
 
-## 1.03.00 (latest release)
+<details>
+<summary><b><i>older versions</i></b></summary>
+
+## 1.03.00 
 
 | date        | author(s)   | link      |
 |---          |---          |---        |
@@ -204,6 +217,7 @@ Further information is available at https://sven-karsten.github.io/iow_esm/intro
                 I2LM_Eurocordex/example_0.22deg/1.00.00                              
   * can be built and run on Haumea but output is not intensively tested
 
+</details>
 </details>
 
 # Usage
