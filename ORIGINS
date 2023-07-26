@@ -1,8 +1,8 @@
-components/OASIS3-MCT       https://git.io-warnemuende.de/iow_esm/components.oasis3-mct.git         master
-components/flux_calculator  https://git.io-warnemuende.de/iow_esm/components.flux_calculator.git    master
-components/MOM5             https://git.io-warnemuende.de/iow_esm/components.mom5.git               master
-components/CCLM             https://git.io-warnemuende.de/iow_esm/components.cclm.git               master
-tools/I2LM                  https://git.io-warnemuende.de/iow_esm/tools.i2lm.git                    master
-postprocess                 https://git.io-warnemuende.de/iow_esm/postprocess.git                   master
-tester                      https://git.io-warnemuende.de/iow_esm/tester.git                        master
-patch                       https://git.io-warnemuende.de/iow_esm/patch.git                         master
+components/OASIS3-MCT       https://github.com/iow-esm/components.oasis3-mct.git    1.00.02
+components/flux_calculator  https://github.com/iow-esm/components.flux_calculator.git    1.03.00
+components/MOM5             https://github.com/iow-esm/components.mom5.git    1.01.01
+components/CCLM             https://github.com/iow-esm/components.cclm.git    1.01.00
+tools/I2LM                  https://github.com/iow-esm/tools.i2lm.git    1.00.02
+postprocess                 https://github.com/iow-esm/postprocess.git    1.03.00
+tester                      https://github.com/iow-esm/tester.git    1.00.00
+patch                       https://github.com/iow-esm/patch.git    1.00.00
