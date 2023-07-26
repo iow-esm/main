@@ -277,7 +277,7 @@ If you just want to use the latest released version of the IOW ESM you have to e
 
 ``` bash
 cd /to/your/favorite/directory
-git clone --branch X.XX.XX https://git.io-warnemuende.de/iow_esm/main.git .
+git clone --branch X.XX.XX https://github.com/iow-esm/main.git .
 ```
 
 where the `X.XX.XX` stands for the version you prefer.
@@ -292,7 +292,7 @@ If you intent to develop the IOW ESM and modify it you have to execute
 
 ``` bash
 cd /to/your/favorite/directory
-git clone https://git.io-warnemuende.de/iow_esm/main.git .
+git clone https://github.com/iow-esm/main.git .
 ```
 
 This will checkout the master (development) branch.
